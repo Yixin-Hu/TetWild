@@ -1,0 +1,6 @@
+[submodule "extern/libigl"]
+	path = extern/libigl
+	url = https://github.com/libigl/libigl
+[submodule "extern/geogram"]
+	path = extern/geogram
+	url = https://github.com/alicevision/geogram
