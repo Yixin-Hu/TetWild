@@ -65,24 +65,23 @@ Our method can fill gaps and holes but the tetmesh faces on those parts could be
 ### Command Line Swtiches
 Our software only supports usage in commnad line. Here is an overview of all command line switches. 
 
-```bash
+```
 Usage:
 ./TetWild [options]
 
 Options:
---input <INPUT>				Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
-
---postfix <POSTFIX>			Postfix for output files. (string, optinal, default: '_')
---output <OUTPUT>			Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
---ideal-edge-length	<L>		ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
---epsilon <EPS>				epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
---stage <STAGE>				Run pipeline in stage STAGE. (integer, optional, default: 1)
---filter-energy <ENERGY>	Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
---max-pass <PASS>			Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)
---is-quiet <Q>				Mute log info and only output tetmesh if Q = 1. Otherwise, Q = 0. (integer, optional, default: 0)
---targeted-num-v <TV>		Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)
---bg-mesh <BGMESH>			Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
---is-laplacian <ISLAP>		Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)
+--input <INPUT>           Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
+--postfix <POSTFIX>       Postfix for output files. (string, optinal, default: '_')
+--output <OUTPUT>         Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
+--ideal-edge-length <L>   ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
+--epsilon <EPS>           epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
+--stage <STAGE>           Run pipeline in stage STAGE. (integer, optional, default: 1)
+--filter-energy <ENERGY>  Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
+--max-pass <PASS>         Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)
+--is-quiet <Q>            Mute log info and only output tetmesh if Q = 1. Otherwise, Q = 0. (integer, optional, default: 0)
+--targeted-num-v <TV>     Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)
+--bg-mesh <BGMESH>        Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
+--is-laplacian <ISLAP>    Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)
 ```
 
 <!--### Tips
