@@ -1,0 +1,36 @@
+//
+// Created by Yixin Hu on 3/29/17.
+//
+
+#ifndef GTET_DELAUNAYTETRAHEDRALIZATION_H
+#define GTET_DELAUNAYTETRAHEDRALIZATION_H
+
+#include "heads.h"
+
+#include "BSPElements.h"
+#include <CGAL/Delaunay_triangulation_3.h>
+#include <CGAL/Triangulation_vertex_base_with_info_3.h>
+typedef CGAL::Triangulation_vertex_base_with_info_3<unsigned, K> Vb;
+typedef CGAL::Triangulation_data_structure_3<Vb> Tds;
+typedef CGAL::Delaunay_triangulation_3<K, Tds> Delaunay;
+typedef Delaunay::Point Point_d;
+
+class DelaunayTetrahedralization {
+public:
+    Eigen::MatrixXd V_sf;
+    Eigen::MatrixXi F_sf;
+
+    void init(const std::vector<Point_3>& m_vertices, const std::vector<std::array<int, 3>>& m_faces,
+                  std::vector<int>& m_f_tags, std::vector<int>& raw_e_tags, std::vector<std::vector<int>>& raw_conn_e4v);
+
+    void getVoxelPoints(const Point_3& p_min, const Point_3& p_max, GEO::Mesh& geo_surface_mesh,
+                        std::vector<Point_d>& voxel_points);
+    void tetra(const std::vector<Point_3>& m_vertices, GEO::Mesh& geo_surface_mesh,
+               std::vector<Point_3>& bsp_vertices, std::vector<BSPEdge>& bsp_edges,
+               std::vector<BSPFace>& bsp_faces, std::vector<BSPtreeNode>& bsp_nodes);
+    void outputTetmesh(const std::vector<Point_3>& m_vertices, std::vector<std::array<int, 4>>& cells,
+                       const std::string& output_file);
+};
+
+
+#endif //GTET_DELAUNAYTETRAHEDRALIZATION_H

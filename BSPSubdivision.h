@@ -1,0 +1,35 @@
+//
+// Created by Yixin Hu on 4/3/17.
+//
+
+#ifndef NEW_GTET_BSPSUBDIVISION_H
+#define NEW_GTET_BSPSUBDIVISION_H
+
+#include "MeshConformer.h"
+
+class BSPSubdivision {
+public:
+    MeshConformer& MC;
+    BSPSubdivision(MeshConformer& mc): MC(mc){}
+    void init();
+
+    std::queue<int> processing_n_ids;
+    void subdivideBSPNodes();
+
+    const int V_POS=0;
+    const int V_NEG=1;
+    const int V_ON=2;
+    void calVertexSides(const Plane_3& pln, const std::unordered_set<int>& v_ids, const std::vector<Point_3>& vs,
+                        std::unordered_map<int, int>& v_sides);
+
+    const int DIVFACE_POS=0;
+    const int DIVFACE_NEG=1;
+    const int DIVFACE_ON=2;
+    const int DIVFACE_CROSS=3;
+    int divfaceSide(const Plane_3& pln, const std::array<int, 3>& p_ids, const std::vector<Point_3>& ps);
+    void getVertices(BSPFace& face);
+
+};
+
+
+#endif //NEW_GTET_BSPSUBDIVISION_H
