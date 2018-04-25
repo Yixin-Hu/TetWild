@@ -34,13 +34,13 @@ You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and
 ### Features
 Our software is quite easy to use. Basically, users only need to provide a surface triangle mesh as input and our mesher would output a tetrahedral mesh by using default settings. If you want to customize your own tetmeshes, we also provide some options.
 
-- Envelop of size *epsilon*
+- Envelope of size *epsilon*
 
-Using smaller envelop preserves features better but also takes longer time. The default value of *epsilon* is *b/1000*, where *b* is the length of diaginal of bounding box.
+Using smaller envelope preserves features better but also takes longer time. The default value of *epsilon* is *b/1000*, where *b* is the length of diaginal of bounding box.
 
 - Ideal edge length
 
-Using smaller envelop preserves features better but also takes longer time. The default ideal edge length is *b/20*
+Using smaller envelope preserves features better but also takes longer time. The default ideal edge length is *b/20*
 
 - Filtering energy
 
