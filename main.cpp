@@ -207,7 +207,6 @@ void outputFinalTetmesh(MeshRefinement& MR) {
 void gtet_new() {
     is_using_energy_max = true;
     is_use_project = false;
-    is_use_geogram = true;
     is_using_sampling = true;
 
     int energy_type = ENERGY_AMIPS;
@@ -351,28 +350,27 @@ void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int m
 
 int main(int argc, char *argv[]) {
     CLI::App app{"RobustTetMeshing"};
-    app.add_option("--input", args.input, "Input surface mesh")->required();
-    app.add_option("--postfix", args.postfix, "Postfix for output files.");
-    app.add_option("--output", args.output, "Output mesh.");
-    app.add_option("--ideal-edge-length", args.i_ideal_edge_length, "N for ideal_edge_length = diag / N");
-    app.add_option("--min-edge-length", args.i_min_edge_length, "N for min_edge_length = diag / N");
-    app.add_option("--epsilon", args.i_epsilon, "N for epsilon = diag / N");
-    app.add_option("--stage", args.stage, "Go for N stages (start from 1)");
-    app.add_option("--dd", args.i_dd, "N for dd = diag / N. dd is distance between sampling points.");
-    app.add_option("--adaptive-scalar", args.adaptive_scalar, "Adaptive scalar for over-refinement");
-    app.add_option("--filter-energy", args.filter_energy, "The energy value used for filtering out bad elements");
-    app.add_option("--delta-energy", args.delta_energy, "Delta energy for updating scalar field");
-    app.add_option("--max-pass", args.max_pass, "Maximum number of mesh optimization passes.");
-    app.add_option("--is-output-stat", args.is_output_csv, "Whether output statictics to .csv file.");
-    app.add_option("--stat-file", args.csv_file, "Path to the .csv file.");
-    app.add_option("--slz-file", args.slz_file, "Whether serialize the tetmesh before the mesh optimization");
+    app.add_option("--input", args.input, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
+    app.add_option("--postfix", args.postfix, "Postfix for output files. (string, optinal, default: '_')");
+    app.add_option("--output", args.output, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("--ideal-edge-length", args.i_ideal_edge_length, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
+    app.add_option("--epsilon", args.i_epsilon, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("--stage", args.stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
+//    app.add_option("--dd", args.i_dd, "N for dd = diag / N. dd is distance between sampling points.");
+//    app.add_option("--adaptive-scalar", args.adaptive_scalar, "Adaptive scalar for over-refinement");
+    app.add_option("--filter-energy", args.filter_energy, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
+//    app.add_option("--delta-energy", args.delta_energy, "Delta energy for updating scalar field");
+    app.add_option("--max-pass", args.max_pass, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+//    app.add_option("--is-output-stat", args.is_output_csv, "Whether output statictics to .csv file.");
+//    app.add_option("--stat-file", args.csv_file, "Path to the .csv file.");
+//    app.add_option("--slz-file", args.slz_file, "Whether serialize the tetmesh before the mesh optimization");
 
-    app.add_option("--mid-result", args.mid_result, "");
-    app.add_option("--is-using-voxel", args.is_using_voxel, "");
-    app.add_option("--is-laplacian", args.is_laplacian, "if do laplacian smoothing for vertices around the open areas of input");
-    app.add_option("--targeted-num-v", args.targeted_num_v, "assign targeted number of vertices for output");
-    app.add_option("--bg-mesh", args.bg_mesh, "background mesh for applying sizing field");
-    app.add_option("--is-quiet", args.is_quiet, "mute log info and only output tetmesh");
+//    app.add_option("--mid-result", args.mid_result, "");
+//    app.add_option("--is-using-voxel", args.is_using_voxel, "");
+    app.add_option("--is-laplacian", args.is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
+    app.add_option("--targeted-num-v", args.targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_option("--bg-mesh", args.bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
+    app.add_option("--is-quiet", args.is_quiet, "Mute log info and only output tetmesh if Q = 1. Otherwise, Q = 0. (integer, optional, default: 0)");
 
     try {
         app.parse(argc, argv);

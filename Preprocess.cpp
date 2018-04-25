@@ -145,7 +145,6 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     }
 
     g_ideal_l = g_diag_l / args.i_ideal_edge_length;
-    g_min_scalar = args.i_ideal_edge_length / float(args.i_min_edge_length);
 
     cout << "eps = " << g_eps << endl;
     cout << "ideal_l = " << g_ideal_l << endl;

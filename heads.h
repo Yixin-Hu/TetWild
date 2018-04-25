@@ -112,13 +112,12 @@ struct Args{
     std::string input;
     std::string output = "";
     std::string postfix = "_";
-    int i_ideal_edge_length = 20;
-    int i_min_edge_length = 1500;
-    int i_epsilon = 1000;
+    double i_ideal_edge_length = 20;
+    double i_epsilon = 1000;
     int i_dd = -1;
     int stage = 1;
     double adaptive_scalar = 0.6;
-    double filter_energy = 10;//13
+    double filter_energy = 10;
     double delta_energy = 0.1;
     int max_pass = 80;
     int is_output_csv = true;
@@ -141,7 +140,6 @@ extern double g_eps;
 extern double g_eps_2;
 extern double g_dd;
 extern double g_ideal_l;
-extern double g_min_scalar;
 extern double g_diag_l;
 extern bool g_is_close;
 
@@ -153,7 +151,6 @@ extern int g_cur_stage;
 extern bool is_using_energy_max;
 extern bool is_using_sampling;
 extern bool is_use_project;
-extern bool is_use_geogram;
 extern int cnt_geo_aabb;
 
 extern bool is_print_tmp;

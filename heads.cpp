@@ -14,7 +14,6 @@ bool is_using_energy_max = true;
 
 bool is_using_sampling = true;
 bool is_use_project = false;
-bool is_use_geogram = true;
 int cnt_geo_aabb = 0;
 
 int NOT_SURFACE = 0;
@@ -23,7 +22,6 @@ double g_eps = 0;
 double g_eps_2 = 0;
 double g_dd = 0;
 double g_ideal_l = 0;
-double g_min_scalar = 0;
 double g_diag_l = 0;
 bool g_is_close = true;
 
