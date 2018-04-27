@@ -81,20 +81,32 @@ bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
     Eigen::MatrixXd V_tmp;
     Eigen::MatrixXi F_tmp;
     if (file_format == "off" || file_format == "OFF") {
-        if (!igl::readOFF(args.input, V_tmp, F_tmp))
+        if (!igl::readOFF(args.input, V_tmp, F_tmp)) {
+            cout << "Libigl read .off fail. Please check your mesh!" << endl;
             return false;
+        }
     } else if (file_format == "stl" || file_format == "STL") {
         Eigen::MatrixXd _;
-        if (!igl::readSTL(args.input, V_tmp, F_tmp, _))
+        if (!igl::readSTL(args.input, V_tmp, F_tmp, _)) {
+            cout << "Libigl read .stl fail. Please check your mesh!" << endl;
             return false;
+        }
     } else if (file_format == "obj" || file_format == "OBJ") {
-        if (!igl::readOBJ(args.input, V_tmp, F_tmp))
+        if (!igl::readOBJ(args.input, V_tmp, F_tmp)) {
+            cout << "Libigl read .obj fail. Please check your mesh!" << endl;
             return false;
+        }
     } else if (file_format == "ply" || file_format == "PLY") {
-        if (!igl::readPLY(args.input, V_tmp, F_tmp))
+        if (!igl::readPLY(args.input, V_tmp, F_tmp)) {
+            cout << "Libigl read .ply fail. Please check your mesh!" << endl;
             return false;
-    } else
+        }
+    } else {
+        cout << "Only support .off/.stl/.obj/.ply formats!" << endl;
         return false;
+    }
+
+    cout << "Mesh read in!" << endl;
 
     return init(V_tmp, F_tmp, geo_b_mesh, geo_sf_mesh);
 }
