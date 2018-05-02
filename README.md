@@ -40,7 +40,7 @@ Using smaller envelope preserves features better but also takes longer time. The
 
 - Ideal edge length
 
-Using smaller envelope preserves features better but also takes longer time. The default ideal edge length is *b/20*
+Using smaller ideal edge length gives a denser mesh but also takes longer time. The default ideal edge length is *b/20*
 
 - Filtering energy
 
