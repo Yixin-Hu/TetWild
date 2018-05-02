@@ -9,7 +9,7 @@ ACM Transactions on Graphics (SIGGRAPH 2018)
 ```bash
 git clone https://github.com/Yixin-Hu/TetWild --recursive
 ```
-- Compile the code (in release mode):
+- Compile the code using cmake (default in release mode):
 
 You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.
 
@@ -48,7 +48,7 @@ Our mesher stops optmizing the mesh when maximum energy is smaller than filterin
 
 - Maximum number of optimzation passes 
 
-Our mesher stops optmizing the mesh when the maximum number of passes is reached. The default number is 10. 
+Our mesher stops optmizing the mesh when the maximum number of passes is reached. The default number is 80. 
 
 - Targeted number of vertices
 
