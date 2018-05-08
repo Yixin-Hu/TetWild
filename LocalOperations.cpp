@@ -1042,8 +1042,8 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
     double sq_dist;
     GEO::index_t prev_facet = geo_sf_tree.nearest_facet(current_point, nearest_point, sq_dist);
     int cnt = 0;
-    const int ps_size = ps.size();
-    for (int i = ps_size / 2; i < ps.size(); i = (i + 1) % ps_size) {//check from the middle
+    const unsigned int ps_size = ps.size();
+    for (unsigned int i = ps_size / 2; i < ps.size(); i = (i + 1) % ps_size) {//check from the middle
         GEO::vec3 &current_point = ps[i];
         sq_dist = current_point.distance2(nearest_point);
         geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
@@ -1173,8 +1173,8 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
     double sq_dist;
     GEO::index_t prev_facet = geo_b_tree.nearest_facet(current_point, nearest_point, sq_dist);
     int cnt = 0;
-    const int b_points_size = b_points.size();
-    for (int i = b_points_size / 2; ; i = (i + 1) % b_points_size) {
+    const unsigned int b_points_size = b_points.size();
+    for (unsigned int i = b_points_size / 2; ; i = (i + 1) % b_points_size) {
         GEO::vec3 &current_point = b_points[i];
         sq_dist = current_point.distance2(nearest_point);
         geo_b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
@@ -1263,7 +1263,7 @@ bool LocalOperations::isBoundaryPoint(int v_id) {
 
 void LocalOperations::checkUnrounded() {
     bool is_output = false;
-    for (int i = 0; i < tet_vertices.size(); i++) {
+    for (unsigned int i = 0; i < tet_vertices.size(); i++) {
         if (v_is_removed[i])
             continue;
         if (!tet_vertices[i].is_rounded) {
@@ -1283,7 +1283,7 @@ void LocalOperations::checkUnrounded() {
     int cnt_all = 0;
     int cnt_sf1 = 0;
     std::vector<double> diss;
-    for (int i = 0; i < tet_vertices.size(); i++) {
+    for (unsigned int i = 0; i < tet_vertices.size(); i++) {
         if (v_is_removed[i])
             continue;
         if (tet_vertices[i].is_rounded)
@@ -1472,11 +1472,11 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 
     Eigen::VectorXd V_vec(V_in.rows() * 3);
     Eigen::VectorXi F_vec(F_in.rows() * 3);
-    for (int i = 0; i < V_in.rows(); i++) {
+    for (unsigned int i = 0; i < V_in.rows(); i++) {
         for (int j = 0; j < 3; j++)
             V_vec(i * 3 + j) = V_in(i, j);
     }
-    for (int i = 0; i < F_in.rows(); i++) {
+    for (unsigned int i = 0; i < F_in.rows(); i++) {
         for (int j = 0; j < 3; j++)
             F_vec(i * 3 + j) = F_in(i, j);
     }

@@ -7,10 +7,10 @@
 void EdgeRemover::init() {
     energy_time = 0;
 
-    const int tets_size = tets.size();
+    const unsigned int tets_size = tets.size();
     std::vector<std::array<int, 2>> edges;
     edges.reserve(tets_size * 6);
-    for (int i = 0; i < tets_size; i++) {
+    for (unsigned int i = 0; i < tets_size; i++) {
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 3; j++) {
@@ -27,7 +27,7 @@ void EdgeRemover::init() {
     std::sort(edges.begin(), edges.end());
     edges.erase(std::unique(edges.begin(), edges.end()), edges.end());
 
-    for (int i = 0; i < edges.size(); i++) {
+    for (unsigned int i = 0; i < edges.size(); i++) {
         std::vector<int> t_ids;
         setIntersection(tet_vertices[edges[i][0]].conn_tets, tet_vertices[edges[i][1]].conn_tets, t_ids);
         addNewEdge(edges[i]);
@@ -723,8 +723,8 @@ bool EdgeRemover::isEdgeValid(const std::array<int, 2>& v_ids){
 }
 
 void EdgeRemover::getNewTetSlots(int n, std::vector<int>& new_conn_tets) {
-    int cnt = 0;
-    for (int i = t_empty_start; i < t_is_removed.size(); i++) {
+    unsigned int cnt = 0;
+    for (unsigned int i = t_empty_start; i < t_is_removed.size(); i++) {
         if (t_is_removed[i]) {
             new_conn_tets.push_back(i);
             cnt++;
@@ -735,7 +735,7 @@ void EdgeRemover::getNewTetSlots(int n, std::vector<int>& new_conn_tets) {
         }
     }
     if (cnt < n) {
-        for (int i = 0; i < n - cnt; i++)
+        for (unsigned int i = 0; i < n - cnt; i++)
             new_conn_tets.push_back(tets.size() + i);
 
         tets.resize(tets.size() + n - cnt);

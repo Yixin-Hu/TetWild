@@ -672,7 +672,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
                                       const std::vector<bool>& tmp_t_is_removed){
     int cnt_suc = 0;
     double max_slim_evergy = 0;
-    for(int i=0;i<tet_qualities.size();i++) {
+    for(unsigned int i=0;i<tet_qualities.size();i++) {
         if (tmp_t_is_removed[i])
             continue;
         if (tet_qualities[i].slim_energy > max_slim_evergy)
