@@ -1,7 +1,14 @@
 # TetWild - Tetrahedral Meshing in the Wild
 ![](teaser.png)
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
-ACM Transactions on Graphics (SIGGRAPH 2018)
+ACM Transactions on Graphics (SIGGRAPH 2018). [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf)
+
+## Dataset
+Here is pre-generated tetmeshes for research-purpose usage.
+- Input: [Thingi10k](https://ten-thousand-models.appspot.com/)
+- Output: 
+[10k tetmeshes](https://drive.google.com/file/d/17AZwaQaj_nxdCIUpiGFCQ7_khNQxfG4Y/view?usp=sharing), 
+[10k surface meshes](https://drive.google.com/open?id=1E_C1uVoG1ZGF3pfDpHFKIS8Qqd2VXLZQ)
 
 ## Installation
 - Clone the repository into your local machine:
