@@ -96,6 +96,9 @@ Options:
 <!--### Tips
 TODO :)-->
 
+## License
+TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
+
 ## Acknowledgements
 
 We used several useful libraries in our implement, testing, and rendering listed as follows. We would like to especially thank their authors for their great work and publishing the code.
