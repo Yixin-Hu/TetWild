@@ -307,5 +307,9 @@ namespace tetwild {
             for (int j = 0; j < 3; j++)
                 F(i, j) = in_faces[i][j];
         gtet_new(V, F, out_vertices, out_tets);
+
+        if (args.is_quiet) {
+            std::cout.clear();
+        }
     }
 }
