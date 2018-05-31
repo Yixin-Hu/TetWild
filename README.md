@@ -1,11 +1,14 @@
+
 # TetWild - Tetrahedral Meshing in the Wild
 ![](teaser.png)
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
 ACM Transactions on Graphics (SIGGRAPH 2018). [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf)
 
 ## Dataset
-Here is pre-generated tetmeshes for research-purpose usage.
+Here is pre-generated tetmeshes and the extracted surface meshes for research-purpose usage.
+
 - Input: [Thingi10k](https://ten-thousand-models.appspot.com/)
+
 - Output: 
 [10k tetmeshes](https://drive.google.com/file/d/17AZwaQaj_nxdCIUpiGFCQ7_khNQxfG4Y/view?usp=sharing), 
 [10k surface meshes](https://drive.google.com/open?id=1E_C1uVoG1ZGF3pfDpHFKIS8Qqd2VXLZQ)
@@ -30,11 +33,12 @@ make
 
 ## Usage
 
-### Input/output Format
 
-The inputs of our software are triangle surface meshes in .off/.obj/.stl/.ply format.
+#### Input/output Format
 
-The output tetrahedral mesh is using .msh format with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/).
+The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` format.
+
+We support `.mesh/.msh` format output. The default output format is .msh with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/).
 
 You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and write .msh meshes.
 
@@ -71,7 +75,7 @@ Users can provide a background tetmesh in .msh format with vertex scalar field `
 
 Our method can fill gaps and holes but the tetmesh faces on those parts could be bumpy. We provide users an option to do Lapacian smoothing on those faces to get a smoother surface.
 
-### Command Line Swtiches
+### Command Line Switches
 Our software only supports usage in commnad line. Here is an overview of all command line switches. 
 
 ```
@@ -96,6 +100,38 @@ Options:
 
 <!--### Tips
 TODO :)-->
+
+### Function Wrapper
+
+We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetrahedaliztion without read/write data from/to files. One can use it in the following way:
+
+1. Include the header file `tetwild.h`.
+2. Set parameters through a struct variable `tetwild::parameters`. The following table provide the corresponding relation between parameters and command line switches.
+	
+	|Switch|Parameter| 
+	|:---------|:-------| 
+	|--input|N/A|	
+	|--postfix|N/A|
+	|--output|N/A|
+	|--ideal-edge-length|`parameters.i_ideal_edge_length`|
+	|--epsilon|`parameters.i_epsilon`|
+	|--stage|`parameters.stage`|
+	|--filter-energy|`parameters.filter_energy`|
+	|--max-pass|`parameters.max_pass`|
+	|--is-quiet|`parameters.is_quiet`|
+	|--targeted-num-v|`parameters.targeted_num_v`|
+	|--bg-mesh|N/A|
+	|--is-laplacian|`parameters.is_laplacian`|
+	|--output-mesh-format|N/A|
+	
+3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out)` by providing the input vertices `v_in`, input triangle faces `f_in`, output vertices `v_out`, and output tetrahedra `t_out` in the following data type:
+
+	|Variable|Type|
+	|:---------|:-------|
+	|`v_in`|`const std::vector<std::array<double, 3>>&`|
+	|`f_in`|`const std::vector<std::array<int, 3>>&`|
+	|`v_out`|`std::vector<std::array<double, 3>>&`|
+	|`t_out`|`std::vector<std::array<int, 4>>&`|
 
 ## License
 TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
