@@ -106,7 +106,7 @@ TODO :)-->
 We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetrahedaliztion without read/write data from/to files. One can use it in the following way:
 
 1. Include the header file `tetwild.h`.
-2. Set parameters through a struct variable `tetwild::parameters`. The following table provide the corresponding relation between parameters and command line switches.
+2. Set parameters through a struct variable `tetwild::parameters`. The following table provides the correspondence between parameters and command line switches.
 	
 	|Switch|Parameter| 
 	|:---------|:-------| 
