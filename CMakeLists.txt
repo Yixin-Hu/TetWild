@@ -86,7 +86,8 @@ set(SOURCE_FILES
 		pymesh/MshLoader.cpp pymesh/MshLoader.h
 		pymesh/MshSaver.cpp pymesh/MshSaver.h
 		pymesh/Exception.h
-        	heads.cpp heads.h
+		heads.cpp heads.h
+		tetwild.h tetwild.cpp
 		)
 
 

@@ -200,10 +200,10 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
             conn_f4v[F_sf(i, j)].push_back(i);
     }
     //check isolated vertices
-    for(int i=0;i<conn_f4v.size();i++){
-        if(conn_f4v[i].size()==0)
-            cout<<"iso"<<endl;
-    }
+//    for(int i=0;i<conn_f4v.size();i++){
+//        if(conn_f4v[i].size()==0)
+//            cout<<"iso"<<endl;
+//    }
 
     std::vector<std::array<int, 2>> b_edges;
     for (int i = 0; i < F_sf.rows(); i++) {
