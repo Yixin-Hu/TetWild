@@ -63,6 +63,7 @@ option(LIBIGL_WITH_OPENGL           "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
 find_package(LIBIGL REQUIRED QUIET)
+find_package(Eigen REQUIRED)
 
 ################################################################################
 
@@ -101,5 +102,6 @@ else()
 endif()
 
 target_link_libraries(TetWild geogram igl::core igl::cgal)
+target_include_directories(TetWild SYSTEM PRIVATE ${EIGEN_INCLUDE_DIRS})
 
 #target_link_libraries(TetWild geogram igl::core igl::cgal igl::viewer)
