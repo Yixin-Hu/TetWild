@@ -139,7 +139,7 @@ void outputFinalSurface(MeshRefinement& MR){
                 break;
             }
     }
-    igl::writeOBJ(g_working_dir+g_postfix+"_sf.obj", V_sf, F_sf);
+    //igl::writeOBJ(g_working_dir+g_postfix+"_sf.obj", V_sf, F_sf);
 }
 
 void outputFinalTetmesh(MeshRefinement& MR) {
@@ -175,7 +175,6 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    PyMesh::MshSaver mSaver(g_output_file, true);
     Eigen::VectorXd oV(v_ids.size() * 3);
     Eigen::VectorXi oT(t_cnt * 4);
     for (int i = 0; i < v_ids.size(); i++) {
@@ -190,7 +189,6 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             oT(cnt * 4 + j) = map_ids[tets[i][j]];
         cnt++;
     }
-    mSaver.save_mesh(oV, oT, 3, mSaver.TET);
     cout << "#v = " << oV.rows() / 3 << endl;
     cout << "#t = " << oT.rows() / 4 << endl;
 
@@ -202,15 +200,15 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         angle(cnt) = tet_qualities[i].min_d_angle;
         cnt++;
     }
-    mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
+    if(g_output_file != "")
+    {
+      PyMesh::MshSaver mSaver(g_output_file, true);
+      mSaver.save_mesh(oV, oT, 3, mSaver.TET);
+      mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
+    }
 
-    if(args.is_quiet)
-        return;
-
-    outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
-    outputFinalSurface(MR);
-
-    if(args.output_mesh_format!=""){
+    if(args.output_mesh_format!="")
+    {
         std::fstream f(args.output_mesh_format, std::ios::out);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
@@ -231,6 +229,13 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "End";
         f.close();
     }
+
+    if(!args.is_quiet)
+    {
+      outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
+      outputFinalSurface(MR);
+    }
+
 }
 
 void gtet_new() {
@@ -412,7 +417,7 @@ int main(int argc, char *argv[]) {
         g_stat_file = g_working_dir + g_postfix + ".csv";
     else
         g_stat_file = args.csv_file;
-    if(args.output == "")
+    if(args.output == "" && args.output_mesh_format == "")
         g_output_file = g_working_dir + g_postfix + ".msh";
     else
         g_output_file = args.output;
