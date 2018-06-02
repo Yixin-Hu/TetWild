@@ -67,8 +67,9 @@ find_package(Eigen REQUIRED)
 
 ################################################################################
 
+SET(MAIN_FILE main.cpp)
+
 set(SOURCE_FILES
-		main.cpp
 		BSPElements.h TetmeshElements.h
 		Preprocess.cpp Preprocess.h
 		DelaunayTetrahedralization.cpp DelaunayTetrahedralization.h
@@ -92,16 +93,19 @@ set(SOURCE_FILES
 		)
 
 
+SET(OBJ_FILES "")
 if(GTET_ISPC)
 	add_custom_command(OUTPUT energy_ispc.o
 			COMMAND ispc ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
-	add_executable(TetWild ${SOURCE_FILES} energy_ispc.o)
 	add_definitions(-DGTET_ISPC)
-else()
-	add_executable(TetWild ${SOURCE_FILES})
-endif()
+    LIST(APPEND OBJ_FILES energy_ispc.o)
+endif(GTET_ISPC)
+ADD_LIBRARY(lib_tetwild SHARED ${SOURCE_FILES} ${OBJ_FILES})
+target_link_libraries(lib_tetwild geogram igl::core igl::cgal)
+target_include_directories(lib_tetwild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
+set_target_properties(lib_tetwild PROPERTIES OUTPUT_NAME "TetWild")
 
-target_link_libraries(TetWild geogram igl::core igl::cgal)
-target_include_directories(TetWild SYSTEM PRIVATE ${EIGEN_INCLUDE_DIRS})
+add_executable(TetWild ${MAIN_FILE})
+target_link_libraries(TetWild lib_tetwild)
 
 #target_link_libraries(TetWild geogram igl::core igl::cgal igl::viewer)
