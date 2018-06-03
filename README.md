@@ -38,7 +38,7 @@ make
 
 The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` format.
 
-We support `.mesh/.msh` format output. The default output format is .msh with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/).
+We support `.mesh/.msh` format output. The default output format is `.msh` with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/).
 
 You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and write .msh meshes.
 
@@ -85,7 +85,7 @@ Usage:
 Options:
 --input <INPUT>                   Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
 --postfix <POSTFIX>               Postfix for output files. (string, optinal, default: '_')
---output <OUTPUT>                 Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
+--output <OUTPUT>                 Output tetmesh OUTPUT in .mesh/.msh format. (string, optional, default: INPUT+POSTFIX+'.msh')
 --ideal-edge-length <L>           ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
 --epsilon <EPS>                   epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
 --stage <STAGE>                   Run pipeline in stage STAGE. (integer, optional, default: 1)
@@ -95,7 +95,6 @@ Options:
 --targeted-num-v <TV>             Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)
 --bg-mesh <BGMESH>                Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
 --is-laplacian <ISLAP>            Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)
---output-mesh-format <M_OUTPUT>   Output .mesh format tetmesh to M_OUTPUT. (string, optional)
 ```
 
 <!--### Tips
@@ -122,8 +121,7 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 	|--targeted-num-v|`parameters.targeted_num_v`|
 	|--bg-mesh|N/A|
 	|--is-laplacian|`parameters.is_laplacian`|
-	|--output-mesh-format|N/A|
-	
+		
 3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out)` by providing the input vertices `v_in`, input triangle faces `f_in`, output vertices `v_out`, and output tetrahedra `t_out` in the following data type:
 
 	|Variable|Type|
