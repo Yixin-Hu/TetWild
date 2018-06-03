@@ -139,7 +139,6 @@ struct Args{
     std::string bg_mesh = "";
 
     bool is_quiet = false;
-    std::string output_mesh_format = "";
 };
 
 extern Args args;

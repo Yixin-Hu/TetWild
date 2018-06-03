@@ -162,6 +162,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     }
 
     //output result
+    cout<<"Writing mesh to "<<g_output_file<<"..."<<endl;
     std::vector<int> v_ids;
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
@@ -175,7 +176,6 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    PyMesh::MshSaver mSaver(g_output_file, true);
     Eigen::VectorXd oV(v_ids.size() * 3);
     Eigen::VectorXi oT(t_cnt * 4);
     for (int i = 0; i < v_ids.size(); i++) {
@@ -190,28 +190,12 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             oT(cnt * 4 + j) = map_ids[tets[i][j]];
         cnt++;
     }
-    mSaver.save_mesh(oV, oT, 3, mSaver.TET);
     cout << "#v = " << oV.rows() / 3 << endl;
     cout << "#t = " << oT.rows() / 4 << endl;
 
-    Eigen::VectorXd angle(t_cnt);
-    cnt = 0;
-    for (int i = 0; i < tet_qualities.size(); i++) {
-        if (t_is_removed[i])
-            continue;
-        angle(cnt) = tet_qualities[i].min_d_angle;
-        cnt++;
-    }
-    mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
-
-    if(args.is_quiet)
-        return;
-
-    outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
-    outputFinalSurface(MR);
-
-    if(args.output_mesh_format!=""){
-        std::fstream f(args.output_mesh_format, std::ios::out);
+    std::string output_format = args.output.substr(args.output.size() - 4, 4);
+    if (output_format == "mesh") {
+        std::fstream f(g_output_file, std::ios::out);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
@@ -230,7 +214,24 @@ void outputFinalTetmesh(MeshRefinement& MR) {
 
         f << "End";
         f.close();
+    } else {
+        PyMesh::MshSaver mSaver(g_output_file, true);
+        mSaver.save_mesh(oV, oT, 3, mSaver.TET);
+        Eigen::VectorXd angle(t_cnt);
+        cnt = 0;
+        for (int i = 0; i < tet_qualities.size(); i++) {
+            if (t_is_removed[i])
+                continue;
+            angle(cnt) = tet_qualities[i].min_d_angle;
+            cnt++;
+        }
+        mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
     }
+
+    if (args.is_quiet)
+        return;
+    outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
+    outputFinalSurface(MR);
 }
 
 void gtet_new() {
@@ -392,7 +393,6 @@ int main(int argc, char *argv[]) {
     app.add_option("--targeted-num-v", args.targeted_num_v, "--targeted-num-v TV. Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
     app.add_option("--bg-mesh", args.bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
     app.add_option("--is-quiet", args.is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
-    app.add_option("--output-mesh-format", args.output_mesh_format, "--output-mesh-format M_OUTPUT. Output .mesh format tetmesh to M_OUTPUT. (string, optional, default: "")");
 
     try {
         app.parse(argc, argv);

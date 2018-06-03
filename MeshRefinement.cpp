@@ -198,11 +198,6 @@ int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& coll
 }
 
 void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update) {
-//    Eigen::MatrixXd V_tmp;
-//    Eigen::MatrixXi F_tmp;
-//    getSurface(V_tmp, F_tmp);
-//    igl::writeSTL(g_working_dir+args.postfix+"_raw.stl", V_tmp, F_tmp);
-
     GEO::MeshFacetsAABB geo_sf_tree(geo_sf_mesh);
     if (geo_b_mesh.vertices.nb() == 0) {
         getSimpleMesh(geo_b_mesh);//for constructing aabb tree, the mesh cannot be empty
@@ -446,16 +441,16 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         outputMidResult(true, 2);//mark in/out
 
 
-    if (!args.is_quiet) {
-        Eigen::MatrixXd V_tmp;
-        Eigen::MatrixXi F_tmp;
-        getTrackedSurface(V_tmp, F_tmp);
-        igl::writeOBJ(g_working_dir + g_postfix + "_tracked_sf1.obj", V_tmp, F_tmp);
-        getSurface(V_tmp, F_tmp);
-        igl::writeOBJ(g_working_dir + g_postfix + "_tracked_sf2.obj", V_tmp, F_tmp);
-//        localOperation.outputSurfaceColormap(V_tmp, F_tmp, g_eps_input);//compared with user input eps
-        localOperation.checkUnrounded();
-    }
+//    if (!args.is_quiet) {
+////        Eigen::MatrixXd V_tmp;
+////        Eigen::MatrixXi F_tmp;
+////        getTrackedSurface(V_tmp, F_tmp);
+////        igl::writeOBJ(g_working_dir + g_postfix + "_tracked_sf1.obj", V_tmp, F_tmp);
+////        getSurface(V_tmp, F_tmp);
+////        igl::writeOBJ(g_working_dir + g_postfix + "_tracked_sf2.obj", V_tmp, F_tmp);
+//////        localOperation.outputSurfaceColormap(V_tmp, F_tmp, g_eps_input);//compared with user input eps
+////        localOperation.checkUnrounded();
+//    }
 
     if (args.is_laplacian)
         postProcess(smoother);
