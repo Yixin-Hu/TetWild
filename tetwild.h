@@ -11,31 +11,10 @@
 #ifndef TETWILD_TETWILD_H
 #define TETWILD_TETWILD_H
 
-#include "Preprocess.h"
-#include "DelaunayTetrahedralization.h"
-#include "BSPSubdivision.h"
-#include "SimpleTetrahedralization.h"
-#include "MeshRefinement.h"
-#include "InoutFiltering.h"
-#include "CLI11.hpp"
-
+#include <array>
+#include <vector>
 
 namespace tetwild {
-    extern MeshRefinement MR;
-    extern Args parameters;
-
-    void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
-                            const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
-                            const std::vector<int>& v_ids);
-
-
-    void outputFinalTetmesh(MeshRefinement& MR,
-                            std::vector<std::array<double, 3>>& V_out,
-                            std::vector<std::array<int, 4>>& T_out);
-
-    void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
-                  std::vector<std::array<double, 3>>& V_out,
-                  std::vector<std::array<int, 4>>& T_out);
 
     void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
                             const std::vector<std::array<int, 3>>& F_in,

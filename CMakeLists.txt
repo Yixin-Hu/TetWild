@@ -109,3 +109,10 @@ add_executable(TetWild ${MAIN_FILE})
 target_link_libraries(TetWild lib_tetwild)
 
 #target_link_libraries(TetWild geogram igl::core igl::cgal igl::viewer)
+
+INSTALL(TARGETS lib_tetwild TetWild
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin)
+INSTALL(FILES tetwild.h
+    DESTINATION include)
