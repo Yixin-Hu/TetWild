@@ -9,6 +9,13 @@
 // Created by Yixin Hu on 5/31/18.
 //
 #include "tetwild.h"
+#include "Preprocess.h"
+#include "DelaunayTetrahedralization.h"
+#include "BSPSubdivision.h"
+#include "SimpleTetrahedralization.h"
+#include "MeshRefinement.h"
+#include "InoutFiltering.h"
+#include "CLI11.hpp"
 
 namespace tetwild {
     MeshRefinement MR;
