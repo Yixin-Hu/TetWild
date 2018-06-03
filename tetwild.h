@@ -13,9 +13,21 @@
 
 #include <array>
 #include <vector>
-#include "heads.h"
+#include <string>
 
 namespace tetwild {
+    struct Args{
+        double i_ideal_edge_length = 20;
+        double i_epsilon = 1000;
+        int stage = 1;
+        double filter_energy = 10;
+        int max_pass = 80;
+
+        bool is_laplacian = false;
+        int targeted_num_v = -1;
+        std::string bg_mesh = "";
+        bool is_quiet = false;
+    };
     extern Args parameters;
 
     void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,

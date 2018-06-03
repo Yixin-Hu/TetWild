@@ -119,7 +119,7 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 	|--max-pass|`parameters.max_pass`|
 	|--is-quiet|`parameters.is_quiet`|
 	|--targeted-num-v|`parameters.targeted_num_v`|
-	|--bg-mesh|N/A|
+	|--bg-mesh|`parameters.bg_mesh`|
 	|--is-laplacian|`parameters.is_laplacian`|
 		
 3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out)` by providing the input vertices `v_in`, input triangle faces `f_in`, output vertices `v_out`, and output tetrahedra `t_out` in the following data type:
