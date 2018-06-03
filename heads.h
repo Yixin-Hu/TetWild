@@ -38,6 +38,7 @@
 
 #include "pymesh/MshSaver.h"
 #include "pymesh/MshLoader.h"
+#include "Args.h"
 
 using std::cerr;
 using std::cout;
@@ -115,33 +116,7 @@ extern std::string g_stat_file;
 extern std::string g_postfix;
 extern std::string g_output_file;
 
-struct Args{
-    std::string input;
-    std::string output = "";
-    std::string postfix = "_";
-    double i_ideal_edge_length = 20;
-    double i_epsilon = 1000;
-    int i_dd = -1;
-    int stage = 1;
-    double adaptive_scalar = 0.6;
-    double filter_energy = 10;
-    double delta_energy = 0.1;
-    int max_pass = 80;
-    int is_output_csv = true;
-    std::string csv_file = "";
-    std::string slz_file = "";
-
-    int mid_result = -1;
-    bool is_using_voxel = true;
-    bool is_laplacian = false;
-
-    int targeted_num_v = -1;
-    std::string bg_mesh = "";
-
-    bool is_quiet = false;
-    std::string output_mesh_format = "";
-};
-
+using Args = tetwild::Args;
 extern Args args;
 
 extern double g_eps;

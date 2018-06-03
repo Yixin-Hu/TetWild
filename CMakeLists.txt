@@ -70,6 +70,7 @@ find_package(Eigen REQUIRED)
 SET(MAIN_FILE main.cpp)
 
 set(SOURCE_FILES
+        Args.h
 		BSPElements.h TetmeshElements.h
 		Preprocess.cpp Preprocess.h
 		DelaunayTetrahedralization.cpp DelaunayTetrahedralization.h
@@ -114,5 +115,5 @@ INSTALL(TARGETS lib_tetwild TetWild
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin)
-INSTALL(FILES tetwild.h
+INSTALL(FILES Args.h tetwild.h
     DESTINATION include)
