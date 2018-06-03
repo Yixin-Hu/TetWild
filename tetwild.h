@@ -13,9 +13,10 @@
 
 #include <array>
 #include <vector>
-#include "heads.h"
+#include "Args.h"
 
 namespace tetwild {
+
     extern Args parameters;
 
     void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
