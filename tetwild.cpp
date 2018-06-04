@@ -278,6 +278,9 @@ namespace tetwild {
                             const std::vector<std::array<int, 3>>& in_faces,
                             std::vector<std::array<double, 3>>& out_vertices,
                             std::vector<std::array<int, 4>>& out_tets) {
+        out_vertices.clear();
+        out_tets.clear();
+
         args.i_epsilon = parameters.i_epsilon;
         args.bg_mesh = parameters.bg_mesh;
         args.filter_energy = parameters.filter_energy;
