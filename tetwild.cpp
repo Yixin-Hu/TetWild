@@ -18,7 +18,7 @@
 #include "CLI11.hpp"
 
 namespace tetwild {
-    MeshRefinement MR;
+//    MeshRefinement MR;
     Args parameters;
 
     void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
@@ -150,19 +150,17 @@ namespace tetwild {
         is_using_sampling = true;
 
         int energy_type = ENERGY_AMIPS;
-//    int energy_type = ENERGY_DIRICHLET;
         bool is_sm_single = true;
         bool is_preprocess = true;
         bool is_check_correctness = false;
         bool is_ec_check_quality = true;
 
         igl::Timer igl_timer;
-//    std::array<double, 5> times = {0, 0, 0, 0, 0};
         double tmp_time = 0;
         double sum_time = 0;
 
         ////pipeline
-//    MeshRefinement MR;
+        MeshRefinement MR;
         {/// STAGE 1
             //preprocess
             igl_timer.start();
