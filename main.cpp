@@ -193,7 +193,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     cout << "#v = " << oV.rows() / 3 << endl;
     cout << "#t = " << oT.rows() / 4 << endl;
 
-    std::string output_format = args.output.substr(args.output.size() - 4, 4);
+    std::string output_format = g_output_file.substr(g_output_file.size() - 4, 4);
     if (output_format == "mesh") {
         std::fstream f(g_output_file, std::ios::out);
         f.precision(std::numeric_limits<double>::digits10 + 1);
@@ -412,6 +412,7 @@ int main(int argc, char *argv[]) {
         g_stat_file = g_working_dir + g_postfix + ".csv";
     else
         g_stat_file = args.csv_file;
+
     if(args.output == "")
         g_output_file = g_working_dir + g_postfix + ".msh";
     else
