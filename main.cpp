@@ -200,10 +200,10 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
 
-        f << "Vertices" << " " << oV.rows() / 3 << std::endl;
+        f << "Vertices" << std::endl << oV.rows() / 3 << std::endl;
         for (int i = 0; i < oV.rows() / 3; i++)
             f << oV(i * 3) << " " << oV(i * 3 + 1) << " " << oV(i * 3 + 2) << " " << 0 << std::endl;
-
+        f << "Triangles" << endl << 0 <<endl;
         f << "Tetrahedra" << endl;
         f << oT.rows() / 4 << std::endl;
         for (int i = 0; i < oT.rows() / 4; i++) {
