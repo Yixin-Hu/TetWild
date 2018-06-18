@@ -4,6 +4,8 @@
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
 ACM Transactions on Graphics (SIGGRAPH 2018). [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf)
 
+<!--<img src="images/new.png" alt="drawing" style="width:25px;"/> New features-->
+
 ## Dataset
 Here is pre-generated tetmeshes and the extracted surface meshes for research-purpose usage.
 
@@ -14,6 +16,9 @@ Here is pre-generated tetmeshes and the extracted surface meshes for research-pu
 [10k surface meshes](https://drive.google.com/open?id=1E_C1uVoG1ZGF3pfDpHFKIS8Qqd2VXLZQ)
 
 ## Installation
+
+Our code was originally developed on MacOS and has been tested on Lunix and Windows.
+
 - Clone the repository into your local machine:
 
 ```bash
@@ -31,16 +36,15 @@ cmake ..
 make
 ```
 
-## Usage
+💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used. 
 
+## Usage
 
 #### Input/output Format
 
-The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` format.
+The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` format. 
 
-We support `.mesh/.msh` format output. The default output format is `.msh` with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/).
-
-You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and write .msh meshes.
+We support `.mesh/.msh` format output. The default output format is `.msh` with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/). You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and write `.msh` meshes.
 
 ### Features
 Our software is quite easy to use. Basically, users only need to provide a surface triangle mesh as input and our mesher would output a tetrahedral mesh by using default settings. If you want to customize your own tetmeshes, we also provide some options.
@@ -57,6 +61,8 @@ Using smaller ideal edge length gives a denser mesh but also takes longer time. 
 
 Our mesher stops optmizing the mesh when maximum energy is smaller than filtering energy. Thus, larger filtering energy means less optimization and sooner stopping. If you do not care about quality, then give a larger filtering energy would let you get the result earlier. The energy we used here is conformal AMIPS whose range is from 3 to +inf. The default filtering energy is 10. 
 
+💡 We suggest not to set filtering energy smaller than 8 for complex input.
+
 - Maximum number of optimzation passes 
 
 Our mesher stops optmizing the mesh when the maximum number of passes is reached. The default number is 80. 
@@ -65,11 +71,13 @@ Our mesher stops optmizing the mesh when the maximum number of passes is reached
 
 We allow users to input the targeted number of vertices and the mesher would try its best to match that number with 5% error. When the targeted number of vertices is unrealistically small, then the output tetmesh may not have number of vertices matched.
 
+💡 If you want a tetmesh with low resolution, please use larger envelop and larger ideal edge length.
+
 - Sizing field
 
 Users can provide a background tetmesh in .msh format with vertex scalar field `values` stored. The scalar field `values` is used for controling edge length. The scalars inside an element of the background mesh are linearly interpolated.
 
-[Here](https://drive.google.com/open?id=1-5AyoQ-CdZnX8IAqZoqgW1tiNBTNvFjJ) is an example including input surface mesh, background mesh and output tetmeshes with/without sizing control.
+💡 [Here](https://drive.google.com/open?id=1-5AyoQ-CdZnX8IAqZoqgW1tiNBTNvFjJ) is an example including input surface mesh, background mesh and output tetmeshes with/without sizing control.
 
 - Smoothing open regions
 
