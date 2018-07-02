@@ -12,7 +12,10 @@
 //#include "tbb/tbb.h"
 
 #include "LocalOperations.h"
+
+#pragma warning(push, 0)
 #include <igl/svd3x3.h>
+#pragma warning( pop )
 //#include <igl/face_areas.h>
 //#include <igl/dihedral_angles.h>
 

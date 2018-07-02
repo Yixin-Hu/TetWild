@@ -284,9 +284,9 @@ namespace tetwild {
         args.i_epsilon = parameters.i_epsilon;
         args.bg_mesh = parameters.bg_mesh;
         args.filter_energy = parameters.filter_energy;
-        args.i_ideal_edge_length = parameters.i_ideal_edge_length;
-        args.is_laplacian = parameters.is_laplacian;
-        args.is_quiet = parameters.is_quiet;
+        //args.i_ideal_edge_length = parameters.i_ideal_edge_length;
+        //args.is_laplacian = parameters.is_laplacian;
+        //args.is_quiet = parameters.is_quiet;
         args.max_pass = parameters.max_pass;
         args.stage = parameters.stage;
         args.targeted_num_v = parameters.targeted_num_v;
@@ -328,4 +328,15 @@ namespace tetwild {
             std::cout.clear();
         }
     }
+
+    void tetrahedralization(const std::vector<std::array<double, 3>>& V_in, 
+                            const std::vector<std::array<int, 3>>& F_in, 
+                            std::vector<std::array<double, 3>>& V_out, 
+                            std::vector<std::array<int, 4>>& T_out, 
+                            const double edgeLength)
+    {
+      args.i_ideal_edge_length = edgeLength;
+      tetrahedralization(V_in, F_in, V_out, T_out);
+    }
+
 }
