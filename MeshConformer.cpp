@@ -19,7 +19,6 @@ void MeshConformer::match() {
 
 void MeshConformer::matchVertexIndices(int x, const std::vector<std::array<int, 2>>& seed_v_list,
                                        std::vector<int>& f_list) {
-    int seed_id;
     int l = 0, r = seed_v_list.size() - 1;
     while (l < r) {
         int mid = (l + r) / 2;

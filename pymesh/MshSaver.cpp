@@ -62,7 +62,7 @@ void MshSaver::save_nodes(const VectorF& nodes) {
     fout << "$Nodes" << std::endl;
     fout << m_num_nodes << std::endl;
     if (!m_binary) {
-        for (size_t i=0; i<nodes.size(); i+=m_dim) {
+        for (Eigen::Index i=0; i<nodes.size(); i+=m_dim) {
             const VectorF& v = nodes.segment(i,m_dim);
             int node_idx = i/m_dim+1;
             fout << node_idx << " " << v[0] << " " << v[1] << " ";
@@ -73,7 +73,7 @@ void MshSaver::save_nodes(const VectorF& nodes) {
             }
         }
     } else {
-        for (size_t i=0; i<nodes.size(); i+=m_dim) {
+        for (Eigen::Index i=0; i<nodes.size(); i+=m_dim) {
             const VectorF& v = nodes.segment(i,m_dim);
             int node_idx = i/m_dim+1;
             fout.write((char*)&node_idx, sizeof(int));
@@ -124,7 +124,7 @@ void MshSaver::save_elements(
         int num_elems = m_num_elements;
         int tags = 0;
         if (!m_binary) {
-            for (size_t i=0; i<elements.size(); i+=nodes_per_element) {
+            for (Eigen::Index i=0; i<elements.size(); i+=nodes_per_element) {
                 int elem_num = i/nodes_per_element + 1;
                 VectorI elem = elements.segment(i, nodes_per_element) +
                                VectorI::Ones(nodes_per_element);
@@ -139,7 +139,7 @@ void MshSaver::save_elements(
             fout.write((char*)&elem_type, sizeof(int));
             fout.write((char*)&num_elems, sizeof(int));
             fout.write((char*)&tags, sizeof(int));
-            for (size_t i=0; i<elements.size(); i+=nodes_per_element) {
+            for (Eigen::Index i=0; i<elements.size(); i+=nodes_per_element) {
                 int elem_num = i/nodes_per_element + 1;
                 VectorI elem = elements.segment(i, nodes_per_element) +
                                VectorI::Ones(nodes_per_element);

@@ -1,5 +1,11 @@
 #include "tetwild.h"
 #include <Mesh3DGen.h>
+#include "Preprocess.h"
+#include "DelaunayTetrahedralization.h"
+#include "BSPSubdivision.h"
+#include "SimpleTetrahedralization.h"
+#include "MeshRefinement.h"
+#include "InoutFiltering.h"
 #include <fstream>
 
 namespace nTopology
@@ -55,7 +61,6 @@ namespace meshGen
     args.targeted_num_v = -1;
     args.filter_energy = 10;
     args.i_ideal_edge_length = targetEdgeLength;
-    //args.i_epsilon = eps;
 
     std::string input = "a";
     tetwild::tetrahedralization(fvs, fts, tVerts, tTets);

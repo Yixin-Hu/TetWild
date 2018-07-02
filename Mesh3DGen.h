@@ -1,4 +1,4 @@
-#include "GTet.h"
+#include "tetwild.h"
 #include <glm/glm.hpp>
 
 namespace nTopology
