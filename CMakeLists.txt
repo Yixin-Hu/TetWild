@@ -62,36 +62,42 @@ option(LIBIGL_WITH_NANOGUI          "Use Nanogui menu"   OFF)
 option(LIBIGL_WITH_OPENGL           "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
+option(BUILD_WITH_PYMESH            "Use PyMesh"         ON)
 find_package(LIBIGL REQUIRED QUIET)
 find_package(Eigen REQUIRED)
 
 ################################################################################
+include_directories(include)
 
-SET(MAIN_FILE main.cpp)
+SET(MAIN_FILE src/main.cpp)
 
 set(SOURCE_FILES
-		BSPElements.h TetmeshElements.h
-		Preprocess.cpp Preprocess.h
-		DelaunayTetrahedralization.cpp DelaunayTetrahedralization.h
-		MeshConformer.cpp MeshConformer.h
-		BSPSubdivision.cpp BSPSubdivision.h
-		SimpleTetrahedralization.cpp SimpleTetrahedralization.h
-		MeshRefinement.cpp MeshRefinement.h
-		LocalOperations.cpp LocalOperations.h
-		EdgeSplitter.cpp EdgeSplitter.h
-		EdgeCollapser.cpp EdgeCollapser.h
-		EdgeRemover.cpp EdgeRemover.h
-		VertexSmoother.cpp VertexSmoother.h
-		InoutFiltering.cpp InoutFiltering.h
-		CLI11.hpp
+	src/Preprocess.cpp
+	src/DelaunayTetrahedralization.cpp
+	src/MeshConformer.cpp
+	src/BSPSubdivision.cpp
+	src/SimpleTetrahedralization.cpp
+	src/MeshRefinement.cpp
+	src/LocalOperations.cpp
+	src/EdgeSplitter.cpp
+	src/EdgeCollapser.cpp
+	src/EdgeRemover.cpp
+	src/VertexSmoother.cpp
+	src/InoutFiltering.cpp
+	src/heads.cpp
+	src/tetwild.cpp
+	)
 
-		pymesh/MshLoader.cpp pymesh/MshLoader.h
-		pymesh/MshSaver.cpp pymesh/MshSaver.h
-		pymesh/Exception.h
-		heads.cpp heads.h
-		tetwild.h tetwild.cpp
+# Only if building with PyMesh
+if(BUILD_WITH_PYMESH)
+	message(STATUS "Building with PyMesh.")
+	set(SOURCE_FILES ${SOURCE_FILES}
+		pymesh/MshLoader.cpp
+		pymesh/MshSaver.cpp
 		)
-
+	include_directories(.)
+	add_definitions(-DUSE_PYMESH)
+endif()
 
 SET(OBJ_FILES "")
 if(GTET_ISPC)
