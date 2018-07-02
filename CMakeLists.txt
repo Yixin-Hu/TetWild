@@ -8,8 +8,6 @@ endif()
 ### Sources ###
 
 set(sources
-    Mesh3DGen.h
-    Mesh3DGen.cpp
     heads.cpp
     heads.h
     EdgeSplitter.cpp
