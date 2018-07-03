@@ -52,10 +52,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 ################################################################################
 # 3rd party libraries
 ################################################################################
+# cgal
+find_package(CGAL REQUIRED)
 # libigl
-find_package(LIBIGL REQUIRED QUIET)
-# eigen
-find_package(Eigen REQUIRED)
+find_package(LIBIGL REQUIRED)
 # geogram
 include(geogram)
 
