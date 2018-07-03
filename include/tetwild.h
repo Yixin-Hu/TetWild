@@ -15,6 +15,16 @@
 #include <vector>
 #include <string>
 
+#ifdef WIN32
+	#if defined TETWILD_EXPORTS
+		#define TETWILD_EXPORT __declspec( dllexport )
+	#else
+		#define TETWILD_EXPORT __declspec( dllimport )
+	#endif
+#else
+	#define TETWILD_EXPORT
+#endif
+
 namespace tetwild {
     struct Args{
         double i_ideal_edge_length = 20;
@@ -30,10 +40,10 @@ namespace tetwild {
     };
     extern Args parameters;
 
-    void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
-                            const std::vector<std::array<int, 3>>& F_in,
-                            std::vector<std::array<double, 3>>& V_out,
-                            std::vector<std::array<int, 4>>& T_out);
+    void TETWILD_EXPORT tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
+                                           const std::vector<std::array<int, 3>>& F_in,
+                                           std::vector<std::array<double, 3>>& V_out,
+                                           std::vector<std::array<int, 4>>& T_out);
 }
 
 #endif //TETWILD_TETWILD_H

@@ -22,7 +22,7 @@
 #include <geogram/basic/geometry_nd.h>
 
 void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-#ifdef USE_PYMESH
+#ifdef DEBUG_MODE
     PyMesh::MshSaver mSaver(g_working_dir+args.postfix+"_boundary.msh", true);
     Eigen::VectorXd oV;
     Eigen::VectorXi oF;
@@ -861,7 +861,7 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
 }
 
 void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::Mesh& geo_sf_mesh) {
-#ifdef USE_PYMESH
+#ifdef DEBUG_MODE
     Eigen::VectorXd eps_dis(F_in.rows());
     for(int f_id=0;f_id<geo_sf_mesh.facets.nb();f_id++) {
 //        if(f_id!=1871)

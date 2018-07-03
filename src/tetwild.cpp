@@ -169,7 +169,7 @@ namespace tetwild {
             if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
                 cout << "Empty!" << endl;
                 //todo: output a empty tetmesh
-#ifdef USE_PYMESH
+#ifdef DEBUG_MODE
                 PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
                 Eigen::VectorXd oV;
                 Eigen::VectorXi oT;

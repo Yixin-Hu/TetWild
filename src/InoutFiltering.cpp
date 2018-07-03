@@ -118,7 +118,7 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
 }
 
 void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
-#ifdef USE_PYMESH
+#ifdef DEBUG_MODE
     int t_cnt = W.rows();
 
     std::vector<int> v_ids;

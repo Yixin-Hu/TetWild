@@ -1356,7 +1356,7 @@ bool LocalOperations::isTetLocked_ui(int tid){
 }
 
 void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in, double old_eps) {
-#ifdef USE_PYMESH
+#ifdef DEBUG_MODE
     g_dd /= 2;
 
     Eigen::VectorXd eps_dis(F_in.rows());

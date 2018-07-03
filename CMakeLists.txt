@@ -1,47 +1,14 @@
 ################################################################################
-# General Information
+# TetWild CMake
 ################################################################################
-
 cmake_minimum_required(VERSION 3.3)
 project(TetWild)
 
 ################################################################################
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-if(NOT CMAKE_BUILD_TYPE)
-	message(STATUS "No build type selected, default to Release")
-	set(CMAKE_BUILD_TYPE "Release")
-endif()
-
+# Options
 ################################################################################
-
+# ispc
 option(GTET_ISPC "Use ISPC" OFF)
-
-# Build static binaries
-#set(BUILD_SHARED_LIBS OFF)
-set(BUILD_STATIC_RUNTIME OFF)
-set(BUILD_DYNAMIC_RUNTIME ON)
-
-# Use folder in Visual Studio
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# Export compile flags (used for autocompletion of the C++ code)
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-
-# Generate position independent code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-#ADD_DEFINITIONS("-D_DLL")
-
-################################################################################
-# 3rd party libraries
-################################################################################
-
-
-# Geogram library
-include(geogram)
-
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -62,14 +29,40 @@ option(LIBIGL_WITH_NANOGUI          "Use Nanogui menu"   OFF)
 option(LIBIGL_WITH_OPENGL           "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
-option(BUILD_WITH_PYMESH            "Use PyMesh"         ON)
-find_package(LIBIGL REQUIRED QUIET)
-find_package(Eigen REQUIRED)
+option(BUILD_WITH_DEBUG             "Debug mode"         OFF)
+option(BUILD_AS_LIB                 "Build as library"   OFF)
 
 ################################################################################
-include_directories(include)
+# Settings
+################################################################################
+if(NOT CMAKE_BUILD_TYPE)
+	message(STATUS "No build type selected, default to Release")
+	set(CMAKE_BUILD_TYPE "Release")
+endif()
 
-SET(MAIN_FILE src/main.cpp)
+set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Use folder in Visual Studio
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Export compile flags (used for autocompletion of the C++ code)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+################################################################################
+# 3rd party libraries
+################################################################################
+# libigl
+find_package(LIBIGL REQUIRED QUIET)
+# eigen
+find_package(Eigen REQUIRED)
+# geogram
+include(geogram)
+
+################################################################################
+# TetWild
+################################################################################
+include_directories(include)
 
 set(SOURCE_FILES
 	src/Preprocess.cpp
@@ -88,17 +81,23 @@ set(SOURCE_FILES
 	src/tetwild.cpp
 	)
 
-# Only if building with PyMesh
-if(BUILD_WITH_PYMESH)
+# Build with PyMesh for debug mode or when building an executable
+if(BUILD_WITH_DEBUG OR NOT BUILD_AS_LIB)
 	message(STATUS "Building with PyMesh.")
 	set(SOURCE_FILES ${SOURCE_FILES}
 		pymesh/MshLoader.cpp
 		pymesh/MshSaver.cpp
 		)
 	include_directories(.)
-	add_definitions(-DUSE_PYMESH)
+    add_definitions(-DUSE_PYMESH)
 endif()
 
+# Define debug build
+if(BUILD_WITH_DEBUG)
+    add_definitions(-DDEBUG_MODE -DUSE_PYMESH)
+endif()
+
+# ispc
 SET(OBJ_FILES "")
 if(GTET_ISPC)
 	add_custom_command(OUTPUT energy_ispc.o
@@ -106,19 +105,41 @@ if(GTET_ISPC)
 	add_definitions(-DGTET_ISPC)
     LIST(APPEND OBJ_FILES energy_ispc.o)
 endif(GTET_ISPC)
-ADD_LIBRARY(lib_tetwild SHARED ${SOURCE_FILES} ${OBJ_FILES})
-target_link_libraries(lib_tetwild geogram igl::core igl::cgal)
-target_include_directories(lib_tetwild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
-set_target_properties(lib_tetwild PROPERTIES OUTPUT_NAME "TetWild")
 
-add_executable(TetWild ${MAIN_FILE})
-target_link_libraries(TetWild lib_tetwild)
+# Build shared library otherwise build a static library for an executable
+if(BUILD_AS_LIB)
+    message(STATUS "Building a shared library.")
+    set(BUILD_SHARED_LIBS ON)
+else()
+    message(STATUS "Building a static library.")
+    set(BUILD_SHARED_LIBS OFF)
+endif()
 
-#target_link_libraries(TetWild geogram igl::core igl::cgal igl::viewer)
+add_library(libTetWild ${SOURCE_FILES} ${OBJ_FILES})
+target_link_libraries(libTetWild geogram igl::core igl::cgal)
+target_include_directories(libTetWild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
+if(BUILD_AS_LIB)
+    set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
+endif()
+if(WIN32)
+    set_target_properties(libTetWild PROPERTIES COMPILE_FLAGS "-DWIN32 -DTETWILD_EXPORTS")
+endif()
 
-INSTALL(TARGETS lib_tetwild TetWild
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin)
-INSTALL(FILES tetwild.h
-    DESTINATION include)
+# Building exectuable
+if(NOT BUILD_AS_LIB)
+    message(STATUS "Building an executable.")
+    set(MAIN_FILE src/main.cpp)
+    add_executable(TetWild ${MAIN_FILE})
+    target_link_libraries(TetWild libTetWild)
+endif()
+
+# Install
+if(BUILD_AS_LIB)
+    INSTALL(TARGETS libTetWild
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin)
+    INSTALL(FILES include/tetwild.h DESTINATION include/tetwild)
+else()
+    INSTALL(TARGETS TetWild RUNTIME DESTINATION bin)
+endif()
