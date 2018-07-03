@@ -619,6 +619,7 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
 
 void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                       VertexSmoother& smoother) {
+#ifndef _WIN32
     PyMesh::MshLoader mshLoader(args.bg_mesh);
     Eigen::VectorXd V_in = mshLoader.get_nodes();
     Eigen::VectorXi T_in = mshLoader.get_elements();
@@ -637,7 +638,8 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
 			p[j] = V_in(i * 3 + j);
     }
     bg_mesh.cells.clear();
-    // bg_mesh.cells.create_tets((int) T_in.rows() / 4);
+	// FIXME-Windows issue on next line?
+	bg_mesh.cells.create_tets((int) T_in.rows() / 4);
     for (int i = 0; i < T_in.rows() / 4; i++) {
         for (int j = 0; j < 4; j++)
             bg_mesh.cells.set_vertex(i, j, T_in(i * 4 + j));
@@ -683,6 +685,10 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.soft_energy = splitter.getMaxEnergy();
 //    is_print_tmp = true;//debugging splitting
     doOperationLoops(splitter, collapser, edge_remover, smoother, 20);
+#else
+	cout << "Applying sizing field is not yet supported for Windows..." << endl;
+		return;
+#endif
 }
 
 void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
