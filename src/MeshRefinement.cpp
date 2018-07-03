@@ -619,6 +619,7 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
 
 void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                       VertexSmoother& smoother) {
+	/*
     PyMesh::MshLoader mshLoader(args.bg_mesh);
     Eigen::VectorXd V_in = mshLoader.get_nodes();
     Eigen::VectorXi T_in = mshLoader.get_elements();
@@ -681,6 +682,8 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.soft_energy = splitter.getMaxEnergy();
 //    is_print_tmp = true;//debugging splitting
     doOperationLoops(splitter, collapser, edge_remover, smoother, 20);
+	*/
+	return;
 }
 
 void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
