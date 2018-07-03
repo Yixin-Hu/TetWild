@@ -169,6 +169,7 @@ namespace tetwild {
             if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
                 cout << "Empty!" << endl;
                 //todo: output a empty tetmesh
+#ifdef USE_PYMESH
                 PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
                 Eigen::VectorXd oV;
                 Eigen::VectorXi oT;
@@ -176,6 +177,7 @@ namespace tetwild {
                 oT.resize(0);
                 mSaver.save_mesh(oV, oT, 3, mSaver.TET);
                 exit(250);
+#endif
             }
             addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()));
 

@@ -619,6 +619,7 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
 
 void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                       VertexSmoother& smoother) {
+#ifdef USE_PYMESH
     PyMesh::MshLoader mshLoader(args.bg_mesh);
     Eigen::VectorXd V_in = mshLoader.get_nodes();
     Eigen::VectorXi T_in = mshLoader.get_elements();
@@ -681,6 +682,9 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.soft_energy = splitter.getMaxEnergy();
 //    is_print_tmp = true;//debugging splitting
     doOperationLoops(splitter, collapser, edge_remover, smoother, 20);
+#else
+	return;
+#endif
 }
 
 void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
@@ -1011,6 +1015,7 @@ void MeshRefinement::check() {
 }
 
 void MeshRefinement::outputMidResult(bool is_with_bbox, double id) {
+#ifdef USE_PYMESH
     std::vector<bool> tmp_t_is_removed = t_is_removed;
     Eigen::VectorXd in_out(std::count(t_is_removed.begin(), t_is_removed.end(), false));
 //    if (!is_with_bbox) {
@@ -1107,6 +1112,9 @@ void MeshRefinement::outputMidResult(bool is_with_bbox, double id) {
         cnt++;
     }
     mSaver.save_scalar_field("scalar field", scalar);
+#else
+	return;
+#endif
 }
 
 void MeshRefinement::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){

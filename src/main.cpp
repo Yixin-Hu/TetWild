@@ -215,6 +215,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "End";
         f.close();
     } else {
+#ifdef USE_PYMESH
         PyMesh::MshSaver mSaver(g_output_file, true);
         mSaver.save_mesh(oV, oT, 3, mSaver.TET);
         Eigen::VectorXd angle(t_cnt);
@@ -226,6 +227,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             cnt++;
         }
         mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
+#endif
     }
 
     if (args.is_quiet)
@@ -261,6 +263,7 @@ void gtet_new() {
         if (!pp.init(MR.geo_b_mesh, MR.geo_sf_mesh)) {
             cout << "Empty!" << endl;
             //todo: output a empty tetmesh
+#ifdef USE_PYMESH
             PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
             Eigen::VectorXd oV;
             Eigen::VectorXi oT;
@@ -268,6 +271,7 @@ void gtet_new() {
             oT.resize(0);
             mSaver.save_mesh(oV, oT, 3, mSaver.TET);
             exit(250);
+#endif
         }
         addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()));
 
