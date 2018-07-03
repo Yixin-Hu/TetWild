@@ -118,7 +118,6 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
 }
 
 void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
-#ifdef DEBUG_MODE
     int t_cnt = W.rows();
 
     std::vector<int> v_ids;
@@ -154,7 +153,4 @@ void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
     cout << "#t = " << oT.rows() / 4 << endl;
 
     mSaver.save_elem_scalar_field("winding number", W);
-#else
-	return;
-#endif
 }

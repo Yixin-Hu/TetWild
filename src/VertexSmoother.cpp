@@ -807,7 +807,6 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 }
 
 void VertexSmoother::outputOneRing(int v_id, std::string s){
-#ifdef DEBUG_MODE
     PyMesh::MshSaver mSaver(g_working_dir+g_postfix+"_smooth_"+std::to_string(v_id)+s+".msh", true);
     std::vector<int> v_ids;
     std::vector<int> new_ids(tet_vertices.size(), -1);
@@ -852,8 +851,5 @@ void VertexSmoother::outputOneRing(int v_id, std::string s){
         cnt++;
     }
     mSaver.save_elem_scalar_field("quality", q);
-#else
-	return;
-#endif
 }
 

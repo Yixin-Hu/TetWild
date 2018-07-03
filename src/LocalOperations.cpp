@@ -1356,7 +1356,6 @@ bool LocalOperations::isTetLocked_ui(int tid){
 }
 
 void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in, double old_eps) {
-#ifdef DEBUG_MODE
     g_dd /= 2;
 
     Eigen::VectorXd eps_dis(F_in.rows());
@@ -1494,7 +1493,4 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 
     g_dd *= 2;
-#else
-return;
-#endif
 }
