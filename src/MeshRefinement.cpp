@@ -619,7 +619,6 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
 
 void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                       VertexSmoother& smoother) {
-	/*
     PyMesh::MshLoader mshLoader(args.bg_mesh);
     Eigen::VectorXd V_in = mshLoader.get_nodes();
     Eigen::VectorXi T_in = mshLoader.get_elements();
@@ -628,22 +627,24 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
         return;
 
     cout << "Applying sizing field..." << endl;
+
     GEO::Mesh bg_mesh;
     bg_mesh.vertices.clear();
     bg_mesh.vertices.create_vertices((int) V_in.rows() / 3);
     for (int i = 0; i < V_in.rows() / 3; i++) {
         GEO::vec3 &p = bg_mesh.vertices.point(i);
-        for (int j = 0; j < 3; j++)
-            p[j] = V_in(i * 3 + j);
+		for (int j = 0; j < 3; j++)
+			p[j] = V_in(i * 3 + j);
     }
     bg_mesh.cells.clear();
-    bg_mesh.cells.create_tets((int) T_in.rows() / 4);
+    // bg_mesh.cells.create_tets((int) T_in.rows() / 4);
     for (int i = 0; i < T_in.rows() / 4; i++) {
         for (int j = 0; j < 4; j++)
             bg_mesh.cells.set_vertex(i, j, T_in(i * 4 + j));
     }
-//    bg_mesh.cells.compute_borders();
-//    bg_mesh.cells.connect();
+
+    // bg_mesh.cells.compute_borders();
+    // bg_mesh.cells.connect();
 
     GEO::MeshCellsAABB bg_aabb(bg_mesh, false);
     for (int i = 0; i < tet_vertices.size(); i++) {
@@ -682,8 +683,6 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.soft_energy = splitter.getMaxEnergy();
 //    is_print_tmp = true;//debugging splitting
     doOperationLoops(splitter, collapser, edge_remover, smoother, 20);
-	*/
-	return;
 }
 
 void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
