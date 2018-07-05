@@ -23,6 +23,8 @@ option(LIBIGL_WITH_PYTHON           "Use Python"         OFF)
 option(LIBIGL_WITH_TETGEN           "Use Tetgen"         OFF)
 option(LIBIGL_WITH_TRIANGLE         "Use Triangle"       OFF)
 option(LIBIGL_WITH_XML              "Use XML"            OFF)
+#geogram
+option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
 # gui
 option(LIBIGL_WITH_EMBREE           "Use Embree"         OFF)
 option(LIBIGL_WITH_NANOGUI          "Use Nanogui menu"   OFF)
@@ -71,10 +73,6 @@ endif(GTET_ISPC)
 ################################################################################
 # TetWild
 ################################################################################
-include_directories(include)
-# For PyMesh (change?)
-include_directories(pymesh)
-
 set(SOURCE_FILES
     src/Preprocess.h
 	src/Preprocess.cpp
@@ -116,7 +114,7 @@ set(SOURCE_FILES
 # Build static library for executable
 add_library(libTetWild STATIC ${SOURCE_FILES} ${OBJ_FILES})
 target_link_libraries(libTetWild geogram igl::core igl::cgal)
-target_include_directories(libTetWild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
+target_include_directories(libTetWild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS} include pymesh)
 
 # Building exectuable
 set(MAIN_FILE src/main.cpp)
