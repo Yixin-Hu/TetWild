@@ -24,6 +24,13 @@ Our code was originally developed on MacOS and has been tested on Lunix and Wind
 ```bash
 git clone https://github.com/Yixin-Hu/TetWild --recursive
 ```
+
+- For Windows users, a patch needs to be applied to the geogram library to avoid a linktime error:
+
+```bash
+git apply geogram_win.patch
+```
+
 - Compile the code using cmake (default in release mode):
 
 You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.
