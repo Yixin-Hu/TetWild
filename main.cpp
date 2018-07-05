@@ -420,7 +420,9 @@ int main(int argc, char *argv[]) {
 
     if(args.is_quiet) {
         args.is_output_csv = false;
-        cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
+        std::streambuf* orig_buf = cout.rdbuf();
+        cout.rdbuf(NULL);
+//        cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
     }
 
     //do tetrahedralization
