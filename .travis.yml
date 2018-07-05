@@ -1,0 +1,34 @@
+sudo: required
+dist: trusty
+
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - libboost1.54-all-dev
+      - libxi-dev
+
+matrix:
+  include:
+    - env: PYTHON="3.6" CONDA_PY=36 ARCH="x86_64"
+      os: linux
+      dist: trusty
+
+before_install:
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda install conda-build
+  - conda install anaconda-client
+  - conda config --add channels conda-forge
+  - git submodule update --init --recursive
+
+script:
+  - conda build ci/conda
