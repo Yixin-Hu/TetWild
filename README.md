@@ -25,7 +25,7 @@ Our code was originally developed on MacOS and has been tested on Lunix and Wind
 git clone https://github.com/Yixin-Hu/TetWild --recursive
 ```
 
-- For Windows users, a patch needs to be applied to the geogram library to avoid a linktime error:
+- For Windows users, a patch needs to be applied to the geogram library to avoid a link error:
 
 ```bash
 git apply geogram_win.patch
