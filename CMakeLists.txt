@@ -49,6 +49,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Export compile flags (used for autocompletion of the C++ code)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+# Generate position independent code
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 ################################################################################
 # 3rd party libraries
 ################################################################################
