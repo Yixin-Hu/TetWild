@@ -17,7 +17,7 @@ set(sources
     EdgeRemover.cpp
     EdgeRemover.h
     tetwild.cpp
-	tetwild.h
+    tetwild.h
     LocalOperations.cpp
     LocalOperations.h
     Preprocess.cpp
@@ -45,9 +45,9 @@ set(sources
 # This corrects cmake's default Visual Studio's ugly folder organization
 source_group("" FILES ${sources})
 
-add_library(TetWild ${sources})
+add_library(tetwild ${sources})
 
-target_include_directories(TetWild PUBLIC .)
+target_include_directories(tetwild PUBLIC .)
 
-target_link_libraries(TetWild PUBLIC
+target_link_libraries(tetwild PUBLIC
   glm geogram libigl2 cgal2)
