@@ -549,7 +549,6 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
     static int current_max_size = 0;
 
     static double* T0 = 0;
-    static double* T1 = 0;
     static double* T2 = 0;
     static double* T3 = 0;
     static double* T4 = 0;
