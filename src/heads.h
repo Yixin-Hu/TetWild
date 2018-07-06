@@ -36,8 +36,9 @@
 #include <igl/Timer.h>
 #include <igl/unique_rows.h>
 
-#include "pymesh/MshSaver.h"
-#include "pymesh/MshLoader.h"
+// PyMesh
+#include "MshSaver.h"
+#include "MshLoader.h"
 
 using std::cerr;
 using std::cout;

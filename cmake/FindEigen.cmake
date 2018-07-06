@@ -10,6 +10,9 @@
 #
 #  EIGEN_ROOT_DIR - The prefered installation prefix when searching for Eigen
 #
+if(EIGEN_FOUND)
+    return()
+endif()
 
 include(FindPackageHandleStandardArgs)
 

@@ -1,0 +1,35 @@
+--- a/extern/geogram/src/lib/geogram/mesh/mesh.cpp
++++ b/extern/geogram/src/lib/geogram/mesh/mesh.cpp
+@@ -2275,3 +2275,13 @@ namespace GEO {
+     
+ }
+ 
++namespace GEO {
++
++	const CellDescriptor& MeshCellsStore::cell_type_to_cell_descriptor(
++		MeshCellType t
++	) {
++		geo_debug_assert(t < GEO::MESH_NB_CELL_TYPES);
++		return *(MeshCellDescriptors::cell_type_to_cell_descriptor[t]);
++	}
++
++}
+\ No newline at end of file
+--- a/extern/geogram/src/lib/geogram/mesh/mesh.h
++++ b/extern/geogram/src/lib/geogram/mesh/mesh.h
+@@ -1439,12 +1439,9 @@ namespace GEO {
+          *   MESH_TET, MESH_HEX, MESH_PRISM, MESH_PYRAMID, MESH_CONNECTOR
+          * \return the descriptor of cell \p c
+          */
+-        static const CellDescriptor& cell_type_to_cell_descriptor(
+-            MeshCellType t
+-        ) {
+-            geo_debug_assert(t < GEO::MESH_NB_CELL_TYPES);
+-            return *(MeshCellDescriptors::cell_type_to_cell_descriptor[t]);
+-        }
++		static const CellDescriptor& cell_type_to_cell_descriptor(
++			MeshCellType t
++		);
+ 
+         /**
+          * \brief Gets the number of corners of a cell
