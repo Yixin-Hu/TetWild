@@ -17,7 +17,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 
 #ifdef GTET_ISPC
-#include "ispc/energy.h"
+#include "../ispc/energy.h"
 #endif
 
 enum class EnvelopSide{

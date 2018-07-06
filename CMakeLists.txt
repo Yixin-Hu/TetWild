@@ -8,7 +8,7 @@ project(TetWild)
 # Options
 ################################################################################
 # ispc
-option(GTET_ISPC "Use ISPC" OFF)
+option(GTET_ISPC "Use ISPC" ON)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -68,7 +68,7 @@ include(geogram)
 SET(OBJ_FILES "")
 if(GTET_ISPC)
 	add_custom_command(OUTPUT energy_ispc.o
-			COMMAND ispc ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
+			COMMAND ispc -g ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
 	add_definitions(-DGTET_ISPC)
     LIST(APPEND OBJ_FILES energy_ispc.o)
 endif(GTET_ISPC)
