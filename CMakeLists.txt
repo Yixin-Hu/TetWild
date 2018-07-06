@@ -118,6 +118,7 @@ set(SOURCE_FILES
 add_library(libTetWild STATIC ${SOURCE_FILES} ${OBJ_FILES})
 target_link_libraries(libTetWild geogram igl::core igl::cgal)
 target_include_directories(libTetWild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS} include pymesh)
+set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 
 # Building exectuable
 set(MAIN_FILE src/main.cpp)
