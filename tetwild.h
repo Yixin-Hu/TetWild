@@ -40,6 +40,14 @@ namespace tetwild {
                             std::vector<std::array<double, 3>>& V_out,
                             std::vector<std::array<int, 4>>& T_out,
                             const double edgeLength);
+
+    void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
+                            const std::vector<std::array<int, 3>>& F_in,
+                            std::vector<std::array<double, 3>>& V_out,
+                            std::vector<std::array<int, 4>>& T_out,
+                            const double edgeLength,
+                            const double eps,
+                            const double energy);
 }
 
 #endif //TETWILD_TETWILD_H
