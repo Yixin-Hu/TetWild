@@ -47,4 +47,4 @@ class TestTetWild(unittest.TestCase):
         Thingi10k: https://ten-thousand-models.appspot.com/detail.html?file_id=39549
         """
         runtime = self.run_tetwild('12246.stl', '12246.msh')
-        self.assertLessEqual(runtime, 130.)
+        self.assertLessEqual(runtime, 180.)
