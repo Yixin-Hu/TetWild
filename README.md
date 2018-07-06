@@ -45,6 +45,8 @@ make
 
 💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used. 
 
+💡 We provide users an option to use [ISPC](https://ispc.github.io/index.html) for computing energy parallelly. It reduces the timimg for computing energy to 50% of the original, but it could result in more optimization iterations and more overall running time. According to our experiment on 1000 models, it reduces the overall running time by 4% in average. If you want to use ISPC, please turn on the flag `GTET_ISPC` in `CMakeLists.txt`.
+
 ## Usage
 
 #### Input/output Format
