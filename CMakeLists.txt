@@ -96,7 +96,7 @@ set(SOURCE_FILES
 SET(OBJ_FILES "")
 if(GTET_ISPC)
 	add_custom_command(OUTPUT energy_ispc.o
-			COMMAND ispc -g ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
+			COMMAND ispc ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
 	add_definitions(-DGTET_ISPC)
     LIST(APPEND OBJ_FILES energy_ispc.o)
 endif(GTET_ISPC)
