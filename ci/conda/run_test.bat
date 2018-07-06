@@ -1,2 +1,2 @@
 cd test
-%PYTHON% -m unittest discover
+python -m unittest discover
