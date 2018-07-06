@@ -21,6 +21,12 @@ requirements:
     - vc 14 # [win]
     - cgal
 
+  test:
+    requires:
+      - python
+    source_files:
+      - test
+
 about:
   home: https://github.com/Yixin-Hu/TetWild
   license: MPLv2.0
