@@ -17,9 +17,17 @@ matrix:
     - env: PYTHON="3.6" CONDA_PY=36 ARCH="x86_64"
       os: linux
       dist: trusty
+    - env: PYTHON="3.6" CONDA_PY=36 ARCH="x86_64" MACOSX_DEPLOYMENT_TARGET="10.9"
+      os: osx
+      osx_image: xcode8.3
 
 before_install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - git submodule update --init --recursive
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+       wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
   - chmod +x miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"
@@ -28,7 +36,6 @@ before_install:
   - conda install conda-build
   - conda install anaconda-client
   - conda config --add channels conda-forge
-  - git submodule update --init --recursive
 
 script:
   - conda build ci/conda
