@@ -15,6 +15,8 @@ Here is pre-generated tetmeshes and the extracted surface meshes for research-pu
 [10k tetmeshes](https://drive.google.com/file/d/17AZwaQaj_nxdCIUpiGFCQ7_khNQxfG4Y/view?usp=sharing), 
 [10k surface meshes](https://drive.google.com/open?id=1E_C1uVoG1ZGF3pfDpHFKIS8Qqd2VXLZQ)
 
+- Figures in the paper: [Input/output & scripts](https://drive.google.com/file/d/1yhq2-UhMrIQBccpDsvHSfeO_NbwqgEog/view?usp=sharing)
+
 ## Installation
 
 Our code was originally developed on MacOS and has been tested on Lunix and Windows.
