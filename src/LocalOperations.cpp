@@ -306,14 +306,14 @@ void LocalOperations::check() {
             assert(tet_vertices[i].conn_tets.size()>0);
         }
 
-        for(int j=0;j<3;j++) {
-            int tmp_n_size = CGAL::exact(tet_vertices[i].pos[j]).numerator().bit_size();
-            int tmp_d_size = CGAL::exact(tet_vertices[i].pos[j]).denominator().bit_size();
-            if(tmp_n_size>n_size)
-                n_size=tmp_n_size;
-            if(tmp_d_size>d_size)
-                d_size=tmp_d_size;
-        }
+//        for(int j=0;j<3;j++) {
+//            int tmp_n_size = CGAL::exact(tet_vertices[i].pos[j]).numerator().bit_size();
+//            int tmp_d_size = CGAL::exact(tet_vertices[i].pos[j]).denominator().bit_size();
+//            if(tmp_n_size>n_size)
+//                n_size=tmp_n_size;
+//            if(tmp_d_size>d_size)
+//                d_size=tmp_d_size;
+//        }
     }
 
     for (int i = 0; i < tets.size(); i++) {
