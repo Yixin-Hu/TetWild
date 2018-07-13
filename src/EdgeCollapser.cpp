@@ -64,7 +64,9 @@ void EdgeCollapser::init() {
 void EdgeCollapser::collapse() {
     tet_tss.assign(tets.size(), 0);
     int cnt = 0;
+#ifndef MUTE_COUT
     cout << "edge queue size = " << ec_queue.size() << endl;
+#endif
     while (!ec_queue.empty()) {
         std::array<int, 2> v_ids = ec_queue.top().v_ids;
         double old_weight = ec_queue.top().weight;
@@ -138,8 +140,10 @@ void EdgeCollapser::collapse() {
 
         counter++;
     }
+#ifndef MUTE_COUT
     cout << suc_counter << " " << counter << " " << inf_es.size() << endl;
     cout << "envelop accept = " << envelop_accept_cnt << endl;
+#endif
 
     if (suc_counter == 0 || inf_es.size() == 0) {
 //        cout<<"checking......."<<endl;
@@ -183,6 +187,7 @@ void EdgeCollapser::collapse() {
 //        }
 //        cout<<cnt_flip<<" "<<cnt_quality<<" "<<cnt_envelop<<" "<<cnt_suc<<endl;
 
+#ifndef MUTE_COUT
         cout << breakdown_name0[id_sampling] << ": " << breakdown_timing0[id_sampling] << "s" << endl;
         cout << breakdown_name0[id_aabb] << ": " << breakdown_timing0[id_aabb] << "s" << endl;
         cout << "----" << endl;
@@ -200,6 +205,7 @@ void EdgeCollapser::collapse() {
 //        }
 
         cout << "energy_time = " << energy_time << endl;
+#endif
 
         return;
     }
@@ -208,7 +214,9 @@ void EdgeCollapser::collapse() {
 }
 
 void EdgeCollapser::postProcess() {
+#ifndef MUTE_COUT
     cout << "postProcess!" << endl;
+#endif
     counter = 0;
     suc_counter = 0;
     envelop_accept_cnt = 0;
@@ -422,8 +430,10 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
         }
         is_envelop_suc = true;
         envelop_accept_cnt++;
+#ifndef MUTE_COUT
         if (envelop_accept_cnt % 1000 == 0)
             cout << "1000 accepted!" << endl;
+#endif
     }
 
 

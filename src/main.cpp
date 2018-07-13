@@ -229,10 +229,12 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
     }
 
+#ifndef MUTE_COUT
     if (args.is_quiet)
         return;
     outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
     outputFinalSurface(MR);
+#endif
 }
 
 void gtet_new() {
@@ -256,8 +258,10 @@ void gtet_new() {
 //    MeshRefinement MR;
     {/// STAGE 1
         //preprocess
+#ifndef MUTE_COUT
         igl_timer.start();
         cout << "Preprocessing..." << endl;
+#endif
         Preprocess pp;
         if (!pp.init(MR.geo_b_mesh, MR.geo_sf_mesh)) {
             cout << "Empty!" << endl;
@@ -270,20 +274,25 @@ void gtet_new() {
             mSaver.save_mesh(oV, oT, 3, mSaver.TET);
             exit(250);
         }
+#ifndef MUTE_COUT
         addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()));
-
+#endif
         std::vector<Point_3> m_vertices;
         std::vector<std::array<int, 3>> m_faces;
         pp.process(MR.geo_sf_mesh, m_vertices, m_faces);
+#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()));
         sum_time += tmp_time;
         cout << "time = " << tmp_time << "s" << endl;
         cout << endl;
+#endif
 
         //delaunay tetrahedralization
+#ifndef MUTE_COUT
         igl_timer.start();
         cout << "Delaunay tetrahedralizing..." << endl;
+#endif
         DelaunayTetrahedralization DT;
         std::vector<int> raw_e_tags;
         std::vector<std::vector<int>> raw_conn_e4v;
@@ -294,6 +303,7 @@ void gtet_new() {
         std::vector<BSPFace> bsp_faces;
         std::vector<BSPtreeNode> bsp_nodes;
         DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
+#ifndef MUTE_COUT
         cout << "# bsp_vertices = " << bsp_vertices.size() << endl;
         cout << "# bsp_edges = " << bsp_edges.size() << endl;
         cout << "# bsp_faces = " << bsp_faces.size() << endl;
@@ -304,23 +314,32 @@ void gtet_new() {
         sum_time += tmp_time;
         cout << "time = " << tmp_time << "s" << endl;
         cout << endl;
+#endif
 
         //mesh conforming
+#ifndef MUTE_COUT
         igl_timer.start();
         cout << "Divfaces matching..." << endl;
+#endif
         MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
         MC.match();
+#ifndef MUTE_COUT
         cout << "Divfaces matching done!" << endl;
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         cout << "time = " << tmp_time << "s" << endl;
         cout << endl;
+#endif
 
         //bsp subdivision
+#ifndef MUTE_COUT
         igl_timer.start();
+        cout << "BSP subdivision ..." << endl;
+#endif
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
+#ifndef MUTE_COUT
         cout << "Output: " << endl;
         cout << "# node = " << MC.bsp_nodes.size() << endl;
         cout << "# face = " << MC.bsp_faces.size() << endl;
@@ -332,16 +351,20 @@ void gtet_new() {
         sum_time += tmp_time;
         cout << "time = " << tmp_time << "s" << endl;
         cout << endl;
+#endif
 
         //simple tetrahedralization
+#ifndef MUTE_COUT
         igl_timer.start();
         cout << "Tetrehedralizing ..." << endl;
+#endif
         SimpleTetrahedralization ST(MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
         if (!g_is_close)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
+#ifndef MUTE_COUT
         cout << "# tet_vertices = " << MR.tet_vertices.size() << endl;
         cout << "# tets = " << MR.tets.size() << endl;
         cout << "Tetrahedralization done!" << endl;
@@ -350,16 +373,20 @@ void gtet_new() {
         sum_time += tmp_time;
         cout << "time = " << tmp_time << "s" << endl;
         cout << endl;
-
         cout << "Total time for the first stage = " << sum_time << endl;
+#endif
     }
 
     /// STAGE 2
     //init
+#ifndef MUTE_COUT
     cout << "Refinement initializing..." << endl;
+#endif
     MR.prepareData();
+#ifndef MUTE_COUT
     cout << "Refinement intialization done!" << endl;
     cout << endl;
+#endif
 
     //improvement
     MR.refine(energy_type);
@@ -380,6 +407,9 @@ void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int m
 }
 
 int main(int argc, char *argv[]) {
+#ifdef MUTE_COUT
+    cout<<"mute cout"<<endl;
+#endif
     CLI::App app{"RobustTetMeshing"};
     app.add_option("--input", args.input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
     app.add_option("--postfix", args.postfix, "--postfix P. Postfix P for output files. (string, optinal, default: '_')");

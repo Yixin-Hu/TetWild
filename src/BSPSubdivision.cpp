@@ -26,9 +26,10 @@ void BSPSubdivision::init() {
 		}
 		nf+=1;
 	}
-    cout << "BSP subdivision ..." << endl;
+#ifndef MUTE_COUT
 	cout << "# nodes need subdivision = " << nf<<"/"<< processing_n_ids.size() << "/"
          << MC.bsp_nodes.size() << endl;
+#endif
 }
 
 void BSPSubdivision::subdivideBSPNodes() {

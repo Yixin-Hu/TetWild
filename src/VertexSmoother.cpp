@@ -28,18 +28,20 @@ void VertexSmoother::smooth() {
             smoothSurface();
             suc_surface = suc_counter;
         }
-
+#ifndef MUTE_COUT
         cout << (suc_in + suc_surface) / v_cnt << endl;
         if (suc_in + suc_surface < v_cnt * 0.1) {
             cout << i << endl;
             break;
         }
+#endif
     }
-
+#ifndef MUTE_COUT
     for (int i = 0; i < breakdown_timing.size(); i++) {
         cout << breakdown_name[i] << ": " << breakdown_timing[i] << "s" << endl;
         breakdown_timing[i] = 0;//reset
     }
+#endif
 }
 
 bool VertexSmoother::smoothSingleVertex(int v_id, bool is_cal_energy){
@@ -453,12 +455,14 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
 
         suc_counter++;
         sf_suc_counter++;
-
+#ifndef MUTE_COUT
         if (sf_suc_counter % 1000 == 0)
             cout << "1000 accepted!" << endl;
+#endif
     }
-
+#ifndef MUTE_COUT
     cout << "Totally " << sf_suc_counter << "(" << sf_counter << ")" << " vertices on surface are smoothed." << endl;
+#endif
 }
 
 bool VertexSmoother::NewtonsMethod(const std::vector<int>& t_ids, const std::vector<std::array<int, 4>>& new_tets,
@@ -856,7 +860,9 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 //        }
     }
 
+#ifndef MUTE_COUT
     cout<<"suc.size = "<<cnt_suc<<endl;
+#endif
     return cnt_suc;
 }
 

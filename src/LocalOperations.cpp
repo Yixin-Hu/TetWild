@@ -1066,7 +1066,6 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    cnt_geo_aabb++;
     if (geo_sf_tree.squared_distance(geo_p) > g_eps_2)
         return true;
 
@@ -1108,7 +1107,6 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
         GEO::vec3 &current_point = ps[i];
         sq_dist = current_point.distance2(nearest_point);
         geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-        cnt_geo_aabb++;
         double dis = current_point.distance2(nearest_point);
         if (dis > g_eps_2) {
 #if TIMING_BREAKDOWN
@@ -1239,7 +1237,6 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
         GEO::vec3 &current_point = b_points[i];
         sq_dist = current_point.distance2(nearest_point);
         geo_b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-        cnt_geo_aabb++;
         double dis = current_point.distance2(nearest_point);
         if (dis > g_eps_2) {
 #if TIMING_BREAKDOWN
@@ -1523,7 +1520,6 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
         for (const GEO::vec3 &current_point:ps) {
             sq_dist = current_point.distance2(nearest_point);
             geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-            cnt_geo_aabb++;
             double dis = current_point.distance2(nearest_point);
             if (dis > max_dis)
                 max_dis = dis;

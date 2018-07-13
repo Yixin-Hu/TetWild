@@ -108,7 +108,7 @@ void EdgeRemover::swap(){
 
         counter++;
     }
-
+#ifndef MUTE_COUT
     cout<<"tmp_cnt3 = "<<tmp_cnt3<<endl;
     cout<<"tmp_cnt4 = "<<tmp_cnt4<<endl;
     cout<<"tmp_cnt5 = "<<tmp_cnt5<<endl;
@@ -116,6 +116,7 @@ void EdgeRemover::swap(){
     cout<<cnt5<<endl;
 
     cout<<"energy_time = "<<energy_time<<endl;
+#endif
 }
 
 bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& old_t_ids) {

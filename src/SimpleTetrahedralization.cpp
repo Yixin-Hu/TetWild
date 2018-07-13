@@ -36,7 +36,9 @@ void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::
 
     ///cal arrangement & tetrahedralization
     triangulation(tet_vertices, tets);
+#ifndef MUTE_COUT
     cout<<"#v = "<<tet_vertices.size()<<" #t = "<<tets.size()<<endl;
+#endif
 
     for (int i = 0; i < tets.size(); i++) {
         for (int j = 0; j < 4; j++)
@@ -197,7 +199,9 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
             bsp_faces[i].edges.push_back(bsp_edges.size() - 1);
         }
     }
+#ifndef MUTE_COUT
     cout<<"2D arr "<<tmp_timer.getElapsedTime()<<endl;
+#endif
     tmp_timer.start();
 
     tet_vertices.reserve(bsp_vertices.size() + bsp_nodes.size());
@@ -250,7 +254,9 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         }
     }
 
+#ifndef MUTE_COUT
     cout<<"improvement "<<tmp_timer.getElapsedTime()<<endl;
+#endif
     tmp_timer.start();
     ///cal CDT & insert tets
     std::vector<std::vector<std::array<int, 3>>> cdt_faces(bsp_faces.size(), std::vector<std::array<int, 3>>());
@@ -358,10 +364,12 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
             //todo: calculate a new position
         }
     }
+#ifndef MUTE_COUT
     cout<<"all_cnt = "<<all_cnt<<endl;
     cout<<"rounded_cnt = "<<rounded_cnt<<endl;
 
     cout<<"CDT "<<tmp_timer.getElapsedTime()<<endl;
+#endif
 }
 
 void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, const std::vector<int>& m_e_tags,
@@ -649,8 +657,9 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
             i7 = I;
         i++;
     }
-
+#ifndef MUTE_COUT
     cout<<"#v on bbox = "<<i<<endl;
+#endif
 }
 
 void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertices, std::vector<std::array<int, 4>>& tets,
@@ -707,8 +716,10 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
         if (tet_vertices[i].is_on_surface)
             cnt_surface++;
     }
+#ifndef MUTE_COUT
     cout << cnt_boundary << " vertices on boundary" << endl;
     cout << cnt_surface << " vertices on surface" << endl;
+#endif
 }
 
 void SimpleTetrahedralization::constructPlane(int bsp_f_id, Plane_3& pln) {

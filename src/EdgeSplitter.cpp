@@ -92,9 +92,10 @@ void EdgeSplitter::split() {
         if (t_slot_size < es_queue.size() * 6 * 2)
             tets.reserve(es_queue.size() * 6 * 2 - t_slot_size + 1);
     }
-
+#ifndef MUTE_COUT
     cout << es_queue.size() << endl;
     cout << "ideal_weight = " << ideal_weight << endl;
+#endif
 
     while (!es_queue.empty()) {
         const ElementInQueue_es &ele = es_queue.top();

@@ -116,8 +116,8 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
     p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
 
-    cout<<"p_min: "<<CGAL::to_double(p_min[0])<<", "<<CGAL::to_double(p_min[1])<<", "<<CGAL::to_double(p_min[2])<<endl;
-    cout<<"p_max: "<<CGAL::to_double(p_max[0])<<", "<<CGAL::to_double(p_max[1])<<", "<<CGAL::to_double(p_max[2])<<endl;
+//    cout<<"p_min: "<<CGAL::to_double(p_min[0])<<", "<<CGAL::to_double(p_min[1])<<", "<<CGAL::to_double(p_min[2])<<endl;
+//    cout<<"p_max: "<<CGAL::to_double(p_max[0])<<", "<<CGAL::to_double(p_max[1])<<", "<<CGAL::to_double(p_max[2])<<endl;
 
     for (int i = 0; i < 8; i++) {
         std::array<CGAL_FT, 3> p;
@@ -137,13 +137,15 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     for(int i=0;i<voxel_points.size();i++) {
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
     }
+#ifndef MUTE_COUT
     cout<<voxel_points.size()<<" voxel points are added!"<<endl;
+#endif
 
     Delaunay T(points.begin(), points.end());
-    if(!T.is_valid()){
-        cout<<"T is not valid!!"<<endl;
-        exit(250);
-    }
+//    if(!T.is_valid()){
+//        cout<<"T is not valid!!"<<endl;
+//        exit(250);
+//    }
 
     //////get nodes, faces, edges info
     //get bsp nodes

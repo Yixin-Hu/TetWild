@@ -120,6 +120,12 @@ bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
 
 bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp,
                       GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
+//#ifndef MUTE_COUT
+//    args.is_output_csv = false;
+//    std::streambuf* orig_buf = cout.rdbuf();
+//    cout.rdbuf(NULL);
+//#endif
+
     cout << V_tmp.rows() << " " << F_tmp.rows() << endl;
 
     Eigen::VectorXi IV, _;
@@ -134,10 +140,10 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //                F_in(i, j) = IV(F_in(i, j));
 //            }
 //        }
-
+#ifndef MUTE_COUT
     cout << "#v = " << V_tmp.rows() << " -> " << V_in.rows() << endl;
     cout << "#f = " << F_tmp.rows() << " -> " << F_in.rows() << endl;
-
+#endif
 //    checkBoundary(V_in, F_in);
 
     ////set global parameters
@@ -165,8 +171,8 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
     g_ideal_l = g_diag_l / args.i_ideal_edge_length;
 
-    cout << "eps = " << g_eps << endl;
-    cout << "ideal_l = " << g_ideal_l << endl;
+//    cout << "eps = " << g_eps << endl;
+//    cout << "ideal_l = " << g_ideal_l << endl;
 
     ////get GEO meshes
     geo_sf_mesh.vertices.clear();
@@ -316,8 +322,10 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         cnt++;
     }
 //    igl::writeSTL(g_working_dir+args.postfix+"_simplified.stl", V_out, F_out);
+#ifndef MUTE_COUT
     cout<<"#v = "<<V_out.rows()<<endl;
     cout<<"#f = "<<F_out.rows()<<endl;
+#endif
 
     V_in = V_out;
     F_in = F_out;
@@ -344,8 +352,10 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         if (!tr.is_degenerate())//delete all degenerate triangles
             m_faces.push_back(f);
     }
+#ifndef MUTE_COUT
     cout << "#v = " << m_vertices.size() << endl;
     cout << "#f = " << F_in.rows()<<"->"<<m_faces.size() << endl;
+#endif
 
     g_eps /= eps_scalar;
     g_eps_2 /= eps_scalar_2;
@@ -449,7 +459,9 @@ void Preprocess::swap(GEO::MeshFacetsAABB& face_aabb_tree) {
         if (is_swapped)
             cnt++;
     }
+#ifndef MUTE_COUT
     cout << cnt << " faces are swapped!!" << endl;
+#endif
 }
 
 double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
@@ -461,7 +473,7 @@ double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
 
 void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
     int cnt = 0;
-    cout << "queue.size() = " << sm_queue.size() << endl;
+//    cout << "queue.size() = " << sm_queue.size() << endl;
     while (!sm_queue.empty()) {
         std::array<int, 2> v_ids = sm_queue.top().v_ids;
         double old_weight = sm_queue.top().weight;
@@ -474,21 +486,26 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
             inf_es.push_back(v_ids);
             inf_e_tss.push_back(ts);
         } else {
-//            return;
             cnt++;
+#ifndef MUTE_COUT
             if (cnt % 1000 == 0)
                 cout << "1000 vertices removed" << endl;
+#endif
         }
     }
+#ifndef MUTE_COUT
     cout << cnt << endl;
     cout << c << endl;
+#endif
 
     if (cnt > 0)
         postProcess(face_aabb_tree);
 }
 
 void Preprocess::postProcess(GEO::MeshFacetsAABB& face_aabb_tree){
+#ifndef MUTE_COUT
     cout << "postProcess!" << endl;
+#endif
 
     std::vector<std::array<int, 2>> tmp_inf_es;
     const int inf_es_size = inf_es.size();
@@ -524,7 +541,7 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
     std::vector<int> n12_f_ids;
     setIntersection(conn_fs[v1_id], conn_fs[v2_id], n12_f_ids);
     if (n12_f_ids.size() != 2) {//!!!
-        cout << "error: n12_f_ids.size()!=2" << endl;
+//        cout << "error: n12_f_ids.size()!=2" << endl;
         return false;
     }
 
@@ -766,7 +783,6 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
         for (const GEO::vec3 &current_point:ps) {
             sq_dist = current_point.distance2(nearest_point);
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-            cnt_geo_aabb++;
             double dis = current_point.distance2(nearest_point);
             if (dis > g_eps_2)
                 return true;
@@ -924,7 +940,6 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             int n_facet = geo_face_tree.nearest_facet(current_point, nearest_point, dis);
 //            sq_dist = current_point.distance2(nearest_point);
 //            geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-//            cnt_geo_aabb++;
 //            double dis = current_point.distance2(nearest_point);
 //            if(f_id==2514)
 //                cout<<cnt<<": "<<dis<<" "<<sq_dist<<" "<<int(prev_facet)<<endl;

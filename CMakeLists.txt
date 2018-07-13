@@ -7,6 +7,7 @@ project(TetWild)
 ################################################################################
 # Options
 ################################################################################
+option(MUTE_COUT "Mute cout" OFF)
 # ispc
 option(USE_ISPC "Use ISPC" OFF)
 # libigl library
@@ -72,6 +73,11 @@ if(USE_ISPC)
 	add_definitions(-DGTET_ISPC)
     LIST(APPEND OBJ_FILES energy_ispc.o)
 endif(USE_ISPC)
+
+#cout
+if(MUTE_COUT)
+	add_definitions(-DMUTE_COUT)
+endif(MUTE_COUT)
 
 ################################################################################
 # TetWild

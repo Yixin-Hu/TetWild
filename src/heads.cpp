@@ -21,7 +21,6 @@ bool is_using_energy_max = true;
 
 bool is_using_sampling = true;
 bool is_use_project = false;
-int cnt_geo_aabb = 0;
 
 int NOT_SURFACE = 0;
 

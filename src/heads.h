@@ -159,7 +159,6 @@ extern int g_cur_stage;
 extern bool is_using_energy_max;
 extern bool is_using_sampling;
 extern bool is_use_project;
-extern int cnt_geo_aabb;
 
 extern bool is_print_tmp;
 
