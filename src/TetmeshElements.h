@@ -68,12 +68,12 @@ public:
 
 class TetQuality {
 public:
-    double min_d_angle;
-    double max_d_angle;
+    double min_d_angle = 0;
+    double max_d_angle = 0;
 //    double asp_ratio_2;
 
-    double slim_energy;
-    double volume;
+    double slim_energy = 0;
+    double volume = 0;
 
     TetQuality(){}
     TetQuality(double d_min, double d_max, double r):
