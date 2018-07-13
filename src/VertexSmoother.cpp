@@ -650,7 +650,9 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
     }
 #endif
     if (std::isinf(s_energy) || std::isnan(s_energy) || s_energy <= 0 || s_energy > MAX_ENERGY) {
+#ifndef MUTE_COUT
         cout << "new E inf" << endl;
+#endif
         s_energy = MAX_ENERGY;
     }
 
@@ -710,23 +712,33 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
 #endif
 
     if (std::isinf(energy)) {
+#ifndef MUTE_COUT
         cout << v_id << " E inf" << endl;
+#endif
         energy = MAX_ENERGY;
     }
     if (std::isnan(energy)) {
+#ifndef MUTE_COUT
         cout << v_id << " E nan" << endl;
+#endif
         return false;
     }
     if (energy <= 0) {
+#ifndef MUTE_COUT
         cout << v_id << " E < 0" << endl;
+#endif
         return false;
     }
     if (!J.allFinite()) {
+#ifndef MUTE_COUT
         cout << v_id << " J inf/nan" << endl;
+#endif
         return false;
     }
     if (!H.allFinite()) {
+#ifndef MUTE_COUT
         cout << v_id << " H inf/nan" << endl;
+#endif
         return false;
     }
 
