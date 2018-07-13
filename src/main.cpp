@@ -158,10 +158,10 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         igl_timer.start();
 #endif
         IOF.filter();
+        t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
 #ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         cout << "time = " << tmp_time << "s" << endl;
-        t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
         cout << t_cnt << " tets inside!" << endl;
 #endif
     }
