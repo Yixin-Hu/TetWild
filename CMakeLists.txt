@@ -7,7 +7,7 @@ project(TetWild)
 ################################################################################
 # Options
 ################################################################################
-option(MUTE_CHECKS "Mute log and unnecassary checks" ON)
+option(MUTE_CHECKS "Mute log and unnecassary checks" OFF)
 # ispc
 option(USE_ISPC "Use ISPC" OFF)
 # libigl library
