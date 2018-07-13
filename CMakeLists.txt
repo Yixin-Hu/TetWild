@@ -7,7 +7,7 @@ project(TetWild)
 ################################################################################
 # Options
 ################################################################################
-option(MUTE_COUT "Mute cout" OFF)
+option(MUTE_CHECKS "Mute log and unnecassary checks" ON)
 # ispc
 option(USE_ISPC "Use ISPC" OFF)
 # libigl library
@@ -75,9 +75,9 @@ if(USE_ISPC)
 endif(USE_ISPC)
 
 #cout
-if(MUTE_COUT)
+if(MUTE_CHECKS)
 	add_definitions(-DMUTE_COUT)
-endif(MUTE_COUT)
+endif(MUTE_CHECKS)
 
 ################################################################################
 # TetWild

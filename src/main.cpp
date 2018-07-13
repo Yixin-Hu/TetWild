@@ -153,13 +153,17 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     double tmp_time = 0;
     if (!args.is_laplacian) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
+#ifndef MUTE_COUT
         igl::Timer igl_timer;
         igl_timer.start();
+#endif
         IOF.filter();
+#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         cout << "time = " << tmp_time << "s" << endl;
         t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
         cout << t_cnt << " tets inside!" << endl;
+#endif
     }
 
     //output result
@@ -218,6 +222,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     } else {
         PyMesh::MshSaver mSaver(g_output_file, true);
         mSaver.save_mesh(oV, oT, 3, mSaver.TET);
+#ifndef MUTE_COUT
         Eigen::VectorXd angle(t_cnt);
         cnt = 0;
         for (int i = 0; i < tet_qualities.size(); i++) {
@@ -227,6 +232,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             cnt++;
         }
         mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
+#endif
     }
 
 #ifndef MUTE_COUT
@@ -249,10 +255,11 @@ void gtet_new() {
     bool is_check_correctness = false;
     bool is_ec_check_quality = true;
 
+#ifndef MUTE_COUT
     igl::Timer igl_timer;
-//    std::array<double, 5> times = {0, 0, 0, 0, 0};
     double tmp_time = 0;
     double sum_time = 0;
+#endif
 
     ////pipeline
 //    MeshRefinement MR;
@@ -408,7 +415,7 @@ void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int m
 
 int main(int argc, char *argv[]) {
 #ifdef MUTE_COUT
-    cout<<"mute cout"<<endl;
+    cout<<"Unnecessary checks are muted."<<endl;
 #endif
     CLI::App app{"RobustTetMeshing"};
     app.add_option("--input", args.input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
