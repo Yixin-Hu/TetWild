@@ -2,7 +2,9 @@
 # TetWild - Tetrahedral Meshing in the Wild
 ![](docs/teaser.png)
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
-ACM Transactions on Graphics (SIGGRAPH 2018). [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf)
+ACM Transactions on Graphics (SIGGRAPH 2018). 
+
+💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper.**
 
 <!--<img src="images/new.png" alt="drawing" style="width:25px;"/> New features-->
 
