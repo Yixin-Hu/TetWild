@@ -59,6 +59,8 @@ The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` 
 
 We support `.mesh/.msh` format output. The default output format is `.msh` with minimum dihedral angle recorded as element scalar field, which can be visualized by software [Gmsh](http://gmsh.info/). You can use `PyMesh::MshLoader` and `PyMesh::MshSaver` in `pymesh/` for read and write `.msh` meshes.
 
+💡 TetWild also outputs the surface of tetmesh in `.obj` format if the `is_quiet` flag is not turned on.
+
 ### Features
 Our software is quite easy to use. Basically, users only need to provide a surface triangle mesh as input and our mesher would output a tetrahedral mesh by using default settings. If you want to customize your own tetmeshes, we also provide some options.
 
