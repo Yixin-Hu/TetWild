@@ -432,6 +432,8 @@ int main(int argc, char *argv[]) {
     app.add_option("--bg-mesh", args.bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
     app.add_option("--is-quiet", args.is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
 
+    app.add_option("--mid-result", args.mid_result, "");
+
     try {
         app.parse(argc, argv);
     } catch (const CLI::ParseError &e) {

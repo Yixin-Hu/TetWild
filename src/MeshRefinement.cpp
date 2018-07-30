@@ -241,8 +241,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
     collapser.is_check_quality = true;
 
-    if (args.mid_result == 1)
-        outputMidResult(false, 1);
+//    if (args.mid_result == 1)
+//        outputMidResult(false, 1);
 
 //    double old_g_eps = g_eps;
 //    g_eps = 0.5 * old_g_eps;
@@ -271,6 +271,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    g_eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_pass; pass++) {
+        if (pass % 2 == 0 && args.mid_result == 1)
+            outputMidResult(false, pass);
+
         if (is_dealing_unrounded && pass == old_pass) {
             updateScalarField(false, false, args.filter_energy);
         }
