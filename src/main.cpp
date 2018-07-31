@@ -433,6 +433,7 @@ int main(int argc, char *argv[]) {
     app.add_option("--is-quiet", args.is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
 
     app.add_option("--mid-result", args.mid_result, "");
+    app.add_option("--is-using-voxel", args.is_using_voxel, "");
 
     try {
         app.parse(argc, argv);
