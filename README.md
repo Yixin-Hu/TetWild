@@ -6,6 +6,8 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 
 💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper.**
 
+💡💡💡 **If you don't have time to read the whole documentation, please always read the tips with (💡) in the front first.**
+
 <!--<img src="images/new.png" alt="drawing" style="width:25px;"/> New features-->
 
 ## Dataset
@@ -124,6 +126,8 @@ Options:
 TODO :)-->
 
 ### Function Wrapper
+
+💡 The input surface mesh reader we are using is open-sourced so it could fail or read in something wrong. If you encounter this problem, please use our function wrapper and pass the raw data directly to TetWild.
 
 We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetrahedaliztion without read/write data from/to files. One can use it in the following way:
 
