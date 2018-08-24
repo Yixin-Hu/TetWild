@@ -8,6 +8,8 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 
 💡💡💡 **If you don't have time to read the whole documentation, please always read the tips with (💡) in the front first.**
 
+💡💡💡 **The orientation of input faces is as important as the position of their vertices. Our algorithm preserves and is faithful to the input face position and orientation. If the input has a large region of faces all inverted (i.e. with flipped normal), the output tetmesh could have some parts missing or includes some elements "outside" the surface around this region, which is expected because the inverted input faces defines the "inside" as outside.**
+
 <!--<img src="images/new.png" alt="drawing" style="width:25px;"/> New features-->
 
 ## Dataset
