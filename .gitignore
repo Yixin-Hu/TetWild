@@ -1,4 +1,5 @@
 *build*/*
 .idea/*
+test/scratch
 .DS_Store
 test.cpp
