@@ -1,15 +1,16 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 4/17/17.
 //
 
 #include <tetwild/EdgeRemover.h>
+#include <unordered_map>
 
 void EdgeRemover::init() {
     energy_time = 0;
@@ -79,7 +80,7 @@ void EdgeRemover::swap(){
         std::array<int, 2> v_ids=ele.v_ids;
         er_queue.pop();
 
-//        cout<<v_ids[0]<<" "<<v_ids[1]<<" "<<t_ids.size()<<" "<<endl;
+//        std::cout<<v_ids[0]<<" "<<v_ids[1]<<" "<<t_ids.size()<<" "<<std::endl;
 
         while(!er_queue.empty()){
             std::array<int, 2> tmp_v_ids = er_queue.top().v_ids;
@@ -102,20 +103,20 @@ void EdgeRemover::swap(){
         }
 
 //        if(is_fail){
-//            cout<<"f"<<endl;
+//            std::cout<<"f"<<std::endl;
 //        } else
-//            cout<<"s"<<endl;
+//            std::cout<<"s"<<std::endl;
 
         counter++;
     }
 #ifndef MUTE_COUT
-    cout<<"tmp_cnt3 = "<<tmp_cnt3<<endl;
-    cout<<"tmp_cnt4 = "<<tmp_cnt4<<endl;
-    cout<<"tmp_cnt5 = "<<tmp_cnt5<<endl;
-    cout<<"tmp_cnt6 = "<<tmp_cnt6<<endl;
-    cout<<cnt5<<endl;
+    std::cout<<"tmp_cnt3 = "<<tmp_cnt3<<std::endl;
+    std::cout<<"tmp_cnt4 = "<<tmp_cnt4<<std::endl;
+    std::cout<<"tmp_cnt5 = "<<tmp_cnt5<<std::endl;
+    std::cout<<"tmp_cnt6 = "<<tmp_cnt6<<std::endl;
+    std::cout<<cnt5<<std::endl;
 
-    cout<<"energy_time = "<<energy_time<<endl;
+    std::cout<<"energy_time = "<<energy_time<<std::endl;
 #endif
 }
 
@@ -199,7 +200,7 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[0]][i] = is_sf_fs[it - fs.begin()];
         } else
-            is_surface_fs[t_ids[0]][i] = NOT_SURFACE;
+            is_surface_fs[t_ids[0]][i] = State::state().NOT_SURFACE;
 
         if (tets[t_ids[1]][i] != v1_id) {
             std::array<int, 3> tmp = {tets[t_ids[1]][(i + 1) % 4], tets[t_ids[1]][(i + 2) % 4],
@@ -208,7 +209,7 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[1]][i] = is_sf_fs[it - fs.begin()];
         } else
-            is_surface_fs[t_ids[1]][i] = NOT_SURFACE;
+            is_surface_fs[t_ids[1]][i] = State::state().NOT_SURFACE;
     }
 
     tet_vertices[v_ids[0]].conn_tets.erase(std::find(tet_vertices[v_ids[0]].conn_tets.begin(),
@@ -401,7 +402,7 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
 
     for (int i = 0; i < old_t_ids.size(); i++) {//old_t_ids contains new tets
         for (int j = 0; j < 4; j++) {
-            is_surface_fs[old_t_ids[i]][j] = NOT_SURFACE;
+            is_surface_fs[old_t_ids[i]][j] = State::state().NOT_SURFACE;
             if (tets[old_t_ids[i]][j] == v_ids[0] || tets[old_t_ids[i]][j] == v_ids[1]) {
                 std::array<int, 3> tmp = {tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
                                           tets[old_t_ids[i]][(j + 3) % 4]};
@@ -572,7 +573,7 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
             qs.push_back(tet_qs[(i - 1 + 5) % 5][j]);
         }
         if(qs.size() != 6){
-            cout<<"ERROR: qs.size() != 6"<<endl;
+            std::cout<<"ERROR: qs.size() != 6"<<std::endl;
             pausee();
         }
         getCheckQuality(qs, new_tq);
@@ -625,7 +626,7 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
     //update on_surface -- 2
     for (int i = 0; i < new_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {
-            is_surface_fs[new_t_ids[i]][j] = NOT_SURFACE;
+            is_surface_fs[new_t_ids[i]][j] = State::state().NOT_SURFACE;
             if (tets[new_t_ids[i]][j] != v1_id && tets[new_t_ids[i]][j] != v2_id
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id + 1) % 5]
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id - 1 + 5) % 5]) {

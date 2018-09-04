@@ -1,15 +1,17 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 3/31/17.
 //
 
 #include <tetwild/SimpleTetrahedralization.h>
+#include <igl/winding_number.h>
+#include <igl/Timer.h>
 
 //triangulation
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -27,8 +29,6 @@ typedef Traits_2::Point_2 Point_arr_2;
 typedef Traits_2::X_monotone_curve_2 Segment_arr_2;
 typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
 
-#include <igl/winding_number.h>
-
 
 void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::vector<std::array<int, 4>>& tets) {
     std::vector<BSPFace> &faces = MC.bsp_faces;
@@ -37,7 +37,7 @@ void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::
     ///cal arrangement & tetrahedralization
     triangulation(tet_vertices, tets);
 #ifndef MUTE_COUT
-    cout<<"#v = "<<tet_vertices.size()<<" #t = "<<tets.size()<<endl;
+    std::cout<<"#v = "<<tet_vertices.size()<<" #t = "<<tets.size()<<std::endl;
 #endif
 
     for (int i = 0; i < tets.size(); i++) {
@@ -200,7 +200,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         }
     }
 #ifndef MUTE_COUT
-    cout<<"2D arr "<<tmp_timer.getElapsedTime()<<endl;
+    std::cout<<"2D arr "<<tmp_timer.getElapsedTime()<<std::endl;
 #endif
     tmp_timer.start();
 
@@ -255,7 +255,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     }
 
 #ifndef MUTE_COUT
-    cout<<"improvement "<<tmp_timer.getElapsedTime()<<endl;
+    std::cout<<"improvement "<<tmp_timer.getElapsedTime()<<std::endl;
 #endif
     tmp_timer.start();
     ///cal CDT & insert tets
@@ -281,7 +281,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
                                   MC.to2d(bsp_vertices[bsp_edges[bsp_faces[i].edges[j]].vertices[1]]));
         }
         if(cdt.number_of_vertices() != bsp_faces[i].vertices.size()){
-            cout<<"error: cdt.number_of_vertices() != bsp_faces[i].vertices.size()"<<endl;
+            std::cout<<"error: cdt.number_of_vertices() != bsp_faces[i].vertices.size()"<<std::endl;
         }
         std::map<Point_2, int> vs_cdt2bsp;
         for (int j = 0; j < bsp_faces[i].vertices.size(); j++) {
@@ -365,10 +365,10 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         }
     }
 #ifndef MUTE_COUT
-    cout<<"all_cnt = "<<all_cnt<<endl;
-    cout<<"rounded_cnt = "<<rounded_cnt<<endl;
+    std::cout<<"all_cnt = "<<all_cnt<<std::endl;
+    std::cout<<"rounded_cnt = "<<rounded_cnt<<std::endl;
 
-    cout<<"CDT "<<tmp_timer.getElapsedTime()<<endl;
+    std::cout<<"CDT "<<tmp_timer.getElapsedTime()<<std::endl;
 #endif
 }
 
@@ -472,9 +472,9 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
     }
 
     ////is face on surface////
-    NOT_SURFACE = m_faces.size()+1;
+    State::state().NOT_SURFACE = m_faces.size()+1;
     is_surface_fs=std::vector<std::array<int, 4>>(tets.size(),
-                                                  std::array<int, 4>({NOT_SURFACE, NOT_SURFACE, NOT_SURFACE, NOT_SURFACE}));
+                                                  std::array<int, 4>({State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE}));
 //    std::vector<std::array<bool, 4>> is_visited(tets.size(), std::array<bool, 4>({false, false, false, false}));
 
     for(unsigned int i = 0; i < tets.size(); i++) {
@@ -502,26 +502,26 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
 
             if (!tet_vertices[tets[i][(j + 1) % 4]].is_on_surface || !tet_vertices[tets[i][(j + 2) % 4]].is_on_surface
                 || !tet_vertices[tets[i][(j + 3) % 4]].is_on_surface) {
-                is_surface_fs[i][j] = NOT_SURFACE;
+                is_surface_fs[i][j] = State::state().NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
                 continue;
             }
             std::unordered_set<int> sf_faces_tmp;
             setIntersection(tet_vertices[tets[i][(j + 1) % 4]].on_face, tet_vertices[tets[i][(j + 2) % 4]].on_face,
                             sf_faces_tmp);
             if (sf_faces_tmp.size() == 0) {
-                is_surface_fs[i][j] = NOT_SURFACE;
+                is_surface_fs[i][j] = State::state().NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
                 continue;
             }
             std::vector<int> sf_faces;
             setIntersection(sf_faces_tmp, tet_vertices[tets[i][(j + 3) % 4]].on_face, sf_faces);
             if (sf_faces.size() == 0) {
-                is_surface_fs[i][j] = NOT_SURFACE;
+                is_surface_fs[i][j] = State::state().NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
                 continue;
             }
 
@@ -539,7 +539,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
             CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 
             if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-                cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << endl;
+                std::cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << std::endl;
                 exit(250);
             }
             if (side == CGAL::ON_POSITIVE_SIDE)//outside
@@ -567,7 +567,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
                     else
                         is_surface_fs[i][j] -= delta;
 //                    else {
-//                        cout << "wrong direction!!" << endl;
+//                        std::cout << "wrong direction!!" << std::endl;
 //                        pausee();
 //                    }
                 }
@@ -579,7 +579,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
 //                CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 //
 //                if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-//                    cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << endl;
+//                    std::cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << std::endl;
 //                    exit(250);
 //                }
 //                if (side == CGAL::ON_POSITIVE_SIDE)//outside
@@ -658,7 +658,7 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
         i++;
     }
 #ifndef MUTE_COUT
-    cout<<"#v on bbox = "<<i<<endl;
+    std::cout<<"#v on bbox = "<<i<<std::endl;
 #endif
 }
 
@@ -695,9 +695,9 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
                 opp_js.push_back(j);
             }
             if (opp_js.size() == 2) {
-                if (is_surface_fs[t_id][opp_js[0]] != NOT_SURFACE)
+                if (is_surface_fs[t_id][opp_js[0]] != State::state().NOT_SURFACE)
                     cnt++;
-                if (is_surface_fs[t_id][opp_js[1]] != NOT_SURFACE)
+                if (is_surface_fs[t_id][opp_js[1]] != State::state().NOT_SURFACE)
                     cnt++;
                 if (cnt > 2)
                     break;
@@ -717,8 +717,8 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
             cnt_surface++;
     }
 #ifndef MUTE_COUT
-    cout << cnt_boundary << " vertices on boundary" << endl;
-    cout << cnt_surface << " vertices on surface" << endl;
+    std::cout << cnt_boundary << " vertices on boundary" << std::endl;
+    std::cout << cnt_surface << " vertices on surface" << std::endl;
 #endif
 }
 

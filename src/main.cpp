@@ -5,16 +5,21 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License
 // v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
 #include <tetwild/Preprocess.h>
 #include <tetwild/DelaunayTetrahedralization.h>
 #include <tetwild/BSPSubdivision.h>
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <igl/writeOBJ.h>
+#include <pymesh/MshSaver.h>
 #include <CLI/CLI11.hpp>
 
 MeshRefinement MR;
+
+using std::cout;
+using std::endl;
 
 void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
                         const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
@@ -140,7 +145,7 @@ void outputFinalSurface(MeshRefinement& MR){
                 break;
             }
     }
-    igl::writeOBJ(g_working_dir+g_postfix+"_sf.obj", V_sf, F_sf);
+    igl::writeOBJ(State::state().g_working_dir+State::state().g_postfix+"_sf.obj", V_sf, F_sf);
 }
 
 void outputFinalTetmesh(MeshRefinement& MR) {
@@ -151,7 +156,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
-    if (!args.is_laplacian) {
+    if (!GArgs::args().is_laplacian) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
 #ifndef MUTE_COUT
         igl::Timer igl_timer;
@@ -167,7 +172,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     }
 
     //output result
-    cout<<"Writing mesh to "<<g_output_file<<"..."<<endl;
+    cout<<"Writing mesh to "<<State::state().g_output_file<<"..."<<endl;
     std::vector<int> v_ids;
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
@@ -198,9 +203,9 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     cout << "#v = " << oV.rows() / 3 << endl;
     cout << "#t = " << oT.rows() / 4 << endl;
 
-    std::string output_format = g_output_file.substr(g_output_file.size() - 4, 4);
+    std::string output_format = State::state().g_output_file.substr(State::state().g_output_file.size() - 4, 4);
     if (output_format == "mesh") {
-        std::fstream f(g_output_file, std::ios::out);
+        std::fstream f(State::state().g_output_file, std::ios::out);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
@@ -220,7 +225,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "End";
         f.close();
     } else {
-        PyMesh::MshSaver mSaver(g_output_file, true);
+        PyMesh::MshSaver mSaver(State::state().g_output_file, true);
         mSaver.save_mesh(oV, oT, 3, mSaver.TET);
 #ifndef MUTE_COUT
         Eigen::VectorXd angle(t_cnt);
@@ -236,7 +241,7 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     }
 
 #ifndef MUTE_COUT
-    if (args.is_quiet)
+    if (GArgs::args().is_quiet)
         return;
     outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
     outputFinalSurface(MR);
@@ -244,12 +249,12 @@ void outputFinalTetmesh(MeshRefinement& MR) {
 }
 
 void gtet_new() {
-    is_using_energy_max = true;
-    is_use_project = false;
-    is_using_sampling = true;
+    State::state().is_using_energy_max = true;
+    State::state().is_use_project = false;
+    State::state().is_using_sampling = true;
 
-    int energy_type = ENERGY_AMIPS;
-//    int energy_type = ENERGY_DIRICHLET;
+    int energy_type = State::state().ENERGY_AMIPS;
+//    int energy_type = State::state().ENERGY_DIRICHLET;
     bool is_sm_single = true;
     bool is_preprocess = true;
     bool is_check_correctness = false;
@@ -273,7 +278,7 @@ void gtet_new() {
         if (!pp.init(MR.geo_b_mesh, MR.geo_sf_mesh)) {
             cout << "Empty!" << endl;
             //todo: output a empty tetmesh
-            PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
+            PyMesh::MshSaver mSaver(State::state().g_working_dir + State::state().g_postfix + ".msh", true);
             Eigen::VectorXd oV;
             Eigen::VectorXi oT;
             oV.resize(0);
@@ -369,7 +374,7 @@ void gtet_new() {
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
-        if (!g_is_close)//if input is an open mesh
+        if (!State::state().g_is_close)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
 #ifndef MUTE_COUT
         cout << "# tet_vertices = " << MR.tet_vertices.size() << endl;
@@ -408,7 +413,7 @@ void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int m
     MR.deserialization(sf_file, slz_file);
 
 //    MR.is_dealing_unrounded = true;
-    MR.refine(ENERGY_AMIPS, ops, false, true);
+    MR.refine(State::state().ENERGY_AMIPS, ops, false, true);
 
     outputFinalTetmesh(MR);
 }
@@ -418,19 +423,19 @@ int main(int argc, char *argv[]) {
     cout<<"Unnecessary checks are muted."<<endl;
 #endif
     CLI::App app{"RobustTetMeshing"};
-    app.add_option("--input", args.input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
-    app.add_option("--postfix", args.postfix, "--postfix P. Postfix P for output files. (string, optinal, default: '_')");
-    app.add_option("--output", args.output, "--output OUTPUT. Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
-    app.add_option("--ideal-edge-length", args.i_ideal_edge_length, "--ideal-edge-length L. ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
-    app.add_option("--epsilon", args.i_epsilon, "--epsilon EPS. epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
-    app.add_option("--stage", args.stage, "--stage STAGE. Run pipeline in stage STAGE. (integer, optional, default: 1)");
-    app.add_option("--filter-energy", args.filter_energy, "--filter-energy ENERGY. Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
-    app.add_option("--max-pass", args.max_pass, "--max-pass PASS. Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+    app.add_option("--input", GArgs::args().input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
+    app.add_option("--postfix", GArgs::args().postfix, "--postfix P. Postfix P for output files. (string, optinal, default: '_')");
+    app.add_option("--output", GArgs::args().output, "--output OUTPUT. Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("--ideal-edge-length", GArgs::args().i_ideal_edge_length, "--ideal-edge-length L. ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
+    app.add_option("--epsilon", GArgs::args().i_epsilon, "--epsilon EPS. epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("--stage", GArgs::args().stage, "--stage STAGE. Run pipeline in stage STAGE. (integer, optional, default: 1)");
+    app.add_option("--filter-energy", GArgs::args().filter_energy, "--filter-energy ENERGY. Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
+    app.add_option("--max-pass", GArgs::args().max_pass, "--max-pass PASS. Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
 
-    app.add_option("--is-laplacian", args.is_laplacian, "--is-laplacian ISLAP. Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
-    app.add_option("--targeted-num-v", args.targeted_num_v, "--targeted-num-v TV. Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
-    app.add_option("--bg-mesh", args.bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("--is-quiet", args.is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
+    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "--is-laplacian ISLAP. Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
+    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "--targeted-num-v TV. Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_option("--bg-mesh", GArgs::args().bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
+    app.add_option("--is-quiet", GArgs::args().is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
 
     try {
         app.parse(argc, argv);
@@ -440,32 +445,32 @@ int main(int argc, char *argv[]) {
 
     //initalization
     GEO::initialize();
-    g_postfix = args.postfix;
-    if(args.slz_file != "")
-        g_working_dir = args.input.substr(0, args.slz_file.size() - 4);
+    State::state().g_postfix = GArgs::args().postfix;
+    if(GArgs::args().slz_file != "")
+        State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().slz_file.size() - 4);
     else
-        g_working_dir = args.input.substr(0, args.input.size() - 4);
+        State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
 
-    if(args.csv_file == "")
-        g_stat_file = g_working_dir + g_postfix + ".csv";
+    if(GArgs::args().csv_file == "")
+        State::state().g_stat_file = State::state().g_working_dir + State::state().g_postfix + ".csv";
     else
-        g_stat_file = args.csv_file;
+        State::state().g_stat_file = GArgs::args().csv_file;
 
-    if(args.output == "")
-        g_output_file = g_working_dir + g_postfix + ".msh";
+    if(GArgs::args().output == "")
+        State::state().g_output_file = State::state().g_working_dir + State::state().g_postfix + ".msh";
     else
-        g_output_file = args.output;
+        State::state().g_output_file = GArgs::args().output;
 
-    if(args.is_quiet) {
-        args.is_output_csv = false;
+    if(GArgs::args().is_quiet) {
+        GArgs::args().is_output_csv = false;
         std::streambuf* orig_buf = cout.rdbuf();
         cout.rdbuf(NULL);
 //        cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
     }
 
     //do tetrahedralization
-    if(args.slz_file != "")
-        gtet_new_slz(args.input, args.slz_file, args.max_pass, std::array<bool, 4>({true, false, true, true}));
+    if(GArgs::args().slz_file != "")
+        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({true, false, true, true}));
     else
         gtet_new();
 

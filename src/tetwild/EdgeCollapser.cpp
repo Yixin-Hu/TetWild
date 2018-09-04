@@ -1,16 +1,17 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 4/11/17.
 //
 
 #include <tetwild/EdgeCollapser.h>
- 
+#include <igl/Timer.h>
+
 void EdgeCollapser::init() {
     energy_time = 0;
 
@@ -65,7 +66,7 @@ void EdgeCollapser::collapse() {
     tet_tss.assign(tets.size(), 0);
     int cnt = 0;
 #ifndef MUTE_COUT
-    cout << "edge queue size = " << ec_queue.size() << endl;
+    std::cout << "edge queue size = " << ec_queue.size() << std::endl;
 #endif
     while (!ec_queue.empty()) {
         std::array<int, 2> v_ids = ec_queue.top().v_ids;
@@ -141,14 +142,14 @@ void EdgeCollapser::collapse() {
         counter++;
     }
 #ifndef MUTE_COUT
-    cout << suc_counter << " " << counter << " " << inf_es.size() << endl;
-    cout << "envelop accept = " << envelop_accept_cnt << endl;
+    std::cout << suc_counter << " " << counter << " " << inf_es.size() << std::endl;
+    std::cout << "envelop accept = " << envelop_accept_cnt << std::endl;
 #endif
 
     if (suc_counter == 0 || inf_es.size() == 0) {
-//        cout<<"checking......."<<endl;
+//        std::cout<<"checking......."<<std::endl;
 //        init();
-//        cout<<ec_queue.size()<<endl;
+//        std::cout<<ec_queue.size()<<std::endl;
 //        int cnt_flip=0, cnt_quality=0, cnt_envelop=0, cnt_suc=0;
 //        while (!ec_queue.empty()) {
 //            std::array<int, 2> v_ids = ec_queue.top().v_ids;
@@ -185,26 +186,26 @@ void EdgeCollapser::collapse() {
 //            else
 //                cnt_suc++;
 //        }
-//        cout<<cnt_flip<<" "<<cnt_quality<<" "<<cnt_envelop<<" "<<cnt_suc<<endl;
+//        std::cout<<cnt_flip<<" "<<cnt_quality<<" "<<cnt_envelop<<" "<<cnt_suc<<std::endl;
 
 #ifndef MUTE_COUT
-        cout << breakdown_name0[id_sampling] << ": " << breakdown_timing0[id_sampling] << "s" << endl;
-        cout << breakdown_name0[id_aabb] << ": " << breakdown_timing0[id_aabb] << "s" << endl;
-        cout << "----" << endl;
+        std::cout << breakdown_name0[id_sampling] << ": " << breakdown_timing0[id_sampling] << "s" << std::endl;
+        std::cout << breakdown_name0[id_aabb] << ": " << breakdown_timing0[id_aabb] << "s" << std::endl;
+        std::cout << "----" << std::endl;
         for (int i = 0; i < breakdown_timing.size(); i++)
-            cout << breakdown_name[i] << ": " << breakdown_timing[i] << "s" << endl;
+            std::cout << breakdown_name[i] << ": " << breakdown_timing[i] << "s" << std::endl;
 
 //        std::ofstream of(timing_log_file_name, std::fstream::app);
 //        if (of.is_open()) {
-//            of<<breakdown_name0[id_sampling]<<": "<<breakdown_timing0[id_sampling]<<"s"<<endl;
-//            of<<breakdown_name0[id_aabb]<<": "<<breakdown_timing0[id_aabb]<<"s"<<endl;
-//            of<<"----"<<endl;
+//            of<<breakdown_name0[id_sampling]<<": "<<breakdown_timing0[id_sampling]<<"s"<<std::endl;
+//            of<<breakdown_name0[id_aabb]<<": "<<breakdown_timing0[id_aabb]<<"s"<<std::endl;
+//            of<<"----"<<std::endl;
 //            for(int i=0;i<breakdown_timing.size();i++)
-//                of<<breakdown_name[i]<<": "<<breakdown_timing[i]<<"s"<<endl;
+//                of<<breakdown_name[i]<<": "<<breakdown_timing[i]<<"s"<<std::endl;
 //            of.close();
 //        }
 
-        cout << "energy_time = " << energy_time << endl;
+        std::cout << "energy_time = " << energy_time << std::endl;
 #endif
 
         return;
@@ -215,7 +216,7 @@ void EdgeCollapser::collapse() {
 
 void EdgeCollapser::postProcess() {
 #ifndef MUTE_COUT
-    cout << "postProcess!" << endl;
+    std::cout << "postProcess!" << std::endl;
 #endif
     counter = 0;
     suc_counter = 0;
@@ -278,10 +279,10 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
         is_edge_degenerate = true;
     }
 //    else if(length < 1e-30) {
-//        cout << v1_id << " " << tet_vertices[v1_id].is_on_surface << " " << tet_vertices[v1_id].is_on_boundary << ", "
+//        std::cout << v1_id << " " << tet_vertices[v1_id].is_on_surface << " " << tet_vertices[v1_id].is_on_boundary << ", "
 //             << v2_id << " " << tet_vertices[v2_id].is_on_surface << " " << tet_vertices[v2_id].is_on_boundary << ": "
-//             << length << endl;
-//        cout << tet_vertices[v1_id].is_rounded << " " << tet_vertices[v2_id].is_rounded << endl;
+//             << length << std::endl;
+//        std::cout << tet_vertices[v1_id].is_rounded << " " << tet_vertices[v2_id].is_rounded << std::endl;
 //        is_edge_too_short = true;
 //    }
 
@@ -300,8 +301,8 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     if(tet_vertices[v1_id].is_on_boundary && !tet_vertices[v2_id].is_on_boundary)
         if(!is_edge_degenerate && isPointOutBoundaryEnvelop(tet_vertices[v2_id].posf)) {
 //            if(is_edge_too_short) {
-//                cout << "v2 bonndary" << endl;
-//                cout << "v1 boundary = " << isPointOutBoundaryEnvelop(tet_vertices[v1_id].posf) << endl;
+//                std::cout << "v2 bonndary" << std::endl;
+//                std::cout << "v1 boundary = " << isPointOutBoundaryEnvelop(tet_vertices[v1_id].posf) << std::endl;
 //            }
             return ENVELOP;
         }
@@ -310,8 +311,8 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     if(tet_vertices[v1_id].is_on_surface && !tet_vertices[v2_id].is_on_surface){
         if(!is_edge_degenerate && isPointOutEnvelop(tet_vertices[v2_id].posf)) {
 //            if(is_edge_too_short) {
-//                cout << "v2 envelop" << endl;
-//                cout << "v1 envelop = " << isPointOutEnvelop(tet_vertices[v1_id].posf) << endl;
+//                std::cout << "v2 envelop" << std::endl;
+//                std::cout << "v1 envelop = " << isPointOutEnvelop(tet_vertices[v1_id].posf) << std::endl;
 //            }
             return ENVELOP;
         }
@@ -374,7 +375,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     //check 2
     if (isFlip(new_tets)) {
 //        if(is_edge_too_short)
-//            cout<<"flip"<<endl;
+//            std::cout<<"flip"<<std::endl;
         return FLIP;
     }
     std::vector<TetQuality> tet_qs;
@@ -383,14 +384,14 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     calTetQualities(new_tets, tet_qs);
     energy_time+=tmp_timer.getElapsedTime();
 
-    if (energy_type != ENERGY_NA && is_check_quality) {
+    if (energy_type != State::state().ENERGY_NA && is_check_quality) {
         TetQuality old_tq, new_tq;
         getCheckQuality(old_t_ids, old_tq);
         getCheckQuality(tet_qs, new_tq);
 //        if (is_edge_too_short)
-//            cout << "old " << old_tq.slim_energy << " new " << new_tq.slim_energy << endl;
+//            std::cout << "old " << old_tq.slim_energy << " new " << new_tq.slim_energy << std::endl;
 //        if (is_soft && old_tq.slim_energy < soft_energy) {
-//            old_tq.slim_energy = args.filter_energy;
+//            old_tq.slim_energy = GArgs::args().filter_energy;
 //        }
         if(is_soft)
             old_tq.slim_energy = soft_energy;
@@ -398,7 +399,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
             new_tq.slim_energy = 0;
         if (!is_edge_degenerate && !new_tq.isBetterOrEqualThan(old_tq, energy_type)) {
 //            if (is_edge_too_short)
-//                cout << "quality" << endl;
+//                std::cout << "quality" << std::endl;
             return QUALITY;
         }
     }
@@ -413,7 +414,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
             tet_vertices[v1_id].posf = old_pf;
             tet_vertices[v1_id].pos = old_p;
 //            if (is_edge_too_short)
-//                cout << "boundary" << endl;
+//                std::cout << "boundary" << std::endl;
             return ENVELOP;
         }
         tet_vertices[v1_id].posf = old_pf;
@@ -422,24 +423,24 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 
     //check 3
     bool is_envelop_suc = false;
-    if (g_eps != EPSILON_NA && g_eps != EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
+    if (State::state().g_eps != State::state().EPSILON_NA && State::state().g_eps != State::state().EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
         if (!is_edge_degenerate && !isCollapsable_epsilon(v1_id, v2_id)) {
 //            if (is_edge_too_short)
-//                cout << "envelop" << endl;
+//                std::cout << "envelop" << std::endl;
             return ENVELOP;
         }
         is_envelop_suc = true;
         envelop_accept_cnt++;
 #ifndef MUTE_COUT
         if (envelop_accept_cnt % 1000 == 0)
-            cout << "1000 accepted!" << endl;
+            std::cout << "1000 accepted!" << std::endl;
 #endif
     }
 
 
     //real update
 //    if(is_edge_too_short)
-//        cout<<"success"<<endl;
+//        std::cout<<"success"<<std::endl;
     if(tet_vertices[v1_id].is_on_boundary)
         tet_vertices[v2_id].is_on_boundary=true;
 
@@ -453,10 +454,10 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
                                     tets[n12_t_ids[i]][(j + 3) % 4], ts);
 
 //                    if(ts.size() != 2) {
-//                        cout << "ts.size() != 2 but = " << ts.size() << endl;
-//                        cout << "v1 info:" << endl;
+//                        std::cout << "ts.size() != 2 but = " << ts.size() << std::endl;
+//                        std::cout << "v1 info:" << std::endl;
 //                        tet_vertices[v1_id].printInfo();
-//                        cout << "v2 info:" << endl;
+//                        std::cout << "v2 info:" << std::endl;
 //                        tet_vertices[v2_id].printInfo();
 //
 //                        tet_vertices[tets[n12_t_ids[i]][(j + 1) % 4]].printInfo();
@@ -530,11 +531,11 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 //            else
 //                is_sf_fs[0] = is_sf_fs[1] == ON_SURFACE_TRUE_INSIDE ? ON_SURFACE_TRUE_OUTSIDE : ON_SURFACE_TRUE_INSIDE;
 
-            if (is_sf_fs[0] == is_sf_fs[1] && is_sf_fs[0] == NOT_SURFACE)
+            if (is_sf_fs[0] == is_sf_fs[1] && is_sf_fs[0] == State::state().NOT_SURFACE)
                 continue;
-            if(is_sf_fs[0] == NOT_SURFACE)
+            if(is_sf_fs[0] == State::state().NOT_SURFACE)
                 is_sf_fs[0] = 0;
-            if(is_sf_fs[1] == NOT_SURFACE)
+            if(is_sf_fs[1] == State::state().NOT_SURFACE)
                 is_sf_fs[1] = 0;
 
             int tmp0 = is_sf_fs[0];
@@ -557,12 +558,12 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     //update boundary points //todo: Pls figure out a more efficient way
 //    if(tet_vertices[v2_id].is_on_boundary && !isBoundaryPoint(v2_id)) {
 //        tet_vertices[v2_id].is_on_boundary = false;
-////        cout<<"a boundary vertex is removed"<<endl;
+////        std::cout<<"a boundary vertex is removed"<<std::endl;
 //    }
 //    for(int v_id:n12_v_ids) {
 //        if (tet_vertices[v_id].is_on_boundary && !isBoundaryPoint(v_id)) {
 //            tet_vertices[v_id].is_on_boundary = false;
-////            cout<<"a boundary vertex is removed"<<endl;
+////            std::cout<<"a boundary vertex is removed"<<std::endl;
 //        }
 //    }
 
@@ -591,7 +592,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 //        addNewEdge(es[i]);
 //    }
 
-//    cout<<n1_v_ids.size()<<"->";
+//    std::cout<<n1_v_ids.size()<<"->";
     std::vector<int> n1_v_ids_vec, n12_v_ids_vec;
     n1_v_ids_vec.reserve(n1_v_ids.size());
     n12_v_ids_vec.reserve(n12_v_ids.size());
@@ -664,7 +665,7 @@ bool EdgeCollapser::isCollapsable_cd1(int v1_id, int v2_id) {
     }
 
     //check the surface tags //if the vertex is on the surface
-//    if (g_eps != EPSILON_NA) {
+//    if (State::state().g_eps != State::state().EPSILON_NA) {
 //        return true;
 //    }
     return true;
@@ -719,11 +720,11 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
 //    std::vector<Triangle_3f> tris;
 //    for (auto it = tet_vertices[v1_id].conn_tets.begin(); it != tet_vertices[v1_id].conn_tets.end(); it++) {
 //        for (int j = 0; j < 4; j++) {
-//            if (tets[*it][j] == v2_id && is_surface_fs[*it][j] != NOT_SURFACE) {
+//            if (tets[*it][j] == v2_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
 //                std::array<int, 3> tri = {tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]};
 //                auto jt = std::find(tri.begin(), tri.end(), v1_id);
 //                if(jt==tri.end()){
-//                    cout<<"jt==tri.end()"<<endl;
+//                    std::cout<<"jt==tri.end()"<<std::endl;
 //                    exit(250);
 //                }
 //                *jt = v2_id;
@@ -736,7 +737,7 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
     std::vector<std::array<int, 3>> tri_ids;
     for (auto it = tet_vertices[v1_id].conn_tets.begin(); it != tet_vertices[v1_id].conn_tets.end(); it++) {
         for (int j = 0; j < 4; j++) {
-            if (tets[*it][j] != v1_id && is_surface_fs[*it][j] != NOT_SURFACE) {
+            if (tets[*it][j] != v1_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
                 std::array<int, 3> tri = {tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]};
                 std::sort(tri.begin(), tri.end());
                 tri_ids.push_back(tri);

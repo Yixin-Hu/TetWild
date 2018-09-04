@@ -16,7 +16,8 @@
 #include <string>
 
 namespace tetwild {
-    struct Args{
+
+    struct Args {
         double i_ideal_edge_length = 20;
         double i_epsilon = 1000;
         int stage = 1;
@@ -28,12 +29,12 @@ namespace tetwild {
         std::string bg_mesh = "";
         bool is_quiet = false;
     };
-    extern Args parameters;
 
     void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
                             const std::vector<std::array<int, 3>>& F_in,
                             std::vector<std::array<double, 3>>& V_out,
-                            std::vector<std::array<int, 4>>& T_out);
+                            std::vector<std::array<int, 4>>& T_out,
+                            Args params = Args());
 }
 
 #endif //TETWILD_TETWILD_H

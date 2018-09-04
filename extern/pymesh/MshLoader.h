@@ -8,11 +8,12 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
+
+namespace PyMesh {
+
 typedef double Float;
 typedef Eigen::VectorXd VectorF;
 typedef Eigen::VectorXi VectorI;
-
-namespace PyMesh {
 
 class MshLoader {
     public:

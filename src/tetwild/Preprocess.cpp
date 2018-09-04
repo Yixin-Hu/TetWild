@@ -1,28 +1,29 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 10/12/17.
 //
 
 #include <tetwild/Preprocess.h>
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
+#include <pymesh/MshSaver.h>
 #include <igl/fit_plane.h>
 #include <igl/remove_duplicate_vertices.h>
-
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/numerics/predicates.h>
 #include <geogram/basic/geometry_nd.h>
+#include <unordered_map>
 
 void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-    PyMesh::MshSaver mSaver(g_working_dir+args.postfix+"_boundary.msh", true);
+    PyMesh::MshSaver mSaver(State::state().g_working_dir+GArgs::args().postfix+"_boundary.msh", true);
     Eigen::VectorXd oV;
     Eigen::VectorXi oF;
     oV.resize(V.rows() * 3);
@@ -60,12 +61,12 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
                                       std::back_inserter(tmp));
                 if (tmp.size() == 1) {
                     bF(tmp[0]) = 1;
-//                    cout << "boundary tri! " << tmp[0] << endl;
+//                    std::cout << "boundary tri! " << tmp[0] << std::endl;
 //                    Triangle_3f tri(Point_3f(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2)),
 //                                    Point_3f(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2)),
 //                                    Point_3f(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2)));
 //                    if(tri.is_degenerate())
-//                        cout<<"degenerate"<<endl;
+//                        std::cout<<"degenerate"<<std::endl;
                     bV(F(i, j)) = 1;
                     bV(F(i, (j + 1) % 3)) = 1;
                 }
@@ -76,44 +77,44 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
         mSaver.save_scalar_field("boundary vertices", bV);
     }
 
-    cout<<"boundary checked!"<<endl;
+    std::cout<<"boundary checked!"<<std::endl;
 }
 
 bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
-    std::string file_format = args.input.substr(args.input.size() - 3, 3);
-//    cout<<args.input<<endl;
+    std::string file_format = GArgs::args().input.substr(GArgs::args().input.size() - 3, 3);
+//    std::cout<<GArgs::args().input<<std::endl;
 //    pausee();
 
     ////read the input file
     Eigen::MatrixXd V_tmp;
     Eigen::MatrixXi F_tmp;
     if (file_format == "off" || file_format == "OFF") {
-        if (!igl::readOFF(args.input, V_tmp, F_tmp)) {
-            cout << "Libigl read .off fail. Please check your mesh!" << endl;
+        if (!igl::readOFF(GArgs::args().input, V_tmp, F_tmp)) {
+            std::cout << "Libigl read .off fail. Please check your mesh!" << std::endl;
             return false;
         }
     } else if (file_format == "stl" || file_format == "STL") {
         Eigen::MatrixXd _;
-        if (!igl::readSTL(args.input, V_tmp, F_tmp, _)) {
-            cout << "Libigl read .stl fail. Please check your mesh!" << endl;
+        if (!igl::readSTL(GArgs::args().input, V_tmp, F_tmp, _)) {
+            std::cout << "Libigl read .stl fail. Please check your mesh!" << std::endl;
             return false;
         }
     } else if (file_format == "obj" || file_format == "OBJ") {
-        if (!igl::readOBJ(args.input, V_tmp, F_tmp)) {
-            cout << "Libigl read .obj fail. Please check your mesh!" << endl;
+        if (!igl::readOBJ(GArgs::args().input, V_tmp, F_tmp)) {
+            std::cout << "Libigl read .obj fail. Please check your mesh!" << std::endl;
             return false;
         }
     } else if (file_format == "ply" || file_format == "PLY") {
-        if (!igl::readPLY(args.input, V_tmp, F_tmp)) {
-            cout << "Libigl read .ply fail. Please check your mesh!" << endl;
+        if (!igl::readPLY(GArgs::args().input, V_tmp, F_tmp)) {
+            std::cout << "Libigl read .ply fail. Please check your mesh!" << std::endl;
             return false;
         }
     } else {
-        cout << "Only support .off/.stl/.obj/.ply formats!" << endl;
+        std::cout << "Only support .off/.stl/.obj/.ply formats!" << std::endl;
         return false;
     }
 
-    cout << "Mesh read in!" << endl;
+    std::cout << "Mesh read in!" << std::endl;
 
     return init(V_tmp, F_tmp, geo_b_mesh, geo_sf_mesh);
 }
@@ -121,12 +122,12 @@ bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
 bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp,
                       GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
 //#ifndef MUTE_COUT
-//    args.is_output_csv = false;
-//    std::streambuf* orig_buf = cout.rdbuf();
-//    cout.rdbuf(NULL);
+//    GArgs::args().is_output_csv = false;
+//    std::streambuf* orig_buf = std::cout.rdbuf();
+//    std::cout.rdbuf(NULL);
 //#endif
 
-    cout << V_tmp.rows() << " " << F_tmp.rows() << endl;
+    std::cout << V_tmp.rows() << " " << F_tmp.rows() << std::endl;
 
     Eigen::VectorXi IV, _;
 //        igl::unique_rows(V_tmp, V_in, _, IV);
@@ -141,38 +142,38 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //            }
 //        }
 #ifndef MUTE_COUT
-    cout << "#v = " << V_tmp.rows() << " -> " << V_in.rows() << endl;
-    cout << "#f = " << F_tmp.rows() << " -> " << F_in.rows() << endl;
+    std::cout << "#v = " << V_tmp.rows() << " -> " << V_in.rows() << std::endl;
+    std::cout << "#f = " << F_tmp.rows() << " -> " << F_in.rows() << std::endl;
 #endif
 //    checkBoundary(V_in, F_in);
 
     ////set global parameters
-    g_diag_l = igl::bounding_box_diagonal(V_in);
-    g_eps_input = g_diag_l / args.i_epsilon;
+    State::state().g_diag_l = igl::bounding_box_diagonal(V_in);
+    State::state().State::state().g_eps_input = State::state().g_diag_l / GArgs::args().i_epsilon;
 
-    if (args.i_dd > 0) {//for testing only
-        g_dd = g_diag_l / args.i_dd;
-        g_eps = g_diag_l / args.i_epsilon;
-        g_eps_2 = g_eps * g_eps;
-        args.stage = 1;
+    if (GArgs::args().i_dd > 0) {//for testing only
+        State::state().g_dd = State::state().g_diag_l / GArgs::args().i_dd;
+        State::state().g_eps = State::state().g_diag_l / GArgs::args().i_epsilon;
+        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+        GArgs::args().stage = 1;
     } else {
-//        g_dd = g_eps_input / args.stage;
-//        g_cur_stage = 1;
-//        g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
-//        g_eps_delta = g_dd / std::sqrt(3);
-//        g_eps_2 = g_eps * g_eps;
+//        State::state().g_dd = State::state().State::state().g_eps_input / GArgs::args().stage;
+//        State::state().g_cur_stage = 1;
+//        State::state().g_eps = State::state().State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
+//        State::state().State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
+//        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 
-        g_dd = g_eps_input / args.stage;
-        g_cur_stage = 1;
-        g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
-        g_eps_delta = g_dd / std::sqrt(3);
-        g_eps_2 = g_eps * g_eps;
+        State::state().g_dd = State::state().State::state().g_eps_input / GArgs::args().stage;
+        State::state().g_cur_stage = 1;
+        State::state().g_eps = State::state().State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
+        State::state().State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
+        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
     }
 
-    g_ideal_l = g_diag_l / args.i_ideal_edge_length;
+    State::state().g_ideal_l = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
 
-//    cout << "eps = " << g_eps << endl;
-//    cout << "ideal_l = " << g_ideal_l << endl;
+//    std::cout << "eps = " << State::state().g_eps << std::endl;
+//    std::cout << "ideal_l = " << State::state().g_ideal_l << std::endl;
 
     ////get GEO meshes
     geo_sf_mesh.vertices.clear();
@@ -191,7 +192,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     geo_sf_mesh.facets.compute_borders();
 
     getBoudnaryMesh(geo_b_mesh);
-    g_is_close = (geo_b_mesh.vertices.nb() == 0);
+    State::state().g_is_close = (geo_b_mesh.vertices.nb() == 0);
 
     return true;
 }
@@ -208,7 +209,7 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
     //check isolated vertices
 //    for(int i=0;i<conn_f4v.size();i++){
 //        if(conn_f4v[i].size()==0)
-//            cout<<"iso"<<endl;
+//            std::cout<<"iso"<<std::endl;
 //    }
 
     std::vector<std::array<int, 2>> b_edges;
@@ -260,9 +261,9 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     double eps_scalar = 0.8;
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
-    g_eps *= eps_scalar;
-    g_eps_2 *= eps_scalar_2;
-//    g_dd *= eps_scalar*2;
+    State::state().g_eps *= eps_scalar;
+    State::state().State::state().g_eps_2 *= eps_scalar_2;
+//    State::state().g_dd *= eps_scalar*2;
 
     conn_fs.resize(V_in.size());
     for (int i = 0; i < F_in.rows(); i++) {
@@ -321,10 +322,10 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             F_out(cnt, j) = new_v_ids[F_in(i, j)];
         cnt++;
     }
-//    igl::writeSTL(g_working_dir+args.postfix+"_simplified.stl", V_out, F_out);
+//    igl::writeSTL(State::state().g_working_dir+GArgs::args().postfix+"_simplified.stl", V_out, F_out);
 #ifndef MUTE_COUT
-    cout<<"#v = "<<V_out.rows()<<endl;
-    cout<<"#f = "<<F_out.rows()<<endl;
+    std::cout<<"#v = "<<V_out.rows()<<std::endl;
+    std::cout<<"#f = "<<F_out.rows()<<std::endl;
 #endif
 
     V_in = V_out;
@@ -336,8 +337,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             conn_fs[F_in(i, j)].insert(i);
     }
     swap(geo_face_tree);
-    if(args.mid_result == 0)
-        igl::writeSTL(g_working_dir+args.postfix+"_swapped.stl", V_in, F_in);
+    if(GArgs::args().mid_result == 0)
+        igl::writeSTL(State::state().g_working_dir+GArgs::args().postfix+"_swapped.stl", V_in, F_in);
 
 //    checkBoundary(V_in, F_in);
 
@@ -353,13 +354,13 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             m_faces.push_back(f);
     }
 #ifndef MUTE_COUT
-    cout << "#v = " << m_vertices.size() << endl;
-    cout << "#f = " << F_in.rows()<<"->"<<m_faces.size() << endl;
+    std::cout << "#v = " << m_vertices.size() << std::endl;
+    std::cout << "#f = " << F_in.rows()<<"->"<<m_faces.size() << std::endl;
 #endif
 
-    g_eps /= eps_scalar;
-    g_eps_2 /= eps_scalar_2;
-//    g_dd /= eps_scalar*2;
+    State::state().g_eps /= eps_scalar;
+    State::state().State::state().g_eps_2 /= eps_scalar_2;
+//    State::state().g_dd /= eps_scalar*2;
 
     //output colormap
     //    outputSurfaceColormap(geo_face_tree, geo_sf_mesh);
@@ -460,7 +461,7 @@ void Preprocess::swap(GEO::MeshFacetsAABB& face_aabb_tree) {
             cnt++;
     }
 #ifndef MUTE_COUT
-    cout << cnt << " faces are swapped!!" << endl;
+    std::cout << cnt << " faces are swapped!!" << std::endl;
 #endif
 }
 
@@ -473,7 +474,7 @@ double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
 
 void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
     int cnt = 0;
-//    cout << "queue.size() = " << sm_queue.size() << endl;
+//    std::cout << "queue.size() = " << sm_queue.size() << std::endl;
     while (!sm_queue.empty()) {
         std::array<int, 2> v_ids = sm_queue.top().v_ids;
         double old_weight = sm_queue.top().weight;
@@ -489,13 +490,13 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
             cnt++;
 #ifndef MUTE_COUT
             if (cnt % 1000 == 0)
-                cout << "1000 vertices removed" << endl;
+                std::cout << "1000 vertices removed" << std::endl;
 #endif
         }
     }
 #ifndef MUTE_COUT
-    cout << cnt << endl;
-    cout << c << endl;
+    std::cout << cnt << std::endl;
+    std::cout << c << std::endl;
 #endif
 
     if (cnt > 0)
@@ -504,7 +505,7 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
 
 void Preprocess::postProcess(GEO::MeshFacetsAABB& face_aabb_tree){
 #ifndef MUTE_COUT
-    cout << "postProcess!" << endl;
+    std::cout << "postProcess!" << std::endl;
 #endif
 
     std::vector<std::array<int, 2>> tmp_inf_es;
@@ -541,7 +542,7 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
     std::vector<int> n12_f_ids;
     setIntersection(conn_fs[v1_id], conn_fs[v2_id], n12_f_ids);
     if (n12_f_ids.size() != 2) {//!!!
-//        cout << "error: n12_f_ids.size()!=2" << endl;
+//        std::cout << "error: n12_f_ids.size()!=2" << std::endl;
         return false;
     }
 
@@ -715,8 +716,8 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 
         sampleTriangle(vs, ps);
 
-//        cout << "ps.size = " << ps.size() << endl;
-//        cout << "is output samples?" << endl;
+//        std::cout << "ps.size = " << ps.size() << std::endl;
+//        std::cout << "is output samples?" << std::endl;
 //        int anw = 0;
 //        cin >> anw;
 //        if (anw != 0) {
@@ -736,7 +737,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //                    F_tmp(1 + i, k) = (1 + i) * 3 + k;
 //                }
 //            }
-//            igl::writeSTL(g_working_dir + "_sample.stl", V_tmp, F_tmp);
+//            igl::writeSTL(State::state().g_working_dir + "_sample.stl", V_tmp, F_tmp);
 //        }
 
 
@@ -748,7 +749,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = ls[max_i] / g_dd;
+//        double n = ls[max_i] / State::state().g_dd;
 //        if (n <= 1) {
 //            for (int i = 0; i < 3; i++)
 //                ps.push_back(vs[i]);
@@ -761,10 +762,10 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //                    break;
 //                ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //            }
-//            if (ls[min_i] > g_dd) {
+//            if (ls[min_i] > State::state().g_dd) {
 //                const int ps_size = ps.size();
 //                for (int i = 0; i < ps_size - 1; i += 2) {
-//                    double m = GEO::length(ps[i] - ps[i + 1]) / g_dd;
+//                    double m = GEO::length(ps[i] - ps[i + 1]) / State::state().g_dd;
 //                    if (m < 1)
 //                        break;
 //                    m = int(m) + 1;
@@ -784,7 +785,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
             sq_dist = current_point.distance2(nearest_point);
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
             double dis = current_point.distance2(nearest_point);
-            if (dis > g_eps_2)
+            if (dis > State::state().State::state().g_eps_2)
                 return true;
         }
     }
@@ -793,7 +794,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 }
 
 bool Preprocess::isPointOutEnvelop(int v_id, GEO::MeshFacetsAABB& geo_face_tree){
-    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > g_eps_2)
+    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > State::state().State::state().g_eps_2)
         return true;
     return false;
 }
@@ -818,13 +819,13 @@ int calEuclidean(const std::vector<std::array<int, 3>>& fs){
 }
 
 bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
-//    cout<<"v1:"<<v1_id<<endl;
+//    std::cout<<"v1:"<<v1_id<<std::endl;
 //    for (int f_id:conn_fs[v1_id]) {
-//        cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<endl;
+//        std::cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<std::endl;
 //    }
-//    cout<<"v2:"<<v2_id<<endl;
+//    std::cout<<"v2:"<<v2_id<<std::endl;
 //    for (int f_id:conn_fs[v2_id]) {
-//        cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<endl;
+//        std::cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<std::endl;
 //    }
 
     std::vector<std::array<int, 3>> fs;
@@ -840,9 +841,9 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
     }
     std::sort(fs.begin(), fs.end());
     fs.erase(std::unique(fs.begin(), fs.end()), fs.end());
-//    cout<<"fs.size() = "<<fs.size()<<endl;
+//    std::cout<<"fs.size() = "<<fs.size()<<std::endl;
     int ec0=calEuclidean(fs);
-//    cout<<ec0<<endl;
+//    std::cout<<ec0<<std::endl;
 
     std::vector<std::array<int, 3>> fs1;
     for(int i=0;i<fs.size();i++){
@@ -852,7 +853,7 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
                 break;
             }
         }
-//        cout<<fs[i][0]<<" "<<fs[i][1]<<" "<<fs[i][2]<<endl;
+//        std::cout<<fs[i][0]<<" "<<fs[i][1]<<" "<<fs[i][2]<<std::endl;
         if(fs[i][0]!=fs[i][1]&&fs[i][1]!=fs[i][2]&&fs[i][0]!=fs[i][2]){
             std::array<int, 3> f = {fs[i][0], fs[i][1], fs[i][2]};
             std::sort(f.begin(), f.end());
@@ -861,9 +862,9 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
     }
     std::sort(fs1.begin(), fs1.end());
     fs1.erase(std::unique(fs1.begin(), fs1.end()), fs1.end());
-//    cout<<"fs1.size() = "<<fs1.size()<<endl;
+//    std::cout<<"fs1.size() = "<<fs1.size()<<std::endl;
     int ec1=calEuclidean(fs1);
-//    cout<<ec1<<endl;
+//    std::cout<<ec1<<std::endl;
 
 //    pausee();
 
@@ -892,7 +893,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
         for (int i = 0; i < 1; i++) {
             ls[i] = GEO::length(vs[i] - vs[(i + 1) % 3]);
             //
-            double n = int(ls[i] / g_dd + 1);
+            double n = int(ls[i] / State::state().g_dd + 1);
             for (int j = 1; j < n; j++) {
                 ps.push_back(double(j) / n * vs[i] + (n - double(j)) / n * vs[(i + 1) % 3]);
             }
@@ -902,17 +903,17 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = int(ls[max_i] / g_dd + 1);
+//        double n = int(ls[max_i] / State::state().g_dd + 1);
 //        ps.reserve(2*n);
 //        for (int j = 0; j <= n; j++) {
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[min_i]);
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //        }
 
-//        if(ls[min_i] > g_dd) {
+//        if(ls[min_i] > State::state().g_dd) {
 //            int ps_size = ps.size();
 //            for (int i = 0; i < ps_size; i += 2) {
-//                double m = int(GEO::length(ps[i] - ps[i + 1]) / g_dd + 1);
+//                double m = int(GEO::length(ps[i] - ps[i + 1]) / State::state().g_dd + 1);
 //                if(m==0)
 //                    break;
 //                for (int j = 1; j < m; j++)
@@ -942,7 +943,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //            geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
 //            double dis = current_point.distance2(nearest_point);
 //            if(f_id==2514)
-//                cout<<cnt<<": "<<dis<<" "<<sq_dist<<" "<<int(prev_facet)<<endl;
+//                std::cout<<cnt<<": "<<dis<<" "<<sq_dist<<" "<<int(prev_facet)<<std::endl;
             if (dis > max_dis) {
                 max_dis = dis;
                 pp=current_point;
@@ -953,46 +954,46 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
         cnt = 0;
         if(f_id==1681) {
             for (const GEO::vec3 &p:ps) {
-                cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt] << "; "
-                     << geo_face_tree.squared_distance(p) << endl;
+                std::cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt] << "; "
+                     << geo_face_tree.squared_distance(p) << std::endl;
                 cnt++;
             }
         }
 
-        eps_dis(f_id) = sqrt(max_dis / g_eps_2);
+        eps_dis(f_id) = sqrt(max_dis / State::state().State::state().g_eps_2);
         if(eps_dis(f_id)>1) {
-            cout << "ERROR: simplified input goes outside of the envelop" << endl;
-            cout<<f_id<<endl;
-            cout << eps_dis(f_id) << endl;
-            cout<<max_dis <<" "<< g_eps_2<<endl;
+            std::cout << "ERROR: simplified input goes outside of the envelop" << std::endl;
+            std::cout<<f_id<<std::endl;
+            std::cout << eps_dis(f_id) << std::endl;
+            std::cout<<max_dis <<" "<< State::state().State::state().g_eps_2<<std::endl;
             cnt = 0;
             for (const GEO::vec3 &p:ps) {
-                cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt]<<"; "<< geo_face_tree.squared_distance(p)<< endl;
+                std::cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt]<<"; "<< geo_face_tree.squared_distance(p)<< std::endl;
                 cnt++;
             }
-//            cout<<geo_face_tree.squared_distance(pp)<<endl;
+//            std::cout<<geo_face_tree.squared_distance(pp)<<std::endl;
 //            double dd;
-//            cout << int(geo_face_tree.nearest_facet(pp, nearest_point, dd)) << endl;
-//            cout << dd << endl;
+//            std::cout << int(geo_face_tree.nearest_facet(pp, nearest_point, dd)) << std::endl;
+//            std::cout << dd << std::endl;
 
             std::vector<int> vf={1681, 1675, 1671, 1666};
             for(int j=0;j<vf.size();j++) {
-                cout << "f " << vf[j] << ": ";
-                cout << GEO::Geom::triangle_area(
+                std::cout << "f " << vf[j] << ": ";
+                std::cout << GEO::Geom::triangle_area(
                         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 0)),
                         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 1)),
-                        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 2))) << endl;
+                        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 2))) << std::endl;
 
-//                cout << geo_sf_mesh.facets.vertex(vf[j], 0) << " " << geo_sf_mesh.facets.vertex(vf[j], 1) << " "
-//                     << geo_sf_mesh.facets.vertex(vf[j], 2) << endl;
+//                std::cout << geo_sf_mesh.facets.vertex(vf[j], 0) << " " << geo_sf_mesh.facets.vertex(vf[j], 1) << " "
+//                     << geo_sf_mesh.facets.vertex(vf[j], 2) << std::endl;
                 int v1_id = geo_sf_mesh.facets.vertex(vf[j], 0);
                 int v2_id = geo_sf_mesh.facets.vertex(vf[j], 1);
                 int v3_id = geo_sf_mesh.facets.vertex(vf[j], 2);
                 std::array<int, 3> v_ids = {v1_id ,v2_id, v3_id};
                 for (int k = 0; k < 3; k++) {
-                    cout << v_ids[k] << ": " << geo_sf_mesh.vertices.point(v_ids[k])[0] << " "
+                    std::cout << v_ids[k] << ": " << geo_sf_mesh.vertices.point(v_ids[k])[0] << " "
                          << geo_sf_mesh.vertices.point(v_ids[k])[1]
-                         << " " << geo_sf_mesh.vertices.point(v_ids[k])[2] << endl;
+                         << " " << geo_sf_mesh.vertices.point(v_ids[k])[2] << std::endl;
                 }
             }
 
@@ -1020,20 +1021,20 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             }
             for(int i=0;i<geo_sf_mesh.facets.nb();i++) {
                 if(diss[i]==min_dis)
-                    cout<<"vf_id = "<<i<<endl;
+                    std::cout<<"vf_id = "<<i<<std::endl;
             }
-            cout << "something" << endl;
-            cout<<"double check 1681 "<<GEO::Geom::point_triangle_squared_distance(ps[10],
+            std::cout << "something" << std::endl;
+            std::cout<<"double check 1681 "<<GEO::Geom::point_triangle_squared_distance(ps[10],
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 0)),
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 1)),
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 2)),
-                                                                                   nearest_p, _1, _2, _3)<<endl;
+                                                                                   nearest_p, _1, _2, _3)<<std::endl;
 
-            cout<<"min_dis = "<<min_dis<<endl;
-            cout<<"diag = "<<g_diag_l<<endl;
+            std::cout<<"min_dis = "<<min_dis<<std::endl;
+            std::cout<<"diag = "<<State::state().g_diag_l<<std::endl;
 //            exit(250);
         }
 
@@ -1052,7 +1053,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(g_working_dir + args.postfix + "_sf.msh");
+    PyMesh::MshSaver mshSaver(State::state().g_working_dir + GArgs::args().postfix + "_sf.msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 }

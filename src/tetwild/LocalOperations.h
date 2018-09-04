@@ -13,8 +13,9 @@
 #define NEW_GTET_LOCALOPERATIONS_H
 
 #include <tetwild/TetmeshElements.h>
-#include <igl/grad.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <igl/grad.h>
+#include <igl/Timer.h>
 
 #ifdef TETWILD_WITH_ISPC
 #include <ispc/energy.h>

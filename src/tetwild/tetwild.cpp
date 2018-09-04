@@ -8,6 +8,7 @@
 //
 // Created by Yixin Hu on 5/31/18.
 //
+
 #include <tetwild/tetwild.h>
 #include <tetwild/Preprocess.h>
 #include <tetwild/DelaunayTetrahedralization.h>
@@ -15,15 +16,15 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <pymesh/MshSaver.h>
 
 namespace tetwild {
 //    MeshRefinement MR;
-    Args parameters;
 
     void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
                             const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
                             const std::vector<int>& v_ids) {
-        cout << "final quality:" << endl;
+        std::cout << "final quality:" << std::endl;
         double min = 10, max = 0;
         double min_avg = 0, max_avg = 0;
 //    double max_asp_ratio = 0, avg_asp_ratio = 0;
@@ -58,20 +59,20 @@ namespace tetwild {
                     cmp_cnt[j + 3]++;
             }
         }
-        cout << "min_d_angle = " << min
+        std::cout << "min_d_angle = " << min
              << ", max_d_angle = " << max
              //         << ", max_aspect_ratio = " << max_asp_ratio
              << ", max_slim_energy = " << max_slim_energy
-             << endl;
-        cout << "avg_min_d_angle = " << min_avg / cnt
+             << std::endl;
+        std::cout << "avg_min_d_angle = " << min_avg / cnt
              << ", avg_max_d_angle = " << max_avg / cnt
              //         << ", avg_aspect_ratio = " << avg_asp_ratio / cnt
              << ", avg_slim_energy = " << avg_slim_energy / cnt
-             << endl;
-        cout << "min_d_angle: <6 " << cmp_cnt[0] / cnt << ";   <12 " << cmp_cnt[1] / cnt << ";  <18 " << cmp_cnt[2] / cnt
-             << endl;
-        cout << "max_d_angle: >174 " << cmp_cnt[5] / cnt << "; >168 " << cmp_cnt[4] / cnt << "; >162 " << cmp_cnt[3] / cnt
-             << endl;
+             << std::endl;
+        std::cout << "min_d_angle: <6 " << cmp_cnt[0] / cnt << ";   <12 " << cmp_cnt[1] / cnt << ";  <18 " << cmp_cnt[2] / cnt
+             << std::endl;
+        std::cout << "max_d_angle: >174 " << cmp_cnt[5] / cnt << "; >168 " << cmp_cnt[4] / cnt << "; >162 " << cmp_cnt[3] / cnt
+             << std::endl;
 
         addRecord(MeshRecord(MeshRecord::OpType::OP_WN, time, v_ids.size(), cnt,
                              min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt));
@@ -82,7 +83,7 @@ namespace tetwild {
             if (!tet_vertices[v_id].is_rounded)
                 cnt++;
         }
-        cout << cnt << "/" << v_ids.size() << " vertices are unrounded!!!" << endl;
+        std::cout << cnt << "/" << v_ids.size() << " vertices are unrounded!!!" << std::endl;
         addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1));
     }
 
@@ -96,7 +97,7 @@ namespace tetwild {
         std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
         int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
         double tmp_time = 0;
-        if (!args.is_laplacian) {
+        if (!GArgs::args().is_laplacian) {
             InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
 #ifndef MUTE_COUT
             igl::Timer igl_timer;
@@ -105,9 +106,9 @@ namespace tetwild {
             IOF.filter();
 #ifndef MUTE_COUT
             tmp_time = igl_timer.getElapsedTime();
-            cout << "time = " << tmp_time << "s" << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
             t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
-            cout << t_cnt << " tets inside!" << endl;
+            std::cout << t_cnt << " tets inside!" << std::endl;
 #endif
         }
 
@@ -139,7 +140,7 @@ namespace tetwild {
                                                    map_ids[tets[i][3]]}));
         }
 
-        if(args.is_quiet)
+        if(GArgs::args().is_quiet)
             return;
 
 #ifndef MUTE_COUT
@@ -150,11 +151,11 @@ namespace tetwild {
     void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
                   std::vector<std::array<double, 3>>& out_vertices,
                   std::vector<std::array<int, 4>>& out_tets) {
-        is_using_energy_max = true;
-        is_use_project = false;
-        is_using_sampling = true;
+        State::state().is_using_energy_max = true;
+        State::state().is_use_project = false;
+        State::state().is_using_sampling = true;
 
-        int energy_type = ENERGY_AMIPS;
+        int energy_type = State::state().ENERGY_AMIPS;
         bool is_sm_single = true;
         bool is_preprocess = true;
         bool is_check_correctness = false;
@@ -172,13 +173,13 @@ namespace tetwild {
             //preprocess
 #ifndef MUTE_COUT
             igl_timer.start();
-            cout << "Preprocessing..." << endl;
+            std::cout << "Preprocessing..." << std::endl;
 #endif
             Preprocess pp;
             if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
-                cout << "Empty!" << endl;
+                std::cout << "Empty!" << std::endl;
                 //todo: output a empty tetmesh
-                PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
+                PyMesh::MshSaver mSaver(State::state().g_working_dir + State::state().g_postfix + ".msh", true);
                 Eigen::VectorXd oV;
                 Eigen::VectorXi oT;
                 oV.resize(0);
@@ -197,14 +198,14 @@ namespace tetwild {
             tmp_time = igl_timer.getElapsedTime();
             addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()));
             sum_time += tmp_time;
-            cout << "time = " << tmp_time << "s" << endl;
-            cout << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
+            std::cout << std::endl;
 #endif
 
             //delaunay tetrahedralization
 #ifndef MUTE_COUT
             igl_timer.start();
-            cout << "Delaunay tetrahedralizing..." << endl;
+            std::cout << "Delaunay tetrahedralizing..." << std::endl;
 #endif
             DelaunayTetrahedralization DT;
             std::vector<int> raw_e_tags;
@@ -217,89 +218,89 @@ namespace tetwild {
             std::vector<BSPtreeNode> bsp_nodes;
             DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
 #ifndef MUTE_COUT
-            cout << "# bsp_vertices = " << bsp_vertices.size() << endl;
-            cout << "# bsp_edges = " << bsp_edges.size() << endl;
-            cout << "# bsp_faces = " << bsp_faces.size() << endl;
-            cout << "# bsp_nodes = " << bsp_nodes.size() << endl;
-            cout << "Delaunay tetrahedralization done!" << endl;
+            std::cout << "# bsp_vertices = " << bsp_vertices.size() << std::endl;
+            std::cout << "# bsp_edges = " << bsp_edges.size() << std::endl;
+            std::cout << "# bsp_faces = " << bsp_faces.size() << std::endl;
+            std::cout << "# bsp_nodes = " << bsp_nodes.size() << std::endl;
+            std::cout << "Delaunay tetrahedralization done!" << std::endl;
             tmp_time = igl_timer.getElapsedTime();
             addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
             sum_time += tmp_time;
-            cout << "time = " << tmp_time << "s" << endl;
-            cout << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
+            std::cout << std::endl;
 #endif
 
             //mesh conforming
 #ifndef MUTE_COUT
             igl_timer.start();
-            cout << "Divfaces matching..." << endl;
+            std::cout << "Divfaces matching..." << std::endl;
 #endif
             MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
             MC.match();
 #ifndef MUTE_COUT
-            cout << "Divfaces matching done!" << endl;
+            std::cout << "Divfaces matching done!" << std::endl;
             tmp_time = igl_timer.getElapsedTime();
             addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
-            cout << "time = " << tmp_time << "s" << endl;
-            cout << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
+            std::cout << std::endl;
 #endif
 
             //bsp subdivision
 #ifndef MUTE_COUT
             igl_timer.start();
-            cout << "BSP subdivision ..." << endl;
+            std::cout << "BSP subdivision ..." << std::endl;
 #endif
             BSPSubdivision BS(MC);
             BS.init();
             BS.subdivideBSPNodes();
 #ifndef MUTE_COUT
-            cout << "Output: " << endl;
-            cout << "# node = " << MC.bsp_nodes.size() << endl;
-            cout << "# face = " << MC.bsp_faces.size() << endl;
-            cout << "# edge = " << MC.bsp_edges.size() << endl;
-            cout << "# vertex = " << MC.bsp_vertices.size() << endl;
-            cout << "BSP subdivision done!" << endl;
+            std::cout << "Output: " << std::endl;
+            std::cout << "# node = " << MC.bsp_nodes.size() << std::endl;
+            std::cout << "# face = " << MC.bsp_faces.size() << std::endl;
+            std::cout << "# edge = " << MC.bsp_edges.size() << std::endl;
+            std::cout << "# vertex = " << MC.bsp_vertices.size() << std::endl;
+            std::cout << "BSP subdivision done!" << std::endl;
             tmp_time = igl_timer.getElapsedTime();
             addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
             sum_time += tmp_time;
-            cout << "time = " << tmp_time << "s" << endl;
-            cout << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
+            std::cout << std::endl;
 #endif
 
             //simple tetrahedralization
 #ifndef MUTE_COUT
             igl_timer.start();
-            cout << "Tetrehedralizing ..." << endl;
+            std::cout << "Tetrehedralizing ..." << std::endl;
 #endif
             SimpleTetrahedralization ST(MC);
             ST.tetra(MR.tet_vertices, MR.tets);
             ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
             ST.labelBbox(MR.tet_vertices, MR.tets);
-            if (!g_is_close)//if input is an open mesh
+            if (!State::state().g_is_close)//if input is an open mesh
                 ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
 #ifndef MUTE_COUT
-            cout << "# tet_vertices = " << MR.tet_vertices.size() << endl;
-            cout << "# tets = " << MR.tets.size() << endl;
-            cout << "Tetrahedralization done!" << endl;
+            std::cout << "# tet_vertices = " << MR.tet_vertices.size() << std::endl;
+            std::cout << "# tets = " << MR.tets.size() << std::endl;
+            std::cout << "Tetrahedralization done!" << std::endl;
             tmp_time = igl_timer.getElapsedTime();
             addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
             sum_time += tmp_time;
-            cout << "time = " << tmp_time << "s" << endl;
-            cout << endl;
+            std::cout << "time = " << tmp_time << "s" << std::endl;
+            std::cout << std::endl;
 
-            cout << "Total time for the first stage = " << sum_time << endl;
+            std::cout << "Total time for the first stage = " << sum_time << std::endl;
 #endif
         }
 
         /// STAGE 2
         //init
 #ifndef MUTE_COUT
-        cout << "Refinement initializing..." << endl;
+        std::cout << "Refinement initializing..." << std::endl;
 #endif
         MR.prepareData();
 #ifndef MUTE_COUT
-        cout << "Refinement intialization done!" << endl;
-        cout << endl;
+        std::cout << "Refinement intialization done!" << std::endl;
+        std::cout << std::endl;
 #endif
 
         //improvement
@@ -311,38 +312,40 @@ namespace tetwild {
     void tetrahedralization(const std::vector<std::array<double, 3>>& in_vertices,
                             const std::vector<std::array<int, 3>>& in_faces,
                             std::vector<std::array<double, 3>>& out_vertices,
-                            std::vector<std::array<int, 4>>& out_tets) {
+                            std::vector<std::array<int, 4>>& out_tets,
+                            Args parameters)
+    {
         out_vertices.clear();
         out_tets.clear();
 
-        args.i_epsilon = parameters.i_epsilon;
-        args.bg_mesh = parameters.bg_mesh;
-        args.filter_energy = parameters.filter_energy;
-        args.i_ideal_edge_length = parameters.i_ideal_edge_length;
-        args.is_laplacian = parameters.is_laplacian;
-        args.is_quiet = parameters.is_quiet;
-        args.max_pass = parameters.max_pass;
-        args.stage = parameters.stage;
-        args.targeted_num_v = parameters.targeted_num_v;
+        GArgs::args().i_epsilon = parameters.i_epsilon;
+        GArgs::args().bg_mesh = parameters.bg_mesh;
+        GArgs::args().filter_energy = parameters.filter_energy;
+        GArgs::args().i_ideal_edge_length = parameters.i_ideal_edge_length;
+        GArgs::args().is_laplacian = parameters.is_laplacian;
+        GArgs::args().is_quiet = parameters.is_quiet;
+        GArgs::args().max_pass = parameters.max_pass;
+        GArgs::args().stage = parameters.stage;
+        GArgs::args().targeted_num_v = parameters.targeted_num_v;
 
         //initalization
         GEO::initialize();
-        g_postfix = args.postfix;
-        g_working_dir = args.input.substr(0, args.input.size() - 4);
+        State::state().g_postfix = GArgs::args().postfix;
+        State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
 
-        if (args.csv_file == "")
-            g_stat_file = g_working_dir + g_postfix + ".csv";
+        if (GArgs::args().csv_file == "")
+            State::state().g_stat_file = State::state().g_working_dir + State::state().g_postfix + ".csv";
         else
-            g_stat_file = args.csv_file;
+            State::state().g_stat_file = GArgs::args().csv_file;
 
-        if (args.output == "")
-            g_output_file = g_working_dir + g_postfix + ".msh";
+        if (GArgs::args().output == "")
+            State::state().g_output_file = State::state().g_working_dir + State::state().g_postfix + ".msh";
         else
-            g_output_file = args.output;
+            State::state().g_output_file = GArgs::args().output;
 
-        if (args.is_quiet) {
-            args.is_output_csv = false;
-            cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
+        if (GArgs::args().is_quiet) {
+            GArgs::args().is_output_csv = false;
+            std::cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
         }
 
         //do tetrahedralization
@@ -358,7 +361,7 @@ namespace tetwild {
                 F(i, j) = in_faces[i][j];
         gtet_new(V, F, out_vertices, out_tets);
 
-        if (args.is_quiet) {
+        if (GArgs::args().is_quiet) {
             std::cout.clear();
         }
     }

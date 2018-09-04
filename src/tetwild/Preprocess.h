@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 10/12/17.
@@ -12,12 +12,13 @@
 #ifndef NEW_GTET_PREPROCESS_H
 #define NEW_GTET_PREPROCESS_H
 
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_AABB.h>
 #include <igl/readOFF.h>
 #include <igl/readSTL.h>
 #include <igl/readOBJ.h>
 #include <igl/readPLY.h>
-
 #include <igl/writeSTL.h>
 #include <igl/unique.h>
 #include <igl/unique_simplices.h>

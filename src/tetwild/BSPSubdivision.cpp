@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 4/3/17.
@@ -27,8 +27,8 @@ void BSPSubdivision::init() {
 		nf+=1;
 	}
 #ifndef MUTE_COUT
-	cout << "# nodes need subdivision = " << nf<<"/"<< processing_n_ids.size() << "/"
-         << MC.bsp_nodes.size() << endl;
+	std::cout << "# nodes need subdivision = " << nf<<"/"<< processing_n_ids.size() << "/"
+         << MC.bsp_nodes.size() << std::endl;
 #endif
 }
 
@@ -205,7 +205,7 @@ void BSPSubdivision::subdivideBSPNodes() {
 
                     v_sides[new_v_id] = V_ON;//fixed
                 } else {
-                    cout << "error cal p!" << endl;
+                    std::cout << "error cal p!" << std::endl;
                     exit(250);
                 }
 

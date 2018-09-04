@@ -93,22 +93,22 @@ void EdgeSplitter::split() {
             tets.reserve(es_queue.size() * 6 * 2 - t_slot_size + 1);
     }
 #ifndef MUTE_COUT
-    cout << es_queue.size() << endl;
-    cout << "ideal_weight = " << ideal_weight << endl;
+    std::cout << es_queue.size() << std::endl;
+    std::cout << "ideal_weight = " << ideal_weight << std::endl;
 #endif
 
     while (!es_queue.empty()) {
         const ElementInQueue_es &ele = es_queue.top();
 
         std::array<int, 2> v_ids = ele.v_ids;
-//        if (is_print_tmp)
-//            cout << v_ids[0] << ' ' << v_ids[1]
+//        if (State::state().is_print_tmp)
+//            std::cout << v_ids[0] << ' ' << v_ids[1]
 //                 << " " << std::sqrt(calEdgeLength(v_ids))
 //                 << " " << std::sqrt(ideal_weight) *
 //                           (tet_vertices[v_ids[0]].adaptive_scale + tet_vertices[v_ids[1]].adaptive_scale) / 2.0
 //                 << " " << tet_vertices[v_ids[0]].adaptive_scale
 //                 << " " << tet_vertices[v_ids[1]].adaptive_scale
-//                 << endl;
+//                 << std::endl;
         es_queue.pop();
         if (splitAnEdge(v_ids))
             suc_counter++;
@@ -148,8 +148,8 @@ void EdgeSplitter::split() {
 
 void printConnTets(const TetVertex& v){
     for(auto it=v.conn_tets.begin();it!=v.conn_tets.end();it++)
-        cout<<*it<<' ';
-    cout<<endl;
+        std::cout<<*it<<' ';
+    std::cout<<std::endl;
 }
 
 bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
@@ -245,10 +245,10 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     }
 
     //update surface tags
-    if (g_eps != EPSILON_INFINITE) {
+    if (State::state().g_eps != State::state().EPSILON_INFINITE) {
         if (isEdgeOnSurface(v1_id, v2_id)) {
             tet_vertices[v_id].is_on_surface = true;
-            if (g_eps == EPSILON_NA) {
+            if (State::state().g_eps == State::state().EPSILON_NA) {
                 setIntersection(tet_vertices[v1_id].on_edge, tet_vertices[v2_id].on_edge, tet_vertices[v_id].on_edge);
                 setIntersection(tet_vertices[v1_id].on_face, tet_vertices[v2_id].on_face, tet_vertices[v_id].on_face);
             }
@@ -273,7 +273,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     for (int i = 0; i < new_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {//v1->v
             if (tets[new_t_ids[i]][j] == v2_id)
-                is_surface_fs[new_t_ids[i]][j] = NOT_SURFACE;
+                is_surface_fs[new_t_ids[i]][j] = State::state().NOT_SURFACE;
 //                else if(tets[new_t_ids[i]][j]==v_id)//no need to change
 //                    is_surface_fs[new_t_ids[i]][j]=is_surface_fs[old_t_ids[i]][j];
         }
@@ -281,7 +281,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     for (int i = 0; i < old_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {//v2->v
             if (tets[old_t_ids[i]][j] == v1_id)
-                is_surface_fs[old_t_ids[i]][j] = NOT_SURFACE;
+                is_surface_fs[old_t_ids[i]][j] = State::state().NOT_SURFACE;
         }
     }
 
@@ -349,7 +349,7 @@ int EdgeSplitter::getOverRefineScale(int v1_id, int v2_id){
         std::vector<int> n12_t_ids;
         setIntersection(tet_vertices[v1_id].conn_tets, tet_vertices[v2_id].conn_tets, n12_t_ids);
         for(int i=0;i<n12_t_ids.size();i++) {
-            if (energy_type == ENERGY_AMIPS &&
+            if (energy_type == State::state().ENERGY_AMIPS &&
                 tet_qualities[n12_t_ids[i]].slim_energy > 500) {//todo: add || for other types of energy
                 int scale = 1;
                 scale = (tet_qualities[n12_t_ids[i]].slim_energy - 500) / 500.0;
@@ -376,7 +376,7 @@ bool EdgeSplitter::isSplittable_cd1(double weight) {
 bool EdgeSplitter::isSplittable_cd1(int v1_id, int v2_id, double weight) {
     double adaptive_scale = (tet_vertices[v1_id].adaptive_scale + tet_vertices[v2_id].adaptive_scale) / 2.0;
 //    if(adaptive_scale==0){
-//        cout<<"adaptive_scale==0!!!"<<endl;
+//        std::cout<<"adaptive_scale==0!!!"<<std::endl;
 //    }
     if (weight > ideal_weight * adaptive_scale * adaptive_scale)
         return true;

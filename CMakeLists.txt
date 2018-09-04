@@ -44,6 +44,9 @@ endif()
 set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Color output
+include(UseColors)
+
 # Use folder in Visual Studio
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -81,34 +84,38 @@ endif()
 ################################################################################
 # Build static library for executable
 add_library(libTetWild STATIC
-		src/tetwild/Preprocess.h
-		src/tetwild/Preprocess.cpp
-		src/tetwild/DelaunayTetrahedralization.h
-		src/tetwild/DelaunayTetrahedralization.cpp
-		src/tetwild/MeshConformer.h
-		src/tetwild/MeshConformer.cpp
-		src/tetwild/BSPSubdivision.h
 		src/tetwild/BSPSubdivision.cpp
-		src/tetwild/SimpleTetrahedralization.h
-		src/tetwild/SimpleTetrahedralization.cpp
-		src/tetwild/MeshRefinement.h
-		src/tetwild/MeshRefinement.cpp
-		src/tetwild/LocalOperations.h
-		src/tetwild/LocalOperations.cpp
-		src/tetwild/EdgeSplitter.h
-		src/tetwild/EdgeSplitter.cpp
-		src/tetwild/EdgeCollapser.h
+		src/tetwild/BSPSubdivision.h
+		src/tetwild/CGALCommon.cpp
+		src/tetwild/CGALCommon.h
+		src/tetwild/Common.cpp
+		src/tetwild/Common.h
+		src/tetwild/DelaunayTetrahedralization.cpp
+		src/tetwild/DelaunayTetrahedralization.h
 		src/tetwild/EdgeCollapser.cpp
-		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeCollapser.h
 		src/tetwild/EdgeRemover.cpp
-		src/tetwild/VertexSmoother.h
-		src/tetwild/VertexSmoother.cpp
-		src/tetwild/InoutFiltering.h
+		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeSplitter.cpp
+		src/tetwild/EdgeSplitter.h
 		src/tetwild/InoutFiltering.cpp
-		src/tetwild/heads.h
-		src/tetwild/heads.cpp
-		src/tetwild/tetwild.cpp
+		src/tetwild/InoutFiltering.h
+		src/tetwild/LocalOperations.cpp
+		src/tetwild/LocalOperations.h
+		src/tetwild/MeshConformer.cpp
+		src/tetwild/MeshConformer.h
+		src/tetwild/MeshRefinement.cpp
+		src/tetwild/MeshRefinement.h
+		src/tetwild/Preprocess.cpp
+		src/tetwild/Preprocess.h
+		src/tetwild/SimpleTetrahedralization.cpp
+		src/tetwild/SimpleTetrahedralization.h
+		src/tetwild/State.cpp
+		src/tetwild/State.h
 		src/tetwild/TetmeshElements.h
+		src/tetwild/tetwild.cpp
+		src/tetwild/VertexSmoother.cpp
+		src/tetwild/VertexSmoother.h
 		include/tetwild/tetwild.h
 )
 target_include_directories(libTetWild

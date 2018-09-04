@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 3/29/17.
@@ -56,10 +56,10 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     GEO::MeshFacetsAABB geo_face_tree(geo_surface_mesh);
 
     double voxel_resolution;
-    if(args.i_ideal_edge_length > 20)
-        voxel_resolution = g_diag_l / 20.0;
+    if(GArgs::args().i_ideal_edge_length > 20)
+        voxel_resolution = State::state().g_diag_l / 20.0;
     else
-        voxel_resolution = g_diag_l / args.i_ideal_edge_length;
+        voxel_resolution = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
     std::array<double, 3> d;
     std::array<int, 3> N;
     for (int i = 0; i < 3; i++) {
@@ -77,7 +77,7 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     }
 
     double min_dis = voxel_resolution * voxel_resolution / 4;
-//    double min_dis = g_ideal_l * g_ideal_l;//epsilon*2
+//    double min_dis = State::state().g_ideal_l * State::state().g_ideal_l;//epsilon*2
     for (int i = 0; i < ds[0].size(); i++) {
         for (int j = 0; j < ds[1].size(); j++) {
             for (int k = 0; k < ds[2].size(); k++) {
@@ -108,16 +108,16 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     Point_3 p_min = bbox.min();
     Point_3 p_max = bbox.max();
 
-    double dis = g_eps * 2;//todo: use epsilon to determine the size of bbx
-    if (dis < g_diag_l / 20)
-        dis = g_diag_l / 20;
+    double dis = State::state().g_eps * 2;//todo: use epsilon to determine the size of bbx
+    if (dis < State::state().g_diag_l / 20)
+        dis = State::state().g_diag_l / 20;
     else
-        dis = g_eps * 1.1;
+        dis = State::state().g_eps * 1.1;
     p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
     p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
 
-//    cout<<"p_min: "<<CGAL::to_double(p_min[0])<<", "<<CGAL::to_double(p_min[1])<<", "<<CGAL::to_double(p_min[2])<<endl;
-//    cout<<"p_max: "<<CGAL::to_double(p_max[0])<<", "<<CGAL::to_double(p_max[1])<<", "<<CGAL::to_double(p_max[2])<<endl;
+//    std::cout<<"p_min: "<<CGAL::to_double(p_min[0])<<", "<<CGAL::to_double(p_min[1])<<", "<<CGAL::to_double(p_min[2])<<std::endl;
+//    std::cout<<"p_max: "<<CGAL::to_double(p_max[0])<<", "<<CGAL::to_double(p_max[1])<<", "<<CGAL::to_double(p_max[2])<<std::endl;
 
     for (int i = 0; i < 8; i++) {
         std::array<CGAL_FT, 3> p;
@@ -132,18 +132,18 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     }
     ///add voxel points
     std::vector<Point_d> voxel_points;
-    if(args.is_using_voxel)
+    if(GArgs::args().is_using_voxel)
         getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points);
     for(int i=0;i<voxel_points.size();i++) {
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
     }
 #ifndef MUTE_COUT
-    cout<<voxel_points.size()<<" voxel points are added!"<<endl;
+    std::cout<<voxel_points.size()<<" voxel points are added!"<<std::endl;
 #endif
 
     Delaunay T(points.begin(), points.end());
 //    if(!T.is_valid()){
-//        cout<<"T is not valid!!"<<endl;
+//        std::cout<<"T is not valid!!"<<std::endl;
 //        exit(250);
 //    }
 
@@ -253,21 +253,15 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
 
 void DelaunayTetrahedralization::outputTetmesh(const std::vector<Point_3>& m_vertices, std::vector<std::array<int, 4>>& cells,
                                                const std::string& output_file){
-    std::streambuf* coutBuf = std::cout.rdbuf();
     std::ofstream of(output_file);
-    std::cout.rdbuf(of.rdbuf());
 
-    cout<<m_vertices.size()<<" "<<cells.size()<<endl;
+    of<<m_vertices.size()<<" "<<cells.size()<<std::endl;
     for(int i=0;i<m_vertices.size();i++){
-        cout<<m_vertices[i]<<endl;
+        of<<m_vertices[i]<<std::endl;
     }
     for(int i=0;i<cells.size();i++){
         for(int j=0;j<4;j++)
-            cout<<cells[i][j]<<" ";
-        cout<<endl;
+            of<<cells[i][j]<<" ";
+        of<<std::endl;
     }
-
-    of.flush();
-    of.close();
-    std::cout.rdbuf(coutBuf);
 }
