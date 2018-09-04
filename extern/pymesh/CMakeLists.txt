@@ -7,12 +7,7 @@ add_library(pymesh_tiny
 )
 target_include_directories(pymesh_tiny PUBLIC ..)
 
-if(TARGET Eigen3::Eigen)
-	# If an imported target already exists, use it
-	target_link_libraries(pymesh_tiny PUBLIC Eigen3::Eigen)
-else()
-	# Otherwise use the version bundled with libigl
-	target_include_directories(pymesh_tiny SYSTEM PUBLIC ${LIBIGL_EXTERNAL}/eigen)
-endif()
+# Link against igl_common to draw Eigen and C++11
+target_link_libraries(pymesh_tiny PUBLIC igl_common)
 
 add_library(pymesh::pymesh ALIAS pymesh_tiny)
