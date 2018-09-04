@@ -33,8 +33,6 @@ option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
 #geogram
 option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
 
-set(TETWILD_WITH_ISPC ON CACHE BOOL "" FORCE)
-
 ################################################################################
 # Settings
 ################################################################################
