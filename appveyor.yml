@@ -29,7 +29,7 @@ install:
 build: off
 
 test_script:
-  - cmd: conda.exe build ci\conda
+  - cmd: conda.exe build .ci\conda
   - cmd: mkdir dist
   - cmd: copy %CONDA_INSTALL_LOCN%\conda-bld\win-%ARCH%\*.bz2 dist
 
