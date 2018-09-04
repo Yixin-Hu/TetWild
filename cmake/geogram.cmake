@@ -8,8 +8,8 @@ endif()
 
 ################################################################################
 
-if(THIRD_PARTY_DIR)
-	set(GEOGRAM_SEARCH_PATHS ${THIRD_PARTY_DIR})
+if(TETWILD_EXTERNAL)
+	set(GEOGRAM_SEARCH_PATHS ${TETWILD_EXTERNAL})
 else()
 	set(GEOGRAM_SEARCH_PATHS
 			${GEOGRAM_INSTALL_PREFIX}

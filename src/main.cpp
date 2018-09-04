@@ -5,14 +5,14 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License
 // v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
-#include "heads.h"
-#include "Preprocess.h"
-#include "DelaunayTetrahedralization.h"
-#include "BSPSubdivision.h"
-#include "SimpleTetrahedralization.h"
-#include "MeshRefinement.h"
-#include "InoutFiltering.h"
-#include "CLI11.hpp"
+#include <tetwild/heads.h>
+#include <tetwild/Preprocess.h>
+#include <tetwild/DelaunayTetrahedralization.h>
+#include <tetwild/BSPSubdivision.h>
+#include <tetwild/SimpleTetrahedralization.h>
+#include <tetwild/MeshRefinement.h>
+#include <tetwild/InoutFiltering.h>
+#include <CLI/CLI11.hpp>
 
 MeshRefinement MR;
 

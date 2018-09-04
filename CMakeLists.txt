@@ -7,9 +7,9 @@ project(TetWild)
 ################################################################################
 # Options
 ################################################################################
-option(MUTE_CHECKS "Mute log and unnecassary checks" OFF)
-# ispc
-option(USE_ISPC "Use ISPC" OFF)
+# tetwild
+option(TETWILD_QUIET     "Mute log and unnecassary checks" OFF)
+option(TETWILD_WITH_ISPC "Use ISPC"                        OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -24,14 +24,16 @@ option(LIBIGL_WITH_PYTHON           "Use Python"         OFF)
 option(LIBIGL_WITH_TETGEN           "Use Tetgen"         OFF)
 option(LIBIGL_WITH_TRIANGLE         "Use Triangle"       OFF)
 option(LIBIGL_WITH_XML              "Use XML"            OFF)
-#geogram
-option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
 # gui
 option(LIBIGL_WITH_EMBREE           "Use Embree"         OFF)
 option(LIBIGL_WITH_NANOGUI          "Use Nanogui menu"   OFF)
 option(LIBIGL_WITH_OPENGL           "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
+#geogram
+option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
+
+set(TETWILD_WITH_ISPC ON CACHE BOOL "" FORCE)
 
 ################################################################################
 # Settings
@@ -41,7 +43,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
+set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Use folder in Visual Studio
@@ -65,71 +67,81 @@ find_package(LIBIGL REQUIRED)
 # geogram
 include(geogram)
 
-# ispc
-SET(OBJ_FILES "")
-if(USE_ISPC)
-	add_custom_command(OUTPUT energy_ispc.o
-			COMMAND ispc -g ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
-	add_definitions(-DGTET_ISPC)
-    LIST(APPEND OBJ_FILES energy_ispc.o)
-endif(USE_ISPC)
+# pymesh loaders
+add_subdirectory(${TETWILD_EXTERNAL}/pymesh)
 
-#cout
-if(MUTE_CHECKS)
+# CL11
+add_subdirectory(${TETWILD_EXTERNAL}/CLI)
+
+# cout
+if(TETWILD_QUIET)
 	add_definitions(-DMUTE_COUT)
-endif(MUTE_CHECKS)
+endif()
 
 ################################################################################
 # TetWild
 ################################################################################
-set(SOURCE_FILES
-    src/Preprocess.h
-	src/Preprocess.cpp
-	src/DelaunayTetrahedralization.h
-	src/DelaunayTetrahedralization.cpp
-	src/MeshConformer.h
-	src/MeshConformer.cpp
-	src/BSPSubdivision.h
-	src/BSPSubdivision.cpp
-	src/SimpleTetrahedralization.h
-	src/SimpleTetrahedralization.cpp
-	src/MeshRefinement.h
-	src/MeshRefinement.cpp
-	src/LocalOperations.h
-	src/LocalOperations.cpp
-	src/EdgeSplitter.h
-	src/EdgeSplitter.cpp
-	src/EdgeCollapser.h
-	src/EdgeCollapser.cpp
-	src/EdgeRemover.h
-	src/EdgeRemover.cpp
-	src/VertexSmoother.h
-	src/VertexSmoother.cpp
-	src/InoutFiltering.h
-	src/InoutFiltering.cpp
-	src/heads.h
-	src/heads.cpp
-	src/tetwild.cpp
-	src/CLI11.hpp
-	src/TetmeshElements.h
-	# PyMesh
-	pymesh/MshLoader.h
-	pymesh/MshLoader.cpp
-	pymesh/MshSaver.h
-	pymesh/MshSaver.cpp
-	pymesh/Exception.h
-    )
-
 # Build static library for executable
-add_library(libTetWild STATIC ${SOURCE_FILES} ${OBJ_FILES})
-target_link_libraries(libTetWild geogram igl::core igl::cgal)
-target_include_directories(libTetWild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS} include pymesh)
+add_library(libTetWild STATIC
+		src/tetwild/Preprocess.h
+		src/tetwild/Preprocess.cpp
+		src/tetwild/DelaunayTetrahedralization.h
+		src/tetwild/DelaunayTetrahedralization.cpp
+		src/tetwild/MeshConformer.h
+		src/tetwild/MeshConformer.cpp
+		src/tetwild/BSPSubdivision.h
+		src/tetwild/BSPSubdivision.cpp
+		src/tetwild/SimpleTetrahedralization.h
+		src/tetwild/SimpleTetrahedralization.cpp
+		src/tetwild/MeshRefinement.h
+		src/tetwild/MeshRefinement.cpp
+		src/tetwild/LocalOperations.h
+		src/tetwild/LocalOperations.cpp
+		src/tetwild/EdgeSplitter.h
+		src/tetwild/EdgeSplitter.cpp
+		src/tetwild/EdgeCollapser.h
+		src/tetwild/EdgeCollapser.cpp
+		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeRemover.cpp
+		src/tetwild/VertexSmoother.h
+		src/tetwild/VertexSmoother.cpp
+		src/tetwild/InoutFiltering.h
+		src/tetwild/InoutFiltering.cpp
+		src/tetwild/heads.h
+		src/tetwild/heads.cpp
+		src/tetwild/tetwild.cpp
+		src/tetwild/TetmeshElements.h
+		include/tetwild/tetwild.h
+)
+target_include_directories(libTetWild
+	PRIVATE
+		src
+	PUBLIC
+		include
+)
+target_link_libraries(libTetWild
+	PUBLIC
+		geogram
+		igl::core
+		igl::cgal
+		pymesh::pymesh
+)
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 
-# Building exectuable
-set(MAIN_FILE src/main.cpp)
-add_executable(TetWild ${MAIN_FILE})
-target_link_libraries(TetWild libTetWild)
+# ispc
+if(TETWILD_WITH_ISPC)
+	message(STATUS "Compiling energy with ISPC")
+	add_subdirectory(src/ispc)
+	ispc_add_energy(libTetWild)
+endif()
+
+# Building executable
+add_executable(TetWild src/main.cpp)
+target_link_libraries(TetWild
+	libTetWild
+	CLI11::CLI11
+)
+target_include_directories(TetWild PRIVATE src)
 
 # Install
-INSTALL(TARGETS TetWild RUNTIME DESTINATION bin)
+install(TARGETS TetWild RUNTIME DESTINATION bin)

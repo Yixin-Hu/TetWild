@@ -1,4 +1,7 @@
+src/ispc/energy.h
 *build*/*
 .idea/*
+.vscode/
+/data
 .DS_Store
 test.cpp
