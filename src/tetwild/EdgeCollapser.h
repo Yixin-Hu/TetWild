@@ -14,6 +14,8 @@
 
 #include <tetwild/LocalOperations.h>
 
+namespace tetwild {
+
 class ElementInQueue_ec{
 public:
     std::array<int, 2> v_ids;
@@ -94,5 +96,6 @@ public:
     igl::Timer igl_timer;
 };
 
+} // namespace tetwild
 
 #endif //NEW_GTET_EDGECOLLAPSER_H

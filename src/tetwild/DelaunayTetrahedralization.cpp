@@ -24,6 +24,8 @@
 
 #include <igl/boundary_loop.h>
 
+namespace tetwild {
+
 void DelaunayTetrahedralization::init(const std::vector<Point_3>& m_vertices, const std::vector<std::array<int, 3>>& m_faces,
               std::vector<int>& m_f_tags, std::vector<int>& raw_e_tags, std::vector<std::vector<int>>& raw_conn_e4v) {
     m_f_tags.reserve(m_faces.size());
@@ -265,3 +267,5 @@ void DelaunayTetrahedralization::outputTetmesh(const std::vector<Point_3>& m_ver
         of<<std::endl;
     }
 }
+
+} // namespace tetwild

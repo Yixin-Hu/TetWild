@@ -18,6 +18,8 @@
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 
+namespace tetwild {
+
 typedef CGAL::Triangulation_vertex_base_with_info_3<unsigned, K> Vb;
 typedef CGAL::Triangulation_data_structure_3<Vb> Tds;
 typedef CGAL::Delaunay_triangulation_3<K, Tds> Delaunay;
@@ -40,5 +42,6 @@ public:
                        const std::string& output_file);
 };
 
+} // namespace tetwild
 
 #endif //GTET_DELAUNAYTETRAHEDRALIZATION_H

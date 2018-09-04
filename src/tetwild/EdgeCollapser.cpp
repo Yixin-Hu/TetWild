@@ -12,6 +12,8 @@
 #include <tetwild/EdgeCollapser.h>
 #include <igl/Timer.h>
 
+namespace tetwild {
+
 void EdgeCollapser::init() {
     energy_time = 0;
 
@@ -790,3 +792,5 @@ bool EdgeCollapser::isEdgeValid(const std::array<int, 2>& e){
 //            ec_queue.push(ele);
 //    }
 //}
+
+} // namespace tetwild

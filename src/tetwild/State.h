@@ -13,6 +13,8 @@
 
 #include <string>
 
+namespace tetwild {
+
 struct State {
     const int EPSILON_INFINITE=-2;
     const int EPSILON_NA=-1;
@@ -142,3 +144,5 @@ struct MeshRecord {
         this->n_t = n_t;
     }
 };
+
+} // namespace tetwild

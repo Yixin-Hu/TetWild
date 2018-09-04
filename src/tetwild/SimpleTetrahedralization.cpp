@@ -17,18 +17,19 @@
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, CGAL::Default, CGAL::Exact_predicates_tag> CDT;
+typedef CGAL::Constrained_Delaunay_triangulation_2<tetwild::K, CGAL::Default, CGAL::Exact_predicates_tag> CDT;
 typedef CDT::Point Point_cdt_2;
-typedef CGAL::Polygon_2<K> Polygon_2;
+typedef CGAL::Polygon_2<tetwild::K> Polygon_2;
 
 //arrangement
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
-typedef CGAL::Arr_segment_traits_2<K> Traits_2;
+typedef CGAL::Arr_segment_traits_2<tetwild::K> Traits_2;
 typedef Traits_2::Point_2 Point_arr_2;
 typedef Traits_2::X_monotone_curve_2 Segment_arr_2;
 typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
 
+namespace tetwild {
 
 void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::vector<std::array<int, 4>>& tets) {
     std::vector<BSPFace> &faces = MC.bsp_faces;
@@ -735,4 +736,4 @@ void SimpleTetrahedralization::constructPlane(int bsp_f_id, Plane_3& pln) {
     assert(!(pln.is_degenerate()));
 }
 
-
+} // namespace tetwild

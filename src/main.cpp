@@ -16,10 +16,11 @@
 #include <pymesh/MshSaver.h>
 #include <CLI/CLI11.hpp>
 
-MeshRefinement MR;
-
+using namespace tetwild;
 using std::cout;
 using std::endl;
+
+MeshRefinement MR;
 
 void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
                         const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,

@@ -16,6 +16,8 @@
 #include <tetwild/BSPElements.h>
 //#include <tetwild/DelaunayTetrahedralization.h>
 
+namespace tetwild {
+
 class MeshConformer {
 public:
     const std::vector<Point_3> &m_vertices;
@@ -48,5 +50,7 @@ public:
     Point_2 to2d(const Point_3 &p);
     Point_3 to3d(const Point_2 &p, const Plane_3 &pln);
 };
+
+} // namespace tetwild
 
 #endif //GTET_MESHCONFORMER_H

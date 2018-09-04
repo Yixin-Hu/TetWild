@@ -15,6 +15,8 @@
 #include <tetwild/Common.h>
 #include <tetwild/TetmeshElements.h>
 
+namespace tetwild {
+
 class InoutFiltering {
 public:
     std::vector<TetVertex>& tet_vertices;
@@ -37,5 +39,6 @@ public:
     void outputWindingNumberField(const Eigen::VectorXd& W);
 };
 
+} // namespace tetwild
 
 #endif //NEW_GTET_INOUTFILTERING_H

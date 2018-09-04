@@ -13,6 +13,8 @@
 #include <fstream>
 #include <algorithm>
 
+namespace tetwild {
+
 void addRecord(const MeshRecord& record) {
     if (!GArgs::args().is_output_csv)
         return;
@@ -209,3 +211,5 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 //        igl::writeSTL(State::state().g_working_dir + "_sample.stl", V_tmp, F_tmp);
 //    }
 }
+
+} // namespace tetwild

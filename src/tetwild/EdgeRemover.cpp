@@ -12,6 +12,8 @@
 #include <tetwild/EdgeRemover.h>
 #include <unordered_map>
 
+namespace tetwild {
+
 void EdgeRemover::init() {
     energy_time = 0;
 
@@ -769,3 +771,5 @@ void EdgeRemover::addNewEdge(const std::array<int, 2>& e){
         }
     }
 }
+
+} // namespace tetwild

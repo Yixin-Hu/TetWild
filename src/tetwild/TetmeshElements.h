@@ -14,6 +14,8 @@
 
 #include <tetwild/Common.h>
 
+namespace tetwild {
+
 //const int ON_SURFACE_FALSE = 0;//delete
 //const int ON_SURFACE_TRUE_INSIDE = 1;//delete
 //const int ON_SURFACE_TRUE_OUTSIDE = 2;//delete
@@ -156,10 +158,12 @@ public:
     }
 };
 
+} // namespace tetwild
+
 namespace igl {
     namespace serialization {
         template<>
-        inline void serialize(const TetVertex &v, std::vector<char> &buffer) {
+        inline void serialize(const tetwild::TetVertex &v, std::vector<char> &buffer) {
             ::igl::serialize(v.pos, std::string("pos"), buffer);
             ::igl::serialize(v.posf, std::string("posf"), buffer);
 
@@ -186,7 +190,7 @@ namespace igl {
         }
 
         template<>
-        inline void deserialize(TetVertex &v, const std::vector<char> &buffer) {
+        inline void deserialize(tetwild::TetVertex &v, const std::vector<char> &buffer) {
             ::igl::deserialize(v.pos, std::string("pos"), buffer);
             ::igl::deserialize(v.posf, std::string("posf"), buffer);
 

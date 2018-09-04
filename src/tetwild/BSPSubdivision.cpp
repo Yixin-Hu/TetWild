@@ -11,6 +11,8 @@
 
 #include <tetwild/BSPSubdivision.h>
 
+namespace tetwild {
+
 void BSPSubdivision::init() {
     for (int old_n_id = 0; old_n_id < MC.bsp_nodes.size(); old_n_id++) {
         if (MC.bsp_nodes[old_n_id].div_faces.size() == 0) {
@@ -380,3 +382,5 @@ void BSPSubdivision::getVertices(BSPFace& face){
     for(auto it=vs.begin();it!=vs.end();it++)
         face.vertices.push_back(*it);
 }
+
+} // namespace tetwild

@@ -22,6 +22,8 @@
 #include <geogram/basic/geometry_nd.h>
 #include <unordered_map>
 
+namespace tetwild {
+
 void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
     PyMesh::MshSaver mSaver(State::state().g_working_dir+GArgs::args().postfix+"_boundary.msh", true);
     Eigen::VectorXd oV;
@@ -1057,3 +1059,5 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 }
+
+} // namespace tetwild

@@ -22,6 +22,7 @@
 #include <igl/serialize.h>
 #include <igl/STR.h>
 
+namespace tetwild {
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef K::Point_2 Point_2;
@@ -54,21 +55,22 @@ typedef CGAL::Epeck::FT CGAL_FT;
 //#include <CGAL/Simple_cartesian.h>
 //typedef CGAL::Simple_cartesian<CGAL::Gmpq>::FT CGAL_FT;
 
-
 typedef K::Iso_cuboid_3 Bbox_3;
+
+} // namespace tetwild
 
 //for serialization
 namespace igl {
     namespace serialization {
         template<>
-        inline void serialize(const Point_3 &p, std::vector<char> &buffer) {
+        inline void serialize(const tetwild::Point_3 &p, std::vector<char> &buffer) {
             ::igl::serialize(STR(CGAL::exact(p[0])), std::string("x"), buffer);
             ::igl::serialize(STR(CGAL::exact(p[1])), std::string("y"), buffer);
             ::igl::serialize(STR(CGAL::exact(p[2])), std::string("z"), buffer);
         }
 
         template<>
-        inline void deserialize(Point_3 &p, const std::vector<char> &buffer) {
+        inline void deserialize(tetwild::Point_3 &p, const std::vector<char> &buffer) {
             std::string s1, s2, s3;
             ::igl::deserialize(s1, std::string("x"), buffer);
             ::igl::deserialize(s2, std::string("y"), buffer);
@@ -77,19 +79,19 @@ namespace igl {
         }
 
         template<>
-        inline void serialize(const Point_3f &p, std::vector<char> &buffer) {
+        inline void serialize(const tetwild::Point_3f &p, std::vector<char> &buffer) {
             ::igl::serialize(p[0], std::string("x"), buffer);
             ::igl::serialize(p[1], std::string("y"), buffer);
             ::igl::serialize(p[2], std::string("z"), buffer);
         }
 
         template<>
-        inline void deserialize(Point_3f &p, const std::vector<char> &buffer) {
+        inline void deserialize(tetwild::Point_3f &p, const std::vector<char> &buffer) {
             double x, y, z;
             ::igl::deserialize(x, std::string("x"), buffer);
             ::igl::deserialize(y, std::string("y"), buffer);
             ::igl::deserialize(z, std::string("z"), buffer);
-            p=Point_3f(x, y, z);
+            p=tetwild::Point_3f(x, y, z);
         }
 
         template<>

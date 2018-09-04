@@ -21,6 +21,8 @@
 #define FULL_LOG false
 #define CHECK_ENVELOP true
 
+namespace tetwild {
+
 double LocalOperations::comformalAMIPSEnergy_new(const std::vector<double>& T) {
     double helper_0[12];
     helper_0[0] = T[0];
@@ -1540,3 +1542,5 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 
     State::state().g_dd *= 2;
 }
+
+} // namespace tetwild

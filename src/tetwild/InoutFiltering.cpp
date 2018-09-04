@@ -14,6 +14,8 @@
 #include <igl/winding_number.h>
 #include <igl/writeSTL.h>
 
+namespace tetwild {
+
 void InoutFiltering::filter() {
 #ifndef MUTE_COUT
     std::cout << "In/out filtering..." << std::endl;
@@ -157,3 +159,5 @@ void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
 
     mSaver.save_elem_scalar_field("winding number", W);
 }
+
+} // namespace tetwild

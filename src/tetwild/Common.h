@@ -20,6 +20,8 @@
 
 #define TIMING_BREAKDOWN true
 
+namespace tetwild {
+
 void pausee();
 
 bool isHaveCommonEle(const std::unordered_set<int>& v1, const std::unordered_set<int>& v2);
@@ -28,3 +30,5 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
 void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps);
 
 void addRecord(const MeshRecord& record);
+
+} // namespace tetwild

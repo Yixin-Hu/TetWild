@@ -24,6 +24,8 @@
 #include <igl/unique_simplices.h>
 #include <igl/bounding_box_diagonal.h>
 
+namespace tetwild {
+
 class ElementInQueue_sm{
 public:
     std::array<int, 2> v_ids;
@@ -83,5 +85,6 @@ public:
     void outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::Mesh& geo_sf_mesh);
 };
 
+} // namespace tetwild
 
 #endif //NEW_GTET_PREPROCESS_H

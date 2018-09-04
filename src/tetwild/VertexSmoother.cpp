@@ -12,6 +12,8 @@
 #include <tetwild/VertexSmoother.h>
 #include <pymesh/MshSaver.h>
 
+namespace tetwild {
+
 void VertexSmoother::smooth() {
     tets_tss = std::vector<int>(tets.size(), 1);
     tet_vertices_tss = std::vector<int>(tet_vertices.size(), 0);
@@ -926,3 +928,4 @@ void VertexSmoother::outputOneRing(int v_id, std::string s){
     mSaver.save_elem_scalar_field("quality", q);
 }
 
+} // namespace tetwild

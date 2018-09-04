@@ -15,6 +15,8 @@
 #include <tetwild/MeshConformer.h>
 #include <unordered_map>
 
+namespace tetwild {
+
 class BSPSubdivision {
 public:
     MeshConformer& MC;
@@ -39,5 +41,6 @@ public:
 
 };
 
+} // namespace tetwild
 
 #endif //NEW_GTET_BSPSUBDIVISION_H

@@ -20,6 +20,7 @@
 #include <igl/readSTL.h>
 #include <igl/writeSTL.h>
 
+namespace tetwild {
 
 void MeshRefinement::prepareData(bool is_init) {
 #ifndef MUTE_COUT
@@ -1445,3 +1446,5 @@ void MeshRefinement::serialization(const std::string& slz_file) {
 
     std::cout<<"serialization done"<<std::endl;
 }
+
+} // namespace tetwild
