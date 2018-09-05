@@ -250,7 +250,7 @@ void gtet_new() {
     {/// STAGE 1
         //preprocess
         igl_timer.start();
-        logger().debug("Preprocessing...");
+        logger().info("Preprocessing...");
         Preprocess pp;
         if (!pp.init(MR.geo_b_mesh, MR.geo_sf_mesh)) {
             logger().debug("Empty!");
@@ -274,7 +274,7 @@ void gtet_new() {
 
         //delaunay tetrahedralization
         igl_timer.start();
-        logger().debug("Delaunay tetrahedralizing...");
+        logger().info("Delaunay tetrahedralizing...");
         DelaunayTetrahedralization DT;
         std::vector<int> raw_e_tags;
         std::vector<std::vector<int>> raw_conn_e4v;
@@ -297,7 +297,7 @@ void gtet_new() {
 
         //mesh conforming
         igl_timer.start();
-        logger().debug("Divfaces matching...");
+        logger().info("Divfaces matching...");
         MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
         MC.match();
         logger().info("Divfaces matching done!");
@@ -307,7 +307,7 @@ void gtet_new() {
 
         //bsp subdivision
         igl_timer.start();
-        logger().debug("BSP subdivision ...");
+        logger().info("BSP subdivision ...");
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
@@ -324,7 +324,7 @@ void gtet_new() {
 
         //simple tetrahedralization
         igl_timer.start();
-        logger().debug("Tetrehedralizing ...");
+        logger().info("Tetrehedralizing ...");
         SimpleTetrahedralization ST(MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
@@ -338,12 +338,12 @@ void gtet_new() {
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
-        logger().debug("Total time for the first stage = {}", sum_time);
+        logger().info("Total time for the first stage = {}", sum_time);
     }
 
     /// STAGE 2
     //init
-    logger().debug("Refinement initializing...");
+    logger().info("Refinement initializing...");
     MR.prepareData();
     logger().info("Refinement intialization done!");
 

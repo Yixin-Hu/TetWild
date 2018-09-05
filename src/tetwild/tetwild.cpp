@@ -155,7 +155,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
     {/// STAGE 1
         //preprocess
         igl_timer.start();
-        logger().debug("Preprocessing...");
+        logger().info("Preprocessing...");
         Preprocess pp;
         if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
             logger().debug("Empty!");
@@ -180,7 +180,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
 
         //delaunay tetrahedralization
         igl_timer.start();
-        logger().debug("Delaunay tetrahedralizing...");
+        logger().info("Delaunay tetrahedralizing...");
         DelaunayTetrahedralization DT;
         std::vector<int> raw_e_tags;
         std::vector<std::vector<int>> raw_conn_e4v;
@@ -195,25 +195,25 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         logger().debug("# bsp_edges = {}", bsp_edges.size());
         logger().debug("# bsp_faces = {}", bsp_faces.size());
         logger().debug("# bsp_nodes = {}", bsp_nodes.size());
-        logger().debug("Delaunay tetrahedralization done!");
+        logger().info("Delaunay tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
-        logger().debug("time = {}s", tmp_time);
+        logger().info("time = {}s", tmp_time);
 
         //mesh conforming
         igl_timer.start();
-        logger().debug("Divfaces matching...");
+        logger().info("Divfaces matching...");
         MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
         MC.match();
-        logger().debug("Divfaces matching done!");
+        logger().info("Divfaces matching done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
-        logger().debug("time = {}s", tmp_time);
+        logger().info("time = {}s", tmp_time);
 
         //bsp subdivision
         igl_timer.start();
-        logger().debug("BSP subdivision ...");
+        logger().info("BSP subdivision ...");
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
@@ -222,15 +222,15 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         logger().debug("# face = {}", MC.bsp_faces.size());
         logger().debug("# edge = {}", MC.bsp_edges.size());
         logger().debug("# vertex = {}", MC.bsp_vertices.size());
-        logger().debug("BSP subdivision done!");
+        logger().info("BSP subdivision done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
-        logger().debug("time = {}s", tmp_time);
+        logger().info("time = {}s", tmp_time);
 
         //simple tetrahedralization
         igl_timer.start();
-        logger().debug("Tetrehedralizing ...");
+        logger().info("Tetrehedralizing ...");
         SimpleTetrahedralization ST(MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
@@ -239,20 +239,20 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
         logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
         logger().debug("# tets = {}", MR.tets.size());
-        logger().debug("Tetrahedralization done!");
+        logger().info("Tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
         sum_time += tmp_time;
-        logger().debug("time = {}s", tmp_time);
+        logger().info("time = {}s", tmp_time);
 
-        logger().debug("Total time for the first stage = {}", sum_time);
+        logger().info("Total time for the first stage = {}", sum_time);
     }
 
     /// STAGE 2
     //init
-    logger().debug("Refinement initializing...");
+    logger().info("Refinement initializing...");
     MR.prepareData();
-    logger().debug("Refinement intialization done!");
+    logger().info("Refinement intialization done!");
 
     //improvement
     MR.refine(energy_type);

@@ -12,6 +12,7 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <igl/winding_number.h>
 #include <igl/Timer.h>
+#include <bitset>
 
 //triangulation
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
