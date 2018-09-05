@@ -151,25 +151,25 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
     ////set global parameters
     State::state().g_diag_l = igl::bounding_box_diagonal(V_in);
-    State::state().State::state().g_eps_input = State::state().g_diag_l / GArgs::args().i_epsilon;
+    State::state().g_eps_input = State::state().g_diag_l / GArgs::args().i_epsilon;
 
     if (GArgs::args().i_dd > 0) {//for testing only
         State::state().g_dd = State::state().g_diag_l / GArgs::args().i_dd;
         State::state().g_eps = State::state().g_diag_l / GArgs::args().i_epsilon;
-        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+        State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
         GArgs::args().stage = 1;
     } else {
-//        State::state().g_dd = State::state().State::state().g_eps_input / GArgs::args().stage;
+//        State::state().g_dd = State::state().g_eps_input / GArgs::args().stage;
 //        State::state().g_cur_stage = 1;
-//        State::state().g_eps = State::state().State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
-//        State::state().State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
-//        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+//        State::state().g_eps = State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
+//        State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
+//        State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 
-        State::state().g_dd = State::state().State::state().g_eps_input / GArgs::args().stage;
+        State::state().g_dd = State::state().g_eps_input / GArgs::args().stage;
         State::state().g_cur_stage = 1;
-        State::state().g_eps = State::state().State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
-        State::state().State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
-        State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+        State::state().g_eps = State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
+        State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
+        State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
     }
 
     State::state().g_ideal_l = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
@@ -264,7 +264,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
     State::state().g_eps *= eps_scalar;
-    State::state().State::state().g_eps_2 *= eps_scalar_2;
+    State::state().g_eps_2 *= eps_scalar_2;
 //    State::state().g_dd *= eps_scalar*2;
 
     conn_fs.resize(V_in.size());
@@ -361,7 +361,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
 #endif
 
     State::state().g_eps /= eps_scalar;
-    State::state().State::state().g_eps_2 /= eps_scalar_2;
+    State::state().g_eps_2 /= eps_scalar_2;
 //    State::state().g_dd /= eps_scalar*2;
 
     //output colormap
@@ -787,7 +787,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
             sq_dist = current_point.distance2(nearest_point);
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
             double dis = current_point.distance2(nearest_point);
-            if (dis > State::state().State::state().g_eps_2)
+            if (dis > State::state().g_eps_2)
                 return true;
         }
     }
@@ -796,7 +796,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 }
 
 bool Preprocess::isPointOutEnvelop(int v_id, GEO::MeshFacetsAABB& geo_face_tree){
-    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > State::state().State::state().g_eps_2)
+    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > State::state().g_eps_2)
         return true;
     return false;
 }
@@ -962,12 +962,12 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             }
         }
 
-        eps_dis(f_id) = sqrt(max_dis / State::state().State::state().g_eps_2);
+        eps_dis(f_id) = sqrt(max_dis / State::state().g_eps_2);
         if(eps_dis(f_id)>1) {
             std::cout << "ERROR: simplified input goes outside of the envelop" << std::endl;
             std::cout<<f_id<<std::endl;
             std::cout << eps_dis(f_id) << std::endl;
-            std::cout<<max_dis <<" "<< State::state().State::state().g_eps_2<<std::endl;
+            std::cout<<max_dis <<" "<< State::state().g_eps_2<<std::endl;
             cnt = 0;
             for (const GEO::vec3 &p:ps) {
                 std::cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt]<<"; "<< geo_face_tree.squared_distance(p)<< std::endl;

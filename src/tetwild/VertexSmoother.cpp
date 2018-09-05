@@ -570,7 +570,7 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
     static double* energy = 0;
 
     if (T0 == 0) {
-        std::cerr << "Initial ISPC allocation: n = " << n << std::endl;
+        logger().warn("Initial ISPC allocation: n = {}", n);
         current_max_size = n;
         T0 = new double[n];
         T1 = new double[n];
@@ -588,7 +588,7 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
     }
 
     if (current_max_size < n) {
-        std::cerr << "ISPC reallocation: n = " << n << std::endl;
+        logger().warn("ISPC reallocation: n = {}", n);
         free(T0);
         free(T1);
         free(T2);

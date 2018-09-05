@@ -438,7 +438,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //            if (!v_is_removed[i] && tet_vertices[i].is_on_surface) {
 //                double dis = geo_sf_tree.squared_distance(
 //                        GEO::vec3(tet_vertices[i].posf[0], tet_vertices[i].posf[1], tet_vertices[i].posf[2]));
-//                if (dis > State::state().State::state().g_eps_2)
+//                if (dis > State::state().g_eps_2)
 //                    cnt++;
 //            }
 //        }
@@ -722,7 +722,7 @@ void LocalOperations::calTetQualities(const std::vector<std::array<int, 4>>& new
     static double* energy = 0;
 
     if (T0 == 0) {
-        std::cerr << "Initial ISPC allocation: n = " << n << std::endl;
+        logger().warn("Initial ISPC allocation: n = {}", n);
         current_max_size = n;
         T0 = new double[n];
         T1 = new double[n];
@@ -740,7 +740,7 @@ void LocalOperations::calTetQualities(const std::vector<std::array<int, 4>>& new
     }
 
     if (current_max_size < n) {
-        std::cerr << "ISPC reallocation: n = " << n << std::endl;
+        logger.warn("ISPC reallocation: n = {}", n);
         free(T0);
         free(T1);
         free(T2);
@@ -1070,7 +1070,7 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_sf_tree.squared_distance(geo_p) > State::state().State::state().g_eps_2)
+    if (geo_sf_tree.squared_distance(geo_p) > State::state().g_eps_2)
         return true;
 
     return false;
@@ -1112,7 +1112,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
         sq_dist = current_point.distance2(nearest_point);
         geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
         double dis = current_point.distance2(nearest_point);
-        if (dis > State::state().State::state().g_eps_2) {
+        if (dis > State::state().g_eps_2) {
 #if TIMING_BREAKDOWN
             breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif
@@ -1136,7 +1136,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutBoundaryEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_b_tree.squared_distance(geo_p) > State::state().State::state().g_eps_2) {
+    if (geo_b_tree.squared_distance(geo_p) > State::state().g_eps_2) {
         return true;
     }
     return false;
@@ -1242,7 +1242,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
         sq_dist = current_point.distance2(nearest_point);
         geo_b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
         double dis = current_point.distance2(nearest_point);
-        if (dis > State::state().State::state().g_eps_2) {
+        if (dis > State::state().g_eps_2) {
 #if TIMING_BREAKDOWN
             breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif

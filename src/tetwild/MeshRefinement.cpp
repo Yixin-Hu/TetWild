@@ -232,7 +232,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     if (is_dealing_unrounded)
         min_adaptive_scale = State::state().g_eps / State::state().g_ideal_l * 0.5; //min to eps/2
     else
-//        min_adaptive_scale = State::state().State::state().g_eps_input / State::state().g_ideal_l; // State::state().State::state().g_eps_input / State::state().g_ideal_l * 0.5 is too small
+//        min_adaptive_scale = State::state().g_eps_input / State::state().g_ideal_l; // State::state().g_eps_input / State::state().g_ideal_l * 0.5 is too small
         min_adaptive_scale = (State::state().g_diag_l / 1000) / State::state().g_ideal_l; // set min_edge_length to diag / 1000 would be better
 
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
@@ -249,7 +249,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
 //    double old_State::state().g_eps = State::state().g_eps;
 //    State::state().g_eps = 0.5 * old_State::state().g_eps;
-//    State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+//    State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 
     if (is_pre)
         refine_pre(splitter, collapser, edge_remover, smoother);
@@ -271,7 +271,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     int is_output = true;
 //    const double eps_s = 0.8;
 //    State::state().g_eps *= eps_s;
-//    State::state().State::state().g_eps_2 *= eps_s*eps_s;
+//    State::state().g_eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + GArgs::args().max_pass; pass++) {
         if (is_dealing_unrounded && pass == old_pass) {
@@ -312,8 +312,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
 //            if (GArgs::args().targeted_num_v > 0 && getInsideVertexSize() > 1.05 * GArgs::args().targeted_num_v && isRegionFullyRounded()) {
 //                if (State::state().g_cur_stage < GArgs::args().stage) {
-//                    State::state().g_eps += State::state().State::state().g_eps_delta;
-//                    State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+//                    State::state().g_eps += State::state().g_eps_delta;
+//                    State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 //                    State::state().g_cur_stage++;
 //                    avg_energy0 = avg_energy;
 //                    max_energy0 = max_energy;
@@ -334,8 +334,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             }
             if (update_buget == 0) {
                 if (State::state().g_cur_stage > 1 && State::state().g_cur_stage < GArgs::args().stage) {
-                    State::state().g_eps += State::state().State::state().g_eps_delta;
-                    State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+                    State::state().g_eps += State::state().g_eps_delta;
+                    State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
                     State::state().g_cur_stage++;
                     update_buget = 2;
 //                    std::cout<<"[[[[[[[[[[[[[[UPDATE EPSILON "<<State::state().g_eps<<"]]]]]]]]]]]]]]]]"<<std::endl;
@@ -358,8 +358,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
             if (State::state().g_cur_stage == 1 && State::state().g_cur_stage < GArgs::args().stage
                 && target_energy < GArgs::args().filter_energy) {
-                State::state().g_eps += State::state().State::state().g_eps_delta;
-                State::state().State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
+                State::state().g_eps += State::state().g_eps_delta;
+                State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
                 State::state().g_cur_stage++;
 //                std::cout<<"[[[[[[[[[[[[[[UPDATE EPSILON "<<State::state().g_eps<<"]]]]]]]]]]]]]]]]"<<std::endl;
             }
@@ -475,7 +475,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 ////        igl::writeOBJ(State::state().g_working_dir + State::state().g_postfix + "_tracked_sf1.obj", V_tmp, F_tmp);
 ////        getSurface(V_tmp, F_tmp);
 ////        igl::writeOBJ(State::state().g_working_dir + State::state().g_postfix + "_tracked_sf2.obj", V_tmp, F_tmp);
-//////        localOperation.outputSurfaceColormap(V_tmp, F_tmp, State::state().State::state().g_eps_input);//compared with user input eps
+//////        localOperation.outputSurfaceColormap(V_tmp, F_tmp, State::state().g_eps_input);//compared with user input eps
 ////        localOperation.checkUnrounded();
 //    }
 
@@ -757,7 +757,7 @@ void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapse
         collapser.is_soft = true;
         collapser.soft_energy = max_energy;
 //        State::state().g_eps *= 1.5;
-//        State::state().State::state().g_eps_2 *= 1.5 * 1.5;
+//        State::state().g_eps_2 *= 1.5 * 1.5;
 //        for (int i = 0; i < tet_vertices.size(); i++)
 //            tet_vertices[i].is_locked = false;
 
@@ -1358,7 +1358,7 @@ bool MeshRefinement::deserialization(const std::string& sf_file, const std::stri
     //deserialization
     igl::deserialize(State::state().g_diag_l, "State::state().g_diag_l", slz_file);
     igl::deserialize(State::state().g_eps, "State::state().g_eps", slz_file);
-    igl::deserialize(State::state().State::state().g_eps_2, "State::state().State::state().g_eps_2", slz_file);
+    igl::deserialize(State::state().g_eps_2, "State::state().g_eps_2", slz_file);
     igl::deserialize(State::state().g_dd, "State::state().g_dd", slz_file);
     igl::deserialize(State::state().g_ideal_l, "State::state().g_ideal_l", slz_file);
     igl::deserialize(State::state().NOT_SURFACE, "State::state().NOT_SURFACE", slz_file);
@@ -1390,7 +1390,7 @@ void MeshRefinement::serialization(const std::string& slz_file) {
     std::cout<<"serializing ..."<<std::endl;
     igl::serialize(State::state().g_diag_l, "State::state().g_diag_l", slz_file, true);
     igl::serialize(State::state().g_eps, "State::state().g_eps", slz_file);
-    igl::serialize(State::state().State::state().g_eps_2, "State::state().State::state().g_eps_2", slz_file);
+    igl::serialize(State::state().g_eps_2, "State::state().g_eps_2", slz_file);
     igl::serialize(State::state().g_dd, "State::state().g_dd", slz_file);
     igl::serialize(State::state().g_ideal_l, "State::state().g_ideal_l", slz_file);
     igl::serialize(State::state().NOT_SURFACE, "State::state().NOT_SURFACE", slz_file);
