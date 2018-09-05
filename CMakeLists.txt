@@ -59,6 +59,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # 3rd party libraries
 ################################################################################
+
+# download external dependencies
+include(TetWildDownloadExternal)
+
+# spdlog
+if(NOT TARGET spdlog::spdlog)
+	tetwild_download_spdlog()
+	add_subdirectory(${TETWILD_EXTERNAL}/spdlog)
+endif()
+
 # cgal
 find_package(CGAL REQUIRED)
 
@@ -102,6 +112,8 @@ add_library(libTetWild STATIC
 		src/tetwild/InoutFiltering.h
 		src/tetwild/LocalOperations.cpp
 		src/tetwild/LocalOperations.h
+		src/tetwild/Logger.cpp
+		src/tetwild/Logger.h
 		src/tetwild/MeshConformer.cpp
 		src/tetwild/MeshConformer.h
 		src/tetwild/MeshRefinement.cpp
@@ -130,6 +142,7 @@ target_link_libraries(libTetWild
 		igl::core
 		igl::cgal
 		pymesh::pymesh
+		spdlog::spdlog
 )
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 

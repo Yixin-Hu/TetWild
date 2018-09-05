@@ -423,6 +423,9 @@ int main(int argc, char *argv[]) {
 #ifdef MUTE_COUT
     cout<<"Unnecessary checks are muted."<<endl;
 #endif
+    int log_level = 1; // debug
+    std::string log_filename = "";
+
     CLI::App app{"RobustTetMeshing"};
     app.add_option("input,--input", GArgs::args().input, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
     app.add_option("output,--output", GArgs::args().output, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
@@ -436,13 +439,23 @@ int main(int argc, char *argv[]) {
     app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
     app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
     app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("--is-quiet", GArgs::args().is_quiet, "Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
+    app.add_option("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (integer, optional, default: 0)");
+    app.add_option("--log", log_filename, "Log info to given file.");
+    app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
     try {
         app.parse(argc, argv);
     } catch (const CLI::ParseError &e) {
         return app.exit(e);
     }
+
+    Logger::init(!GArgs::args().is_quiet, log_filename);
+    log_level = std::max(0, std::min(6, log_level));
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
+    spdlog::flush_every(std::chrono::seconds(3));
+
+    // logger().info("this is a test");
+    // logger().debug("debug stuff");
 
     //initalization
     GEO::initialize();
@@ -474,6 +487,8 @@ int main(int argc, char *argv[]) {
         gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({true, false, true, true}));
     else
         gtet_new();
+
+    spdlog::shutdown();
 
     return 0;
 }
