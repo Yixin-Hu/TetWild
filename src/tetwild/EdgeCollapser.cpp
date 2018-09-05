@@ -67,9 +67,7 @@ void EdgeCollapser::init() {
 void EdgeCollapser::collapse() {
     tet_tss.assign(tets.size(), 0);
     int cnt = 0;
-#ifndef MUTE_COUT
     logger().debug("edge queue size = {}", ec_queue.size());
-#endif
     while (!ec_queue.empty()) {
         std::array<int, 2> v_ids = ec_queue.top().v_ids;
         double old_weight = ec_queue.top().weight;
@@ -143,10 +141,8 @@ void EdgeCollapser::collapse() {
 
         counter++;
     }
-#ifndef MUTE_COUT
     logger().debug("{} {} {}", suc_counter, counter, inf_es.size());
     logger().debug("envelop accept = {}", envelop_accept_cnt);
-#endif
 
     if (suc_counter == 0 || inf_es.size() == 0) {
 //        logger().debug("checking.......");
@@ -190,7 +186,6 @@ void EdgeCollapser::collapse() {
 //        }
 //        logger().debug("{} {} {} {}", cnt_flip, cnt_quality, cnt_envelop, cnt_suc);
 
-#ifndef MUTE_COUT
         logger().debug("{}: {}s", breakdown_name0[id_sampling], breakdown_timing0[id_sampling]);
         logger().debug("{}: {}s", breakdown_name0[id_aabb], breakdown_timing0[id_aabb]);
         logger().debug("----");
@@ -208,7 +203,6 @@ void EdgeCollapser::collapse() {
 //        }
 
         logger().debug("energy_time = {}", energy_time);
-#endif
 
         return;
     }
@@ -217,9 +211,7 @@ void EdgeCollapser::collapse() {
 }
 
 void EdgeCollapser::postProcess() {
-#ifndef MUTE_COUT
     logger().debug("postProcess!");
-#endif
     counter = 0;
     suc_counter = 0;
     envelop_accept_cnt = 0;
@@ -433,10 +425,8 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
         }
         is_envelop_suc = true;
         envelop_accept_cnt++;
-#ifndef MUTE_COUT
         if (envelop_accept_cnt % 1000 == 0)
             logger().debug("1000 accepted!");
-#endif
     }
 
 

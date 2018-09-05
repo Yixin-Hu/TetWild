@@ -90,17 +90,13 @@ void outputFinalTetmesh(MeshRefinement& MR,
     double tmp_time = 0;
     if (!GArgs::args().is_laplacian) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
-#ifndef MUTE_COUT
         igl::Timer igl_timer;
         igl_timer.start();
-#endif
         IOF.filter();
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         logger().debug("time = {}s", tmp_time);
         t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
         logger().debug("{} tets inside!", t_cnt);
-#endif
     }
 
     //output result
@@ -134,9 +130,7 @@ void outputFinalTetmesh(MeshRefinement& MR,
     if(GArgs::args().is_quiet)
         return;
 
-#ifndef MUTE_COUT
     outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
-#endif
 }
 
 void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
@@ -152,20 +146,16 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
     bool is_check_correctness = false;
     bool is_ec_check_quality = true;
 
-#ifndef MUTE_COUT
     igl::Timer igl_timer;
     double tmp_time = 0;
     double sum_time = 0;
-#endif
 
     ////pipeline
     MeshRefinement MR;
     {/// STAGE 1
         //preprocess
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("Preprocessing...");
-#endif
         Preprocess pp;
         if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
             logger().debug("Empty!");
@@ -178,25 +168,19 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
             mSaver.save_mesh(oV, oT, 3, mSaver.TET);
             exit(250);
         }
-#ifndef MUTE_COUT
         addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()));
-#endif
 
         std::vector<Point_3> m_vertices;
         std::vector<std::array<int, 3>> m_faces;
         pp.process(MR.geo_sf_mesh, m_vertices, m_faces);
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()));
         sum_time += tmp_time;
         logger().debug("time = {}s", tmp_time);
-#endif
 
         //delaunay tetrahedralization
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("Delaunay tetrahedralizing...");
-#endif
         DelaunayTetrahedralization DT;
         std::vector<int> raw_e_tags;
         std::vector<std::vector<int>> raw_conn_e4v;
@@ -207,7 +191,6 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         std::vector<BSPFace> bsp_faces;
         std::vector<BSPtreeNode> bsp_nodes;
         DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
-#ifndef MUTE_COUT
         logger().debug("# bsp_vertices = {}", bsp_vertices.size());
         logger().debug("# bsp_edges = {}", bsp_edges.size());
         logger().debug("# bsp_faces = {}", bsp_faces.size());
@@ -217,31 +200,23 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
         logger().debug("time = {}s", tmp_time);
-#endif
 
         //mesh conforming
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("Divfaces matching...");
-#endif
         MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
         MC.match();
-#ifndef MUTE_COUT
         logger().debug("Divfaces matching done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         logger().debug("time = {}s", tmp_time);
-#endif
 
         //bsp subdivision
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("BSP subdivision ...");
-#endif
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
-#ifndef MUTE_COUT
         logger().debug("Output: ");
         logger().debug("# node = {}", MC.bsp_nodes.size());
         logger().debug("# face = {}", MC.bsp_faces.size());
@@ -252,20 +227,16 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
         logger().debug("time = {}s", tmp_time);
-#endif
 
         //simple tetrahedralization
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("Tetrehedralizing ...");
-#endif
         SimpleTetrahedralization ST(MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
         if (!State::state().g_is_close)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
-#ifndef MUTE_COUT
         logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
         logger().debug("# tets = {}", MR.tets.size());
         logger().debug("Tetrahedralization done!");
@@ -275,18 +246,13 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         logger().debug("time = {}s", tmp_time);
 
         logger().debug("Total time for the first stage = {}", sum_time);
-#endif
     }
 
     /// STAGE 2
     //init
-#ifndef MUTE_COUT
     logger().debug("Refinement initializing...");
-#endif
     MR.prepareData();
-#ifndef MUTE_COUT
     logger().debug("Refinement intialization done!");
-#endif
 
     //improvement
     MR.refine(energy_type);

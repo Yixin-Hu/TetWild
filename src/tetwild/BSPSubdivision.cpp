@@ -28,9 +28,7 @@ void BSPSubdivision::init() {
 		}
 		nf+=1;
 	}
-#ifndef MUTE_COUT
 	logger().debug("# nodes need subdivision = {}/{}/{}", nf, processing_n_ids.size(), MC.bsp_nodes.size());
-#endif
 }
 
 void BSPSubdivision::subdivideBSPNodes() {

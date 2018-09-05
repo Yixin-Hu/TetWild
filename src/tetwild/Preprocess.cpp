@@ -143,10 +143,8 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //                F_in(i, j) = IV(F_in(i, j));
 //            }
 //        }
-#ifndef MUTE_COUT
     logger().debug("#v = {} -> {}", V_tmp.rows(), V_in.rows());
     logger().debug("#f = {} -> {}", F_tmp.rows(), F_in.rows());
-#endif
 //    checkBoundary(V_in, F_in);
 
     ////set global parameters
@@ -325,10 +323,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         cnt++;
     }
 //    igl::writeSTL(State::state().g_working_dir+GArgs::args().postfix+"_simplified.stl", V_out, F_out);
-#ifndef MUTE_COUT
     logger().debug("#v = {}", V_out.rows());
     logger().debug("#f = {}", F_out.rows());
-#endif
 
     V_in = V_out;
     F_in = F_out;
@@ -355,10 +351,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         if (!tr.is_degenerate())//delete all degenerate triangles
             m_faces.push_back(f);
     }
-#ifndef MUTE_COUT
     logger().debug("#v = {}", m_vertices.size());
     logger().debug("#f = {}->{}", F_in.rows(), m_faces.size());
-#endif
 
     State::state().g_eps /= eps_scalar;
     State::state().g_eps_2 /= eps_scalar_2;
@@ -462,9 +456,7 @@ void Preprocess::swap(GEO::MeshFacetsAABB& face_aabb_tree) {
         if (is_swapped)
             cnt++;
     }
-#ifndef MUTE_COUT
     logger().debug("{} faces are swapped!!", cnt);
-#endif
 }
 
 double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
@@ -490,25 +482,19 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
             inf_e_tss.push_back(ts);
         } else {
             cnt++;
-#ifndef MUTE_COUT
             if (cnt % 1000 == 0)
                 logger().debug("1000 vertices removed");
-#endif
         }
     }
-#ifndef MUTE_COUT
     logger().debug("{}", cnt);
     logger().debug("{}", c);
-#endif
 
     if (cnt > 0)
         postProcess(face_aabb_tree);
 }
 
 void Preprocess::postProcess(GEO::MeshFacetsAABB& face_aabb_tree){
-#ifndef MUTE_COUT
     logger().debug("postProcess!");
-#endif
 
     std::vector<std::array<int, 2>> tmp_inf_es;
     const int inf_es_size = inf_es.size();

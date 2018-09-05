@@ -17,9 +17,7 @@
 namespace tetwild {
 
 void InoutFiltering::filter() {
-#ifndef MUTE_COUT
     logger().debug("In/out filtering...");
-#endif
 
     Eigen::MatrixXd C(std::count(t_is_removed.begin(), t_is_removed.end(), false), 3);
     int cnt = 0;
@@ -75,9 +73,7 @@ void InoutFiltering::filter() {
 //    outputWindingNumberField(W);
 
     t_is_removed = tmp_t_is_removed;
-#ifndef MUTE_COUT
     logger().debug("In/out Filtered!");
-#endif
 }
 
 void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){

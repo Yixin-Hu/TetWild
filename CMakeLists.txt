@@ -8,7 +8,6 @@ project(TetWild)
 # Options
 ################################################################################
 # tetwild
-option(TETWILD_QUIET     "Mute log and unnecassary checks" OFF)
 option(TETWILD_WITH_ISPC "Use ISPC"                        OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
@@ -83,11 +82,6 @@ add_subdirectory(${TETWILD_EXTERNAL}/pymesh)
 
 # CL11
 add_subdirectory(${TETWILD_EXTERNAL}/CLI)
-
-# cout
-if(TETWILD_QUIET)
-	add_definitions(-DMUTE_COUT)
-endif()
 
 ################################################################################
 # TetWild

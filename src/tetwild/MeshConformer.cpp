@@ -175,9 +175,7 @@ void MeshConformer::matchDivFaces() {
             seed_nids.insert(new_nids.begin(), new_nids.end());//c++11
         }
     }
-#ifndef MUTE_COUT
     logger().debug("{} faces matched!", std::count(is_matched.begin(), is_matched.end(), true));
-#endif
 }
 
 void MeshConformer::getOrientedVertices(int bsp_f_id){

@@ -31,20 +31,16 @@ void VertexSmoother::smooth() {
             smoothSurface();
             suc_surface = suc_counter;
         }
-#ifndef MUTE_COUT
         logger().debug("{}", (suc_in + suc_surface) / v_cnt);
         if (suc_in + suc_surface < v_cnt * 0.1) {
             logger().debug("{}", i);
             break;
         }
-#endif
     }
-#ifndef MUTE_COUT
     for (int i = 0; i < breakdown_timing.size(); i++) {
         logger().debug("{}: {}s", breakdown_name[i], breakdown_timing[i]);
         breakdown_timing[i] = 0;//reset
     }
-#endif
 }
 
 bool VertexSmoother::smoothSingleVertex(int v_id, bool is_cal_energy){
@@ -458,14 +454,10 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
 
         suc_counter++;
         sf_suc_counter++;
-#ifndef MUTE_COUT
         if (sf_suc_counter % 1000 == 0)
             logger().debug("1000 accepted!");
-#endif
     }
-#ifndef MUTE_COUT
     logger().debug("Totally {}({}) vertices on surface are smoothed.", sf_suc_counter, sf_counter);
-#endif
 }
 
 bool VertexSmoother::NewtonsMethod(const std::vector<int>& t_ids, const std::vector<std::array<int, 4>>& new_tets,
@@ -653,9 +645,7 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
     }
 #endif
     if (std::isinf(s_energy) || std::isnan(s_energy) || s_energy <= 0 || s_energy > State::state().MAX_ENERGY) {
-#ifndef MUTE_COUT
         logger().debug("new E inf");
-#endif
         s_energy = State::state().MAX_ENERGY;
     }
 
@@ -715,33 +705,23 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
 #endif
 
     if (std::isinf(energy)) {
-#ifndef MUTE_COUT
         logger().debug("{} E inf", v_id);
-#endif
         energy = State::state().MAX_ENERGY;
     }
     if (std::isnan(energy)) {
-#ifndef MUTE_COUT
         logger().debug("{} E nan", v_id);
-#endif
         return false;
     }
     if (energy <= 0) {
-#ifndef MUTE_COUT
         logger().debug("{} E < 0", v_id);
-#endif
         return false;
     }
     if (!J.allFinite()) {
-#ifndef MUTE_COUT
         logger().debug("{} J inf/nan", v_id);
-#endif
         return false;
     }
     if (!H.allFinite()) {
-#ifndef MUTE_COUT
         logger().debug("{} H inf/nan", v_id);
-#endif
         return false;
     }
 
@@ -875,9 +855,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 //        }
     }
 
-#ifndef MUTE_COUT
     logger().debug("suc.size = {}", cnt_suc);
-#endif
     return cnt_suc;
 }
 

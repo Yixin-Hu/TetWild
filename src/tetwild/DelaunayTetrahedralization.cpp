@@ -15,14 +15,12 @@
 #include <igl/readSTL.h>
 #include <igl/readOBJ.h>
 #include <igl/writeSTL.h>
-
 #include <igl/unique.h>
 #include <igl/unique_rows.h>
 #include <igl/unique_simplices.h>
-#include <geogram/mesh/mesh_AABB.h>
-//#include <geogram/mesh/mesh.h>
-
 #include <igl/boundary_loop.h>
+#include <geogram/mesh/mesh_AABB.h>
+#include <bitset>
 
 namespace tetwild {
 
@@ -139,9 +137,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     for(int i=0;i<voxel_points.size();i++) {
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
     }
-#ifndef MUTE_COUT
     logger().debug("{} voxel points are added!", voxel_points.size());
-#endif
 
     Delaunay T(points.begin(), points.end());
 //    if(!T.is_valid()){

@@ -23,9 +23,7 @@
 namespace tetwild {
 
 void MeshRefinement::prepareData(bool is_init) {
-#ifndef MUTE_COUT
     igl_timer.start();
-#endif
     if (is_init) {
         t_is_removed = std::vector<bool>(tets.size(), false);//have to
         v_is_removed = std::vector<bool>(tet_vertices.size(), false);
@@ -43,11 +41,9 @@ void MeshRefinement::prepareData(bool is_init) {
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
                                    State::state().ENERGY_AMIPS, simple_tree, simple_tree);
     localOperation.calTetQualities(tets, tet_qualities, true);//cal all measure
-#ifndef MUTE_COUT
     double tmp_time = igl_timer.getElapsedTime();
     logger().debug("{}s", tmp_time);
     localOperation.outputInfo(MeshRecord::OpType::OP_OPT_INIT, tmp_time);
-#endif
 }
 
 void MeshRefinement::round() {
@@ -89,9 +85,7 @@ void MeshRefinement::round() {
             sub_cnt++;
         }
     }
-#ifndef MUTE_COUT
     logger().debug("round: {}({})", cnt, tet_vertices.size());
-#endif
 
     //for check
 //    for (int i = 0; i < tets.size(); i++) {
@@ -127,62 +121,46 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
     double tmp_time;
 
     if (ops[0]) {
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("edge splitting...");
-#endif
         splitter.init();
         splitter.split();
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         splitter.outputInfo(MeshRecord::OpType::OP_SPLIT, tmp_time, is_log);
         logger().debug("edge splitting done!");
         logger().debug("time = {}s", tmp_time);
-#endif
     }
 
     if (ops[1]) {
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("edge collasing...");
-#endif
         collapser.init();
         collapser.collapse();
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         collapser.outputInfo(MeshRecord::OpType::OP_COLLAPSE, tmp_time, is_log);
         logger().debug("edge collasing done!");
         logger().debug("time = {}s", tmp_time);
-#endif
     }
 
     if (ops[2]) {
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("edge removing...");
-#endif
         edge_remover.init();
         edge_remover.swap();
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         edge_remover.outputInfo(MeshRecord::OpType::OP_SWAP, tmp_time, is_log);
         logger().debug("edge removal done!");
         logger().debug("time = {}s", tmp_time);
-#endif
     }
 
     if (ops[3]) {
-#ifndef MUTE_COUT
         igl_timer.start();
         logger().debug("vertex smoothing...");
-#endif
         smoother.smooth();
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         smoother.outputInfo(MeshRecord::OpType::OP_SMOOTH, tmp_time, is_log);
         logger().debug("vertex smooth done!");
         logger().debug("time = {}s", tmp_time);
-#endif
     }
 
     round();
@@ -274,9 +252,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             updateScalarField(false, false, GArgs::args().filter_energy);
         }
 
-#ifndef MUTE_COUT
         logger().debug("////////////////Pass {} ////////////////", pass);
-#endif
         if (is_dealing_unrounded)
             collapser.is_limit_length = false;
         doOperations(splitter, collapser, edge_remover, smoother,
@@ -481,9 +457,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
 void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                 VertexSmoother& smoother){
-#ifndef MUTE_COUT
     logger().debug("////////////////// Pre-processing //////////////////");
-#endif
     collapser.is_limit_length = false;
     doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{false, true, false, false});
     collapser.is_limit_length = true;
@@ -491,9 +465,7 @@ void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser
 
 void MeshRefinement::refine_post(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                  VertexSmoother& smoother){
-#ifndef MUTE_COUT
     logger().debug("////////////////// Post-processing //////////////////");
-#endif
     collapser.is_limit_length = true;
     for (int i = 0; i < tet_vertices.size(); i++) {
         tet_vertices[i].adaptive_scale = 1;
@@ -789,10 +761,8 @@ bool MeshRefinement::isRegionFullyRounded(){
 }
 
 void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean_up_local, double filter_energy, bool is_lock) {
-#ifndef MUTE_COUT
     igl_timer.start();
     logger().debug("marking adaptive scales...");
-#endif
     double tmp_time = 0;
 
     double radius0 = State::state().g_ideal_l * 1.8;//increasing the radius would increase the #v in output
@@ -803,9 +773,7 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
     if (is_clean_up_unrounded)
         radius0 *= 2;
 
-#ifndef MUTE_COUT
     logger().debug("filter_energy = {}", filter_energy);
-#endif
     std::vector<double> adap_tmp(tet_vertices.size(), 1.5);
     double dynamic_adaptive_scale = GArgs::args().adaptive_scalar;
 
@@ -908,12 +876,10 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
     if (is_clean_up_unrounded && is_lock)
         logger().debug("{} vertices locked", cnt);
 
-#ifndef MUTE_COUT
     logger().debug("marked!");
     tmp_time = igl_timer.getElapsedTime();
     logger().debug("time = {}s", tmp_time);
     addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1));
-#endif
 //    outputMidResult(true);
 }
 
