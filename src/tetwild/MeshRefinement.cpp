@@ -122,45 +122,45 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
 
     if (ops[0]) {
         igl_timer.start();
-        logger().debug("edge splitting...");
+        logger().info("edge splitting...");
         splitter.init();
         splitter.split();
         tmp_time = igl_timer.getElapsedTime();
         splitter.outputInfo(MeshRecord::OpType::OP_SPLIT, tmp_time, is_log);
-        logger().debug("edge splitting done!");
-        logger().debug("time = {}s", tmp_time);
+        logger().info("edge splitting done!");
+        logger().info("time = {}s", tmp_time);
     }
 
     if (ops[1]) {
         igl_timer.start();
-        logger().debug("edge collasing...");
+        logger().info("edge collapsing...");
         collapser.init();
         collapser.collapse();
         tmp_time = igl_timer.getElapsedTime();
         collapser.outputInfo(MeshRecord::OpType::OP_COLLAPSE, tmp_time, is_log);
-        logger().debug("edge collasing done!");
-        logger().debug("time = {}s", tmp_time);
+        logger().info("edge collasing done!");
+        logger().info("time = {}s", tmp_time);
     }
 
     if (ops[2]) {
         igl_timer.start();
-        logger().debug("edge removing...");
+        logger().info("edge removing...");
         edge_remover.init();
         edge_remover.swap();
         tmp_time = igl_timer.getElapsedTime();
         edge_remover.outputInfo(MeshRecord::OpType::OP_SWAP, tmp_time, is_log);
-        logger().debug("edge removal done!");
-        logger().debug("time = {}s", tmp_time);
+        logger().info("edge removal done!");
+        logger().info("time = {}s", tmp_time);
     }
 
     if (ops[3]) {
         igl_timer.start();
-        logger().debug("vertex smoothing...");
+        logger().info("vertex smoothing...");
         smoother.smooth();
         tmp_time = igl_timer.getElapsedTime();
         smoother.outputInfo(MeshRecord::OpType::OP_SMOOTH, tmp_time, is_log);
-        logger().debug("vertex smooth done!");
-        logger().debug("time = {}s", tmp_time);
+        logger().info("vertex smooth done!");
+        logger().info("time = {}s", tmp_time);
     }
 
     round();
@@ -252,7 +252,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             updateScalarField(false, false, GArgs::args().filter_energy);
         }
 
-        logger().debug("////////////////Pass {} ////////////////", pass);
+        logger().info("//////////////// Pass {} ////////////////", pass);
         if (is_dealing_unrounded)
             collapser.is_limit_length = false;
         doOperations(splitter, collapser, edge_remover, smoother,
@@ -457,7 +457,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
 void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                 VertexSmoother& smoother){
-    logger().debug("////////////////// Pre-processing //////////////////");
+    logger().info("////////////////// Pre-processing //////////////////");
     collapser.is_limit_length = false;
     doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{false, true, false, false});
     collapser.is_limit_length = true;
@@ -465,7 +465,7 @@ void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser
 
 void MeshRefinement::refine_post(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                  VertexSmoother& smoother){
-    logger().debug("////////////////// Post-processing //////////////////");
+    logger().info("////////////////// Post-processing //////////////////");
     collapser.is_limit_length = true;
     for (int i = 0; i < tet_vertices.size(); i++) {
         tet_vertices[i].adaptive_scale = 1;
@@ -488,7 +488,7 @@ void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collaps
     }
     updateScalarField(false, true, target_energy * 0.8, true);
     for (int pass = 0; pass < 20; pass++) {
-        logger().debug("////////////////// Local Pass {} //////////////////", pass);
+        logger().info("////////////////// Local Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother);
 
         double avg_energy, max_energy;
@@ -520,7 +520,7 @@ bool MeshRefinement::refine_unrounded(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.is_limit_length = false;
     updateScalarField(true, false, -1, true);
     for (int pass = 0; pass < 5 * scalar_update; pass++) {
-        logger().debug("////////////////// Local Pass {} //////////////////", pass);
+        logger().info("////////////////// Local Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother);
 
         if (isRegionFullyRounded())
@@ -553,7 +553,7 @@ void MeshRefinement::refine_revert(EdgeSplitter& splitter, EdgeCollapser& collap
 
     int n_v0 = std::count(v_is_removed.begin(), v_is_removed.end(), false);
     for (int pass = 0; pass < 10; pass++) {
-        logger().debug("////////////////// Local (revert) Pass {} //////////////////", pass);
+        logger().info("////////////////// Local (revert) Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>({false, true, true, true}));
 //        doOperations(splitter, collapser, edge_remover, smoother);
 
