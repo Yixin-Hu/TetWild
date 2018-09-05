@@ -38,4 +38,4 @@ before_install:
   - conda config --add channels conda-forge
 
 script:
-  - conda build ci/conda
+  - conda build .ci/conda
