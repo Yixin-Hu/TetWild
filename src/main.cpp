@@ -424,19 +424,19 @@ int main(int argc, char *argv[]) {
     cout<<"Unnecessary checks are muted."<<endl;
 #endif
     CLI::App app{"RobustTetMeshing"};
-    app.add_option("--input", GArgs::args().input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
-    app.add_option("--postfix", GArgs::args().postfix, "--postfix P. Postfix P for output files. (string, optinal, default: '_')");
-    app.add_option("--output", GArgs::args().output, "--output OUTPUT. Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
-    app.add_option("--ideal-edge-length", GArgs::args().i_ideal_edge_length, "--ideal-edge-length L. ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
-    app.add_option("--epsilon", GArgs::args().i_epsilon, "--epsilon EPS. epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
-    app.add_option("--stage", GArgs::args().stage, "--stage STAGE. Run pipeline in stage STAGE. (integer, optional, default: 1)");
-    app.add_option("--filter-energy", GArgs::args().filter_energy, "--filter-energy ENERGY. Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
-    app.add_option("--max-pass", GArgs::args().max_pass, "--max-pass PASS. Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+    app.add_option("input,--input", GArgs::args().input, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
+    app.add_option("output,--output", GArgs::args().output, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("--postfix", GArgs::args().postfix, "Postfix P for output files. (string, optional, default: '_')");
+    app.add_option("--ideal-edge-length", GArgs::args().i_ideal_edge_length, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
+    app.add_option("--epsilon", GArgs::args().i_epsilon, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("--stage", GArgs::args().stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
+    app.add_option("--filter-energy", GArgs::args().filter_energy, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
+    app.add_option("--max-pass", GArgs::args().max_pass, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
 
-    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "--is-laplacian ISLAP. Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
-    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "--targeted-num-v TV. Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
-    app.add_option("--bg-mesh", GArgs::args().bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("--is-quiet", GArgs::args().is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
+    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
+    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
+    app.add_option("--is-quiet", GArgs::args().is_quiet, "Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
 
     try {
         app.parse(argc, argv);
