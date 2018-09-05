@@ -298,15 +298,15 @@ void LocalOperations::check() {
 
         for (auto it = tet_vertices[i].conn_tets.begin(); it != tet_vertices[i].conn_tets.end(); it++) {
             if (t_is_removed[*it])
-                std::cout << "t " << *it << " is removed!" << std::endl;
+                logger().debug("t {} is removed!", *it);
             auto jt=std::find(tets[*it].begin(), tets[*it].end(), i);
             if(jt==tets[*it].end()){
-                std::cout<<"t "<<*it<<" is not a conn_tet for v "<<i<<std::endl;
+                logger().debug("t {} is not a conn_tet for v {}", *it, i);
             }
         }
 
         if(tet_vertices[i].conn_tets.size()==0) {
-            std::cout << "empty conn_tets: v " << i << std::endl;
+            logger().debug("empty conn_tets: v {}", i);
             assert(tet_vertices[i].conn_tets.size()>0);
         }
 
@@ -331,11 +331,11 @@ void LocalOperations::check() {
                     is_found = true;
                 }
                 if (t_is_removed[*it])
-                    std::cout << "tet " << *it << " is removed!" << std::endl;
+                    logger().debug("tet {} is removed!", *it);
             }
             if (!is_found) {
-                std::cout << tets[i][0] << " " << tets[i][1] << " " << tets[i][2] << " " << tets[i][3] << std::endl;
-                std::cout << "tet " << i << " should be conn to v " << tets[i][j] << std::endl;
+                logger().debug("{} {} {} {}", tets[i][0], tets[i][1], tets[i][2], tets[i][3]);
+                logger().debug("tet {} should be conn to v {}", i, tets[i][j]);
             }
         }
     }
@@ -344,7 +344,7 @@ void LocalOperations::check() {
 }
 
 void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
-    std::cout<<"outputing info"<<std::endl;
+    logger().debug("outputing info");
     //update min/max dihedral angle infos
     for (int i = 0; i < tets.size(); i++) {
         if (!t_is_removed[i])
@@ -363,7 +363,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //                                                  tet_vertices[tets[i][2]].pos,
 //                                                  tet_vertices[tets[i][3]].pos);
 //        if (ori != CGAL::POSITIVE) {
-//            std::cout << "outputInfo(): tet flipped!!" << std::endl;
+//            logger().debug("outputInfo(): tet flipped!!");
 //            pausee();
 //        }
 //
@@ -371,8 +371,8 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 ////        TetQuality tq;
 ////        calTetQuality_AMIPS(tets[i], tq);
 ////        if (tq.slim_energy != tet_qualities[i].slim_energy) {
-////            std::cout << "quality incorrect!" << std::endl;
-////            std::cout << tq.slim_energy << " " << tet_qualities[i].slim_energy << std::endl;
+////            logger().debug("quality incorrect!");
+////            logger().debug("{} {}", tq.slim_energy, tet_qualities[i].slim_energy);
 ////            pausee();
 ////        }
 //    }
@@ -384,20 +384,20 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //
 //        for (int j = 0; j < 3; j++) {
 //            if (std::isnan(tet_vertices[i].posf[j])) {
-//                std::cout << "v " << i << " is nan" << std::endl;
+//                logger().debug("v {} is nan", i);
 //                pausee();
 //            }
 //        }
 //
 //        if (tet_vertices[i].is_on_bbox && tet_vertices[i].is_on_surface) {
-//            std::cout << "ERROR: tet_vertices[i].is_on_bbox && tet_vertices[i].is_on_surface" << std::endl;
+//            logger().debug("ERROR: tet_vertices[i].is_on_bbox && tet_vertices[i].is_on_surface");
 //            pausee();
 //        }
 //
 //        if (tet_vertices[i].is_on_bbox)
 //            cnt++;
 //    }
-//    std::cout << "on bbox = " << cnt << std::endl;
+//    logger().debug("on bbox = {}", cnt);
 
 //    std::vector<std::array<int, 4>> fs;
 //    for (int i = 0; i < tets.size(); i++) {
@@ -412,21 +412,19 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //        }
 //    }
 //    if (fs.size() % 2 != 0) {
-//        std::cout << "fs.size()%2!=0" << std::endl;
+//        logger().debug("fs.size()%2!=0");
 //    }
 //    std::sort(fs.begin(), fs.end());
 //    for (int i = 0; i < fs.size() - 1; i += 2) {
 //        if (fs[i][0] == fs[i + 1][0] && fs[i][1] == fs[i + 1][1] && fs[i][2] == fs[i + 1][2] &&
 //            fs[i][3] + fs[i + 1][3] == 0);//good
 //        else {
-//            std::cout << i << std::endl;
-//            std::cout << "hehehehe" << std::endl;
+//            logger().debug("{}", i);
+//            logger().debug("hehehehe");
 //            for (int j = 0; j < 4; j++)
-//                std::cout << fs[i][j] << " ";
-//            std::cout << std::endl;
+//                logger().debug("{}{}{}{}#vertices outside of envelop = {}", fs[i][j], " ";
 //            for (int j = 0; j < 4; j++)
-//                std::cout << fs[i + 1][j] << " ";
-//            std::cout << std::endl;
+//                std::cout, fs[i + 1][j], " ";
 //            pausee();
 //        }
 //    }
@@ -442,7 +440,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //                    cnt++;
 //            }
 //        }
-//        std::cout << "#vertices outside of envelop = " << cnt << std::endl;
+//        std::cout, cnt);
 //    }
 
     int cnt = 0;
@@ -454,10 +452,10 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //                if (tet_vertices[i].pos[0] != tet_vertices[i].posf[0]
 //                    || tet_vertices[i].pos[1] != tet_vertices[i].posf[1]
 //                    || tet_vertices[i].pos[2] != tet_vertices[i].posf[2]) {
-//                    std::cout << "tet_vertices[i].pos!=tet_vertices[i].posf" << std::endl;
-//                    std::cout << tet_vertices[i].pos[0] - tet_vertices[i].posf[0] << " "
-//                         << tet_vertices[i].pos[1] - tet_vertices[i].posf[1] << " "
-//                         << tet_vertices[i].pos[2] - tet_vertices[i].posf[2] << std::endl;
+//                    logger().debug("tet_vertices[i].pos!=tet_vertices[i].posf");
+//                    logger().debug("{}{}{}{}{}", tet_vertices[i].pos[0] - tet_vertices[i].posf[0], " "
+//, tet_vertices[i].pos[1] - tet_vertices[i].posf[1], " "
+//, tet_vertices[i].pos[2] - tet_vertices[i].posf[2]);
 //
 //                }
                 r_cnt++;
@@ -466,26 +464,26 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //                if (CGAL::to_double(tet_vertices[i].pos[0]) != tet_vertices[i].posf[0]
 //                    || CGAL::to_double(tet_vertices[i].pos[1]) != tet_vertices[i].posf[1]
 //                    || CGAL::to_double(tet_vertices[i].pos[2]) != tet_vertices[i].posf[2]) {
-//                    std::cout << "CGAL::to_double(tet_vertices[i].pos)!=tet_vertices[i].posf" << std::endl;
-//                    std::cout << CGAL::to_double(tet_vertices[i].pos[0]) - tet_vertices[i].posf[0] << " "
-//                         << CGAL::to_double(tet_vertices[i].pos[1]) - tet_vertices[i].posf[1] << " "
-//                         << CGAL::to_double(tet_vertices[i].pos[2]) - tet_vertices[i].posf[2] << std::endl;
+//                    logger().debug("CGAL::to_double(tet_vertices[i].pos)!=tet_vertices[i].posf");
+//                    logger().debug("{}{}{}{}{}", CGAL::to_double(tet_vertices[i].pos[0]) - tet_vertices[i].posf[0], " "
+//, CGAL::to_double(tet_vertices[i].pos[1]) - tet_vertices[i].posf[1], " "
+//, CGAL::to_double(tet_vertices[i].pos[2]) - tet_vertices[i].posf[2]);
 //                }
 //            }
         }
     }
 
 
-    std::cout << "# vertices = " << cnt << "(" << tet_vertices.size() << ") " << r_cnt << "(r)" << std::endl;
+    logger().debug("# vertices = {}({}) {}(r)", cnt, tet_vertices.size(), r_cnt);
 
     cnt = 0;
     for (int i = 0; i < tets.size(); i++) {
         if (!t_is_removed[i])
             cnt++;
     }
-    std::cout << "# tets = " << cnt << "(" << tets.size() << ")" << std::endl;
-    std::cout << "# total operations = " << counter << std::endl;
-    std::cout << "# accepted operations = " << suc_counter << std::endl;
+    logger().debug("# tets = {}({})", cnt, tets.size());
+    logger().debug("# total operations = {}", counter);
+    logger().debug("# accepted operations = {}", suc_counter);
 
 
     double min = 10, max = 0;
@@ -521,18 +519,10 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
         }
     }
 
-    std::cout << "min_d_angle = " << min
-         << ", max_d_angle = " << max
-         << ", max_slim_energy = " << max_slim_energy
-         << std::endl;
-    std::cout << "avg_min_d_angle = " << min_avg / cnt
-         << ", avg_max_d_angle = " << max_avg / cnt
-         << ", avg_slim_energy = " << avg_slim_energy / cnt
-         << std::endl;
-    std::cout << "min_d_angle: <6 " << cmp_cnt[0] / cnt << ";   <12 " << cmp_cnt[1] / cnt << ";  <18 " << cmp_cnt[2] / cnt
-         << std::endl;
-    std::cout << "max_d_angle: >174 " << cmp_cnt[5] / cnt << "; >168 " << cmp_cnt[4] / cnt << "; >162 " << cmp_cnt[3] / cnt
-         << std::endl;
+    logger().debug("min_d_angle = {}, max_d_angle = {}, max_slim_energy = {}", min, max, max_slim_energy);
+    logger().debug("avg_min_d_angle = {}, avg_max_d_angle = {}, avg_slim_energy = {}", min_avg / cnt, max_avg / cnt, avg_slim_energy / cnt);
+    logger().debug("min_d_angle: <6 {};   <12 {};  <18 {}", cmp_cnt[0] / cnt, cmp_cnt[1] / cnt, cmp_cnt[2] / cnt);
+    logger().debug("max_d_angle: >174 {}; >168 {}; >162 {}", cmp_cnt[5] / cnt, cmp_cnt[4] / cnt, cmp_cnt[3] / cnt);
 
     if(is_log)
         addRecord(MeshRecord(op_type, time, std::count(v_is_removed.begin(), v_is_removed.end(), false), cnt,
@@ -840,15 +830,15 @@ void LocalOperations::calTetQuality_AD(const std::array<int, 4>& tet, TetQuality
         heights[i] = CGAL::squared_distance(tet_vertices[tet[i]].posf, tmp_p);
 
 //        if(std::isnan(heights[i])){//because pln is degenerate
-//            std::cout<<tet_vertices[tet[i]].posf<<std::endl;
-//            std::cout<<tet_vertices[tet[(i + 1) % 4]].posf<<std::endl;
-//            std::cout<<tet_vertices[tet[(i + 2) % 4]].posf<<std::endl;
-//            std::cout<<tet_vertices[tet[(i + 3) % 4]].posf<<std::endl;
-//            std::cout<<pln.is_degenerate()<<std::endl;
+//            logger().debug("{}", tet_vertices[tet[i]].posf);
+//            logger().debug("{}", tet_vertices[tet[(i + 1) % 4]].posf);
+//            logger().debug("{}", tet_vertices[tet[(i + 2) % 4]].posf);
+//            logger().debug("{}", tet_vertices[tet[(i + 3) % 4]].posf);
+//            logger().debug("{}", pln.is_degenerate());
 //
-//            std::cout<<tmp_p<<std::endl;
-//            std::cout<<nv[i]<<std::endl;
-//            std::cout<<heights[i]<<std::endl;
+//            logger().debug("{}", tmp_p);
+//            logger().debug("{}", nv[i]);
+//            logger().debug("{}", heights[i]);
 //            pausee();
 //        }
 
@@ -1022,9 +1012,9 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 //        tris_queue.push(tri);
 //        cnt++;
 //        while (!tris_queue.empty()) {
-////            std::cout << "depth = " << depth << ", "
-////                 << "cnt = " << cnt << ", "
-////                 << "sub_cnt = " << sub_cnt << std::endl;
+////            logger().debug("depth = {}{}cnt = {}{}sub_cnt = {}", depth, ", "
+////, cnt, ", "
+////, sub_cnt);
 //            if (depth == 6)
 //                return true;
 ////                return false;
@@ -1041,7 +1031,7 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 //            tris[3] = Triangle_3f(mps[0], mps[1], mps[2]);
 //
 //            for (int j = 0; j < 4; j++) {
-////                std::cout << j << ": ";
+////                logger().debug("{}{}depth = {}{}cnt = {}{}sub_cnt = {}", j, ": ";
 //                side = getUpperLowerBounds(tris[j]);
 //                if (side == EnvelopSide::OUTSIDE)
 //                    return true;
@@ -1053,9 +1043,9 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 //
 //            tris_queue.pop();
 //            cnt--;
-////            std::cout << "depth = " << depth << ", "
-////                 << "cnt = " << cnt << ", "
-////                 << "sub_cnt = " << sub_cnt << std::endl;
+////            std::cout, depth, ", "
+////, cnt, ", "
+////, sub_cnt);
 //            if (cnt == 0) {
 //                cnt = sub_cnt;
 //                sub_cnt = 0;

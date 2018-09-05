@@ -18,7 +18,7 @@ namespace tetwild {
 
 void InoutFiltering::filter() {
 #ifndef MUTE_COUT
-    std::cout << "In/out filtering..." << std::endl;
+    logger().debug("In/out filtering...");
 #endif
 
     Eigen::MatrixXd C(std::count(t_is_removed.begin(), t_is_removed.end(), false), 3);
@@ -54,7 +54,7 @@ void InoutFiltering::filter() {
     //if the surface is totally reversed
     //TODO: test the correctness
 //    if(std::count(tmp_t_is_removed.begin(), tmp_t_is_removed.end(), false)==0) {
-//        std::cout<<"Winding number gives a empty mesh! trying again"<<std::endl;
+//        logger().debug("Winding number gives a empty mesh! trying again");
 //        for (int i = 0; i < F.rows(); i++) {
 //            int tmp = F(i, 0);
 //            F(i, 0) = F(i, 2);
@@ -76,7 +76,7 @@ void InoutFiltering::filter() {
 
     t_is_removed = tmp_t_is_removed;
 #ifndef MUTE_COUT
-    std::cout << "In/out Filtered!" << std::endl;
+    logger().debug("In/out Filtered!");
 #endif
 }
 
@@ -154,8 +154,8 @@ void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
         cnt++;
     }
     mSaver.save_mesh(oV, oT, 3, mSaver.TET);
-    std::cout << "#v = " << oV.rows() / 3 << std::endl;
-    std::cout << "#t = " << oT.rows() / 4 << std::endl;
+    logger().debug("#v = {}", oV.rows() / 3);
+    logger().debug("#t = {}", oT.rows() / 4);
 
     mSaver.save_elem_scalar_field("winding number", W);
 }

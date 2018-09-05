@@ -55,13 +55,12 @@ public:
     }
 
     void printInfo(){
-        std::cout<<"is_on_surface = "<<is_on_surface<<std::endl;
-        std::cout<<"is_on_bbox = "<<is_on_bbox<<std::endl;
+        logger().debug("is_on_surface = {}", is_on_surface);
+        logger().debug("is_on_bbox = {}", is_on_bbox);
         std::cout<<"conn_tets: ";
         for(auto it=conn_tets.begin();it!=conn_tets.end();it++){
             std::cout<<*it<<" ";
         }
-        std::cout<<std::endl;
     }
 
     bool is_locked = false;

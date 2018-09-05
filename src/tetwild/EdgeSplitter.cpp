@@ -95,8 +95,8 @@ void EdgeSplitter::split() {
             tets.reserve(es_queue.size() * 6 * 2 - t_slot_size + 1);
     }
 #ifndef MUTE_COUT
-    std::cout << es_queue.size() << std::endl;
-    std::cout << "ideal_weight = " << ideal_weight << std::endl;
+    logger().debug("{}", es_queue.size());
+    logger().debug("ideal_weight = {}", ideal_weight);
 #endif
 
     while (!es_queue.empty()) {
@@ -104,13 +104,13 @@ void EdgeSplitter::split() {
 
         std::array<int, 2> v_ids = ele.v_ids;
 //        if (State::state().is_print_tmp)
-//            std::cout << v_ids[0] << ' ' << v_ids[1]
-//                 << " " << std::sqrt(calEdgeLength(v_ids))
-//                 << " " << std::sqrt(ideal_weight) *
+//            logger().debug("{}{}{} {} {} {} {}", v_ids[0], ' ', v_ids[1]
+//, std::sqrt(calEdgeLength(v_ids))
+//, std::sqrt(ideal_weight) *
 //                           (tet_vertices[v_ids[0]].adaptive_scale + tet_vertices[v_ids[1]].adaptive_scale) / 2.0
-//                 << " " << tet_vertices[v_ids[0]].adaptive_scale
-//                 << " " << tet_vertices[v_ids[1]].adaptive_scale
-//                 << std::endl;
+//, tet_vertices[v_ids[0]].adaptive_scale
+//, tet_vertices[v_ids[1]].adaptive_scale
+//);
         es_queue.pop();
         if (splitAnEdge(v_ids))
             suc_counter++;
@@ -146,12 +146,6 @@ void EdgeSplitter::split() {
         }
     }
 
-}
-
-void printConnTets(const TetVertex& v){
-    for(auto it=v.conn_tets.begin();it!=v.conn_tets.end();it++)
-        std::cout<<*it<<' ';
-    std::cout<<std::endl;
 }
 
 bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
@@ -378,7 +372,7 @@ bool EdgeSplitter::isSplittable_cd1(double weight) {
 bool EdgeSplitter::isSplittable_cd1(int v1_id, int v2_id, double weight) {
     double adaptive_scale = (tet_vertices[v1_id].adaptive_scale + tet_vertices[v2_id].adaptive_scale) / 2.0;
 //    if(adaptive_scale==0){
-//        std::cout<<"adaptive_scale==0!!!"<<std::endl;
+//        logger().debug("adaptive_scale==0!!!");
 //    }
     if (weight > ideal_weight * adaptive_scale * adaptive_scale)
         return true;

@@ -118,8 +118,8 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
     p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
 
-//    std::cout<<"p_min: "<<CGAL::to_double(p_min[0])<<", "<<CGAL::to_double(p_min[1])<<", "<<CGAL::to_double(p_min[2])<<std::endl;
-//    std::cout<<"p_max: "<<CGAL::to_double(p_max[0])<<", "<<CGAL::to_double(p_max[1])<<", "<<CGAL::to_double(p_max[2])<<std::endl;
+//    logger().debug("p_min: {}, {}, {}", CGAL::to_double(p_min[0]), CGAL::to_double(p_min[1]), CGAL::to_double(p_min[2]));
+//    logger().debug("p_max: {}, {}, {}", CGAL::to_double(p_max[0]), CGAL::to_double(p_max[1]), CGAL::to_double(p_max[2]));
 
     for (int i = 0; i < 8; i++) {
         std::array<CGAL_FT, 3> p;
@@ -140,12 +140,12 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
     }
 #ifndef MUTE_COUT
-    std::cout<<voxel_points.size()<<" voxel points are added!"<<std::endl;
+    logger().debug("{} voxel points are added!", voxel_points.size());
 #endif
 
     Delaunay T(points.begin(), points.end());
 //    if(!T.is_valid()){
-//        std::cout<<"T is not valid!!"<<std::endl;
+//        logger().debug("T is not valid!!");
 //        exit(250);
 //    }
 

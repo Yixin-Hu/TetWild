@@ -34,7 +34,7 @@ void addRecord(const MeshRecord& record) {
 }
 
 void pausee(){
-    std::cout<<"Is pausing... (Enter '0' to exit and other characters to continue.)"<<std::endl;
+    logger().debug("Is pausing... (Enter '0' to exit and other characters to continue.)");
     char c;
     std::cin>>c;
     if(c=='0')
@@ -187,8 +187,8 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
         }
     }
 
-//    std::cout << "ps.size = " << ps.size() << std::endl;
-//    std::cout << "is output samples?" << std::endl;
+//    logger().debug("ps.size = {}", ps.size());
+//    logger().debug("is output samples?");
 //    int anw = 0;
 //    cin >> anw;
 //    if (anw != 0) {

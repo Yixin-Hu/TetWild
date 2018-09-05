@@ -32,16 +32,16 @@ void VertexSmoother::smooth() {
             suc_surface = suc_counter;
         }
 #ifndef MUTE_COUT
-        std::cout << (suc_in + suc_surface) / v_cnt << std::endl;
+        logger().debug("{}", (suc_in + suc_surface) / v_cnt);
         if (suc_in + suc_surface < v_cnt * 0.1) {
-            std::cout << i << std::endl;
+            logger().debug("{}", i);
             break;
         }
 #endif
     }
 #ifndef MUTE_COUT
     for (int i = 0; i < breakdown_timing.size(); i++) {
-        std::cout << breakdown_name[i] << ": " << breakdown_timing[i] << "s" << std::endl;
+        logger().debug("{}: {}s", breakdown_name[i], breakdown_timing[i]);
         breakdown_timing[i] = 0;//reset
     }
 #endif
@@ -94,7 +94,7 @@ bool VertexSmoother::smoothSingleVertex(int v_id, bool is_cal_energy){
         tet_vertices[v_id].posf = pf;
         tet_vertices[v_id].is_rounded = true;
         if (isFlip(new_tets)) {//TODO: why it happens?
-            std::cout << "flip in the end" << std::endl;
+            logger().debug("flip in the end");
             tet_vertices[v_id].pos = old_p;
             tet_vertices[v_id].posf = old_pf;
             tet_vertices[v_id].is_rounded = old_is_rounded;
@@ -196,7 +196,7 @@ void VertexSmoother::smoothSingle() {
             tet_vertices[v_id].posf = pf;
             tet_vertices[v_id].is_rounded = true;
             if (isFlip(new_tets)) {//TODO: why it happens?
-                std::cout << "flip in the end" << std::endl;
+                logger().debug("flip in the end");
                 tet_vertices[v_id].pos = old_p;
                 tet_vertices[v_id].posf = old_pf;
                 tet_vertices[v_id].is_rounded = old_is_rounded;
@@ -460,11 +460,11 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
         sf_suc_counter++;
 #ifndef MUTE_COUT
         if (sf_suc_counter % 1000 == 0)
-            std::cout << "1000 accepted!" << std::endl;
+            logger().debug("1000 accepted!");
 #endif
     }
 #ifndef MUTE_COUT
-    std::cout << "Totally " << sf_suc_counter << "(" << sf_counter << ")" << " vertices on surface are smoothed." << std::endl;
+    logger().debug("Totally {}({}) vertices on surface are smoothed.", sf_suc_counter, sf_counter);
 #endif
 }
 
@@ -654,7 +654,7 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
 #endif
     if (std::isinf(s_energy) || std::isnan(s_energy) || s_energy <= 0 || s_energy > State::state().MAX_ENERGY) {
 #ifndef MUTE_COUT
-        std::cout << "new E inf" << std::endl;
+        logger().debug("new E inf");
 #endif
         s_energy = State::state().MAX_ENERGY;
     }
@@ -716,31 +716,31 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
 
     if (std::isinf(energy)) {
 #ifndef MUTE_COUT
-        std::cout << v_id << " E inf" << std::endl;
+        logger().debug("{} E inf", v_id);
 #endif
         energy = State::state().MAX_ENERGY;
     }
     if (std::isnan(energy)) {
 #ifndef MUTE_COUT
-        std::cout << v_id << " E nan" << std::endl;
+        logger().debug("{} E nan", v_id);
 #endif
         return false;
     }
     if (energy <= 0) {
 #ifndef MUTE_COUT
-        std::cout << v_id << " E < 0" << std::endl;
+        logger().debug("{} E < 0", v_id);
 #endif
         return false;
     }
     if (!J.allFinite()) {
 #ifndef MUTE_COUT
-        std::cout << v_id << " J inf/nan" << std::endl;
+        logger().debug("{} J inf/nan", v_id);
 #endif
         return false;
     }
     if (!H.allFinite()) {
 #ifndef MUTE_COUT
-        std::cout << v_id << " H inf/nan" << std::endl;
+        logger().debug("{} H inf/nan", v_id);
 #endif
         return false;
     }
@@ -862,8 +862,8 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
         }
 
         // do normal smoothing on neighbor vertices
-//        std::cout<<"n_v_ids.size = "<<n_v_ids.size()<<std::endl;
-//        std::cout<<"n_v_ids2.size = "<<n_v_ids2.size()<<std::endl;
+//        logger().debug("n_v_ids.size = {}", n_v_ids.size());
+//        logger().debug("n_v_ids2.size = {}", n_v_ids2.size());
         for(int n_v_id:n_v_ids){
             smoothSingleVertex(n_v_id, true);
         }
@@ -876,7 +876,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
     }
 
 #ifndef MUTE_COUT
-    std::cout<<"suc.size = "<<cnt_suc<<std::endl;
+    logger().debug("suc.size = {}", cnt_suc);
 #endif
     return cnt_suc;
 }

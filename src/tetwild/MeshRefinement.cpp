@@ -45,7 +45,7 @@ void MeshRefinement::prepareData(bool is_init) {
     localOperation.calTetQualities(tets, tet_qualities, true);//cal all measure
 #ifndef MUTE_COUT
     double tmp_time = igl_timer.getElapsedTime();
-    std::cout << tmp_time << "s" << std::endl;
+    logger().debug("{}s", tmp_time);
     localOperation.outputInfo(MeshRecord::OpType::OP_OPT_INIT, tmp_time);
 #endif
 }
@@ -90,7 +90,7 @@ void MeshRefinement::round() {
         }
     }
 #ifndef MUTE_COUT
-    std::cout << "round: " << cnt << "(" << tet_vertices.size() << ")" << std::endl;
+    logger().debug("round: {}({})", cnt, tet_vertices.size());
 #endif
 
     //for check
@@ -100,7 +100,7 @@ void MeshRefinement::round() {
 //        CGAL::Orientation ori = CGAL::orientation(tet_vertices[tets[i][0]].pos, tet_vertices[tets[i][1]].pos,
 //                                                  tet_vertices[tets[i][2]].pos, tet_vertices[tets[i][3]].pos);
 //        if (ori != CGAL::POSITIVE) {
-//            std::cout << "round hehe" << std::endl;
+//            logger().debug("round hehe");
 //        }
 //    }
 }
@@ -129,63 +129,59 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
     if (ops[0]) {
 #ifndef MUTE_COUT
         igl_timer.start();
-        std::cout << "edge splitting..." << std::endl;
+        logger().debug("edge splitting...");
 #endif
         splitter.init();
         splitter.split();
 #ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         splitter.outputInfo(MeshRecord::OpType::OP_SPLIT, tmp_time, is_log);
-        std::cout << "edge splitting done!" << std::endl;
-        std::cout << "time = " << tmp_time << "s" << std::endl;
-        std::cout << std::endl;
+        logger().debug("edge splitting done!");
+        logger().debug("time = {}s", tmp_time);
 #endif
     }
 
     if (ops[1]) {
 #ifndef MUTE_COUT
         igl_timer.start();
-        std::cout << "edge collasing..." << std::endl;
+        logger().debug("edge collasing...");
 #endif
         collapser.init();
         collapser.collapse();
 #ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         collapser.outputInfo(MeshRecord::OpType::OP_COLLAPSE, tmp_time, is_log);
-        std::cout << "edge collasing done!" << std::endl;
-        std::cout << "time = " << tmp_time << "s" << std::endl;
-        std::cout << std::endl;
+        logger().debug("edge collasing done!");
+        logger().debug("time = {}s", tmp_time);
 #endif
     }
 
     if (ops[2]) {
 #ifndef MUTE_COUT
         igl_timer.start();
-        std::cout << "edge removing..." << std::endl;
+        logger().debug("edge removing...");
 #endif
         edge_remover.init();
         edge_remover.swap();
 #ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         edge_remover.outputInfo(MeshRecord::OpType::OP_SWAP, tmp_time, is_log);
-        std::cout << "edge removal done!" << std::endl;
-        std::cout << "time = " << tmp_time << "s" << std::endl;
-        std::cout << std::endl;
+        logger().debug("edge removal done!");
+        logger().debug("time = {}s", tmp_time);
 #endif
     }
 
     if (ops[3]) {
 #ifndef MUTE_COUT
         igl_timer.start();
-        std::cout << "vertex smoothing..." << std::endl;
+        logger().debug("vertex smoothing...");
 #endif
         smoother.smooth();
 #ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         smoother.outputInfo(MeshRecord::OpType::OP_SMOOTH, tmp_time, is_log);
-        std::cout << "vertex smooth done!" << std::endl;
-        std::cout << "time = " << tmp_time << "s" << std::endl;
-        std::cout << std::endl;
+        logger().debug("vertex smooth done!");
+        logger().debug("time = {}s", tmp_time);
 #endif
     }
 
@@ -279,7 +275,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         }
 
 #ifndef MUTE_COUT
-        std::cout << "////////////////Pass " << pass << " ////////////////" << std::endl;
+        logger().debug("////////////////Pass {} ////////////////", pass);
 #endif
         if (is_dealing_unrounded)
             collapser.is_limit_length = false;
@@ -296,7 +292,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                     is_finished = false;
             }
             if (is_finished) {
-                std::cout << "all vertices rounded!!" << std::endl;
+                logger().debug("all vertices rounded!!");
 //                break;
             }
         }
@@ -338,7 +334,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                     State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
                     State::state().g_cur_stage++;
                     update_buget = 2;
-//                    std::cout<<"[[[[[[[[[[[[[[UPDATE EPSILON "<<State::state().g_eps<<"]]]]]]]]]]]]]]]]"<<std::endl;
+//                    logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", State::state().g_eps);
                 } else
                     break;
             }
@@ -361,7 +357,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                 State::state().g_eps += State::state().g_eps_delta;
                 State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
                 State::state().g_cur_stage++;
-//                std::cout<<"[[[[[[[[[[[[[[UPDATE EPSILON "<<State::state().g_eps<<"]]]]]]]]]]]]]]]]"<<std::endl;
+//                logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", State::state().g_eps);
             }
 
             if (is_output && GArgs::args().mid_result == 1) {
@@ -486,7 +482,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                 VertexSmoother& smoother){
 #ifndef MUTE_COUT
-    std::cout<<"////////////////// Pre-processing //////////////////"<<std::endl;
+    logger().debug("////////////////// Pre-processing //////////////////");
 #endif
     collapser.is_limit_length = false;
     doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{false, true, false, false});
@@ -496,7 +492,7 @@ void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser
 void MeshRefinement::refine_post(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                  VertexSmoother& smoother){
 #ifndef MUTE_COUT
-    std::cout<<"////////////////// Post-processing //////////////////"<<std::endl;
+    logger().debug("////////////////// Post-processing //////////////////");
 #endif
     collapser.is_limit_length = true;
     for (int i = 0; i < tet_vertices.size(); i++) {
@@ -520,7 +516,7 @@ void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collaps
     }
     updateScalarField(false, true, target_energy * 0.8, true);
     for (int pass = 0; pass < 20; pass++) {
-        std::cout << "////////////////// Local Pass " << pass << " //////////////////" << std::endl;
+        logger().debug("////////////////// Local Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother);
 
         double avg_energy, max_energy;
@@ -552,7 +548,7 @@ bool MeshRefinement::refine_unrounded(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.is_limit_length = false;
     updateScalarField(true, false, -1, true);
     for (int pass = 0; pass < 5 * scalar_update; pass++) {
-        std::cout << "////////////////// Local Pass " << pass << " //////////////////" << std::endl;
+        logger().debug("////////////////// Local Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother);
 
         if (isRegionFullyRounded())
@@ -585,7 +581,7 @@ void MeshRefinement::refine_revert(EdgeSplitter& splitter, EdgeCollapser& collap
 
     int n_v0 = std::count(v_is_removed.begin(), v_is_removed.end(), false);
     for (int pass = 0; pass < 10; pass++) {
-        std::cout << "////////////////// Local (revert) Pass " << pass << " //////////////////" << std::endl;
+        logger().debug("////////////////// Local (revert) Pass {} //////////////////", pass);
         doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>({false, true, true, true}));
 //        doOperations(splitter, collapser, edge_remover, smoother);
 
@@ -633,9 +629,9 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
     Eigen::MatrixXi F;
     getSurface(V, F);
     Eigen::VectorXd W;
-    std::cout << "winding number..." << std::endl;
+    logger().debug("winding number...");
     igl::winding_number(V, F, C, W);
-    std::cout << "winding number done" << std::endl;
+    logger().debug("winding number done");
 
     cnt = 0;
     for (int i = 0; i < tets.size(); i++) {
@@ -655,7 +651,7 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     if (V_in.rows() == 0 || T_in.rows() == 0 || values.rows() == 0)
         return;
 
-    std::cout << "Applying sizing field..." << std::endl;
+    logger().debug("Applying sizing field...");
 
     GEO::Mesh bg_mesh;
     bg_mesh.vertices.clear();
@@ -747,7 +743,7 @@ void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapse
     if (std::abs(cnt - N) / N < size_threshold)
         return;
 
-    std::cout<<cnt<<" -> target "<<N<<std::endl;
+    logger().debug("{} -> target {}", cnt, N);
 
     if (cnt > N) {//reduce vertices
         double max_energy = splitter.getMaxEnergy();
@@ -795,7 +791,7 @@ bool MeshRefinement::isRegionFullyRounded(){
 void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean_up_local, double filter_energy, bool is_lock) {
 #ifndef MUTE_COUT
     igl_timer.start();
-    std::cout << "marking adaptive scales..." << std::endl;
+    logger().debug("marking adaptive scales...");
 #endif
     double tmp_time = 0;
 
@@ -808,7 +804,7 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
         radius0 *= 2;
 
 #ifndef MUTE_COUT
-    std::cout << "filter_energy = " << filter_energy << std::endl;
+    logger().debug("filter_energy = {}", filter_energy);
 #endif
     std::vector<double> adap_tmp(tet_vertices.size(), 1.5);
     double dynamic_adaptive_scale = GArgs::args().adaptive_scalar;
@@ -910,12 +906,12 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
             tet_vertices[i].adaptive_scale = new_scale;
     }
     if (is_clean_up_unrounded && is_lock)
-        std::cout << cnt << " vertices locked" << std::endl;
+        logger().debug("{} vertices locked", cnt);
 
 #ifndef MUTE_COUT
-    std::cout << "marked!" << std::endl;
+    logger().debug("marked!");
     tmp_time = igl_timer.getElapsedTime();
-    std::cout << "time = " << tmp_time << "s" << std::endl << std::endl;
+    logger().debug("time = {}s", tmp_time);
     addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1));
 #endif
 //    outputMidResult(true);
@@ -971,8 +967,8 @@ void MeshRefinement::postProcess(VertexSmoother& smoother) {
         if (!tet_vertices[i].is_on_surface)
             b_v_ids.push_back(i);
     }
-    std::cout << "tmp_is_on_surface.size = " << tmp_is_on_surface.size() << std::endl;
-    std::cout << "b_v_ids.size = " << b_v_ids.size() << std::endl;
+    logger().debug("tmp_is_on_surface.size = {}", tmp_is_on_surface.size());
+    logger().debug("b_v_ids.size = {}", b_v_ids.size());
     for (int i = 0; i < 20; i++) {
         if (smoother.laplacianBoundary(b_v_ids, tmp_is_on_surface, tmp_t_is_removed) == 0) {
             break;
@@ -991,9 +987,9 @@ void MeshRefinement::check() {
             continue;
         for (auto it = tet_vertices[i].conn_tets.begin(); it != tet_vertices[i].conn_tets.end(); it++)
             if (t_is_removed[*it])
-                std::cout << "v " << i << " should have conn_tet t" << *it << std::endl;
+                logger().debug("v {} should have conn_tet t{}", i, *it);
         if (tet_vertices[i].conn_tets.size() == 0) {
-            std::cout << "empty conn_tets: v " << i << std::endl;
+            logger().debug("empty conn_tets: v {}", i);
         }
     }
 
@@ -1008,9 +1004,9 @@ void MeshRefinement::check() {
                                                   tet_vertices[tets[i][3]].pos);
 
         if (ori == CGAL::COPLANAR) {
-            std::cout << "tet " << i << " is degenerate!" << std::endl;
+            logger().debug("tet {} is degenerate!", i);
         } else if (ori == CGAL::NEGATIVE) {
-            std::cout << "tet " << i << " is flipped!" << std::endl;
+            logger().debug("tet {} is flipped!", i);
         }
 
         for (int j = 0; j < 4; j++) {
@@ -1021,11 +1017,11 @@ void MeshRefinement::check() {
                     is_found = true;
                 }
                 if (t_is_removed[*it])
-                    std::cout << "tet " << *it << " is removed!" << std::endl;
+                    logger().debug("tet {} is removed!", *it);
             }
             if (!is_found) {
-                std::cout << tets[i][0] << " " << tets[i][1] << " " << tets[i][2] << " " << tets[i][3] << std::endl;
-                std::cout << "tet " << i << " should be conn to v " << tets[i][j] << std::endl;
+                logger().debug("{} {} {} {}", tets[i][0], tets[i][1], tets[i][2], tets[i][3]);
+                logger().debug("tet {} should be conn to v {}", i, tets[i][j]);
             }
 
             std::array<int, 3> f = {tets[i][j], tets[i][(j + 1) % 4], tets[i][(j + 2) % 4]};
@@ -1042,7 +1038,7 @@ void MeshRefinement::check() {
         setIntersection(tet_vertices[tet_faces[i][2]].conn_tets, tmp, tmp);
 
         if (tmp.size() != 1 && tmp.size() != 2)
-            std::cout << tmp.size() << std::endl;
+            logger().debug("{}", tmp.size());
     }
 }
 
@@ -1069,9 +1065,9 @@ void MeshRefinement::outputMidResult(bool is_with_bbox, double id) {
         Eigen::MatrixXi F;
         getSurface(V, F);
         Eigen::VectorXd W;
-        std::cout<<"winding number..."<<std::endl;
+        logger().debug("winding number...");
         igl::winding_number(V, F, C, W);
-        std::cout<<"winding number done"<<std::endl;
+        logger().debug("winding number done");
 
         cnt = 0;
         for (int i = 0; i < tets.size(); i++) {
@@ -1117,8 +1113,8 @@ void MeshRefinement::outputMidResult(bool is_with_bbox, double id) {
         cnt++;
     }
     mSaver.save_mesh(oV, oT, 3, mSaver.TET);
-    std::cout << "#v = " << oV.rows() / 3 << std::endl;
-    std::cout << "#t = " << oT.rows() / 4 << std::endl;
+    logger().debug("#v = {}", oV.rows() / 3);
+    logger().debug("#t = {}", oT.rows() / 4);
 
     Eigen::VectorXd angle(t_cnt);
     Eigen::VectorXd energy(t_cnt);
@@ -1345,7 +1341,7 @@ void getBoudnaryMesh(const Eigen::MatrixXd& V_sf, const Eigen::MatrixXi& F_sf, G
 }
 
 bool MeshRefinement::deserialization(const std::string& sf_file, const std::string& slz_file) {
-    std::cout<<"deserializing ..."<<std::endl;
+    logger().debug("deserializing ...");
 
     //process sf_file
     Eigen::MatrixXd V_in;
@@ -1381,13 +1377,13 @@ bool MeshRefinement::deserialization(const std::string& sf_file, const std::stri
 //        for (int j = 0; j < 4; j++)
 //            tet_vertices[tets[i][j]].conn_tets.insert(i);
 //    }
-    std::cout<<"deserialization done"<<std::endl;
+    logger().debug("deserialization done");
 
     return true;
 }
 
 void MeshRefinement::serialization(const std::string& slz_file) {
-    std::cout<<"serializing ..."<<std::endl;
+    logger().debug("serializing ...");
     igl::serialize(State::state().g_diag_l, "State::state().g_diag_l", slz_file, true);
     igl::serialize(State::state().g_eps, "State::state().g_eps", slz_file);
     igl::serialize(State::state().g_eps_2, "State::state().g_eps_2", slz_file);
@@ -1436,15 +1432,12 @@ void MeshRefinement::serialization(const std::string& slz_file) {
     for (int i = 0; i < is_surface_fs.size(); i++) {
         if (t_is_removed[i])
             continue;
-//        for (int j = 0; j < 4; j++)
-//            std::cout<<is_surface_fs[i][j]<<" ";
-//        std::cout<<std::endl;
         slz_is_surface_fs.push_back(is_surface_fs[i]);
     }
     igl::serialize(slz_is_surface_fs, "is_surface_fs", slz_file);
     slz_is_surface_fs.clear();
 
-    std::cout<<"serialization done"<<std::endl;
+    logger().debug("serialization done");
 }
 
 } // namespace tetwild

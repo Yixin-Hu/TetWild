@@ -176,7 +176,7 @@ void MeshConformer::matchDivFaces() {
         }
     }
 #ifndef MUTE_COUT
-    std::cout << std::count(is_matched.begin(), is_matched.end(), true) << " faces matched!" << std::endl;
+    logger().debug("{} faces matched!", std::count(is_matched.begin(), is_matched.end(), true));
 #endif
 }
 
@@ -210,9 +210,8 @@ void MeshConformer::getOrientedVertices(int bsp_f_id){
     bsp_faces[bsp_f_id].vertices=vertices;
 
     if(vertices.size()!=bsp_faces[bsp_f_id].vertices.size()){
-        std::cout<<"error!"<<std::endl;
-        std::cout<<bsp_faces[bsp_f_id].vertices.size()<<", "
-            <<bsp_faces[bsp_f_id].edges.size()<<std::endl;
+        logger().debug("error!");
+        logger().debug("{}, {}", bsp_faces[bsp_f_id].vertices.size(), bsp_faces[bsp_f_id].edges.size());
         exit(250);
     }
 }
@@ -381,7 +380,7 @@ Point_3 MeshConformer::to3d(const Point_2& p, const Plane_3& pln) {
         const Point_3 *p = boost::get<Point_3>(&*result);
         return *p;
     } else {
-        std::cout << "error to3d!" << std::endl;
+        logger().debug("error to3d!");
         exit(250);
     }
 }

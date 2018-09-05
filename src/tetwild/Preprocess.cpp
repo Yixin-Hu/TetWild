@@ -63,12 +63,12 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
                                       std::back_inserter(tmp));
                 if (tmp.size() == 1) {
                     bF(tmp[0]) = 1;
-//                    std::cout << "boundary tri! " << tmp[0] << std::endl;
+//                    logger().debug("boundary tri! {}", tmp[0]);
 //                    Triangle_3f tri(Point_3f(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2)),
 //                                    Point_3f(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2)),
 //                                    Point_3f(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2)));
 //                    if(tri.is_degenerate())
-//                        std::cout<<"degenerate"<<std::endl;
+//                        logger().debug("degenerate");
                     bV(F(i, j)) = 1;
                     bV(F(i, (j + 1) % 3)) = 1;
                 }
@@ -79,12 +79,12 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
         mSaver.save_scalar_field("boundary vertices", bV);
     }
 
-    std::cout<<"boundary checked!"<<std::endl;
+    logger().debug("boundary checked!");
 }
 
 bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
     std::string file_format = GArgs::args().input.substr(GArgs::args().input.size() - 3, 3);
-//    std::cout<<GArgs::args().input<<std::endl;
+//    logger().debug("{}", GArgs::args().input);
 //    pausee();
 
     ////read the input file
@@ -92,31 +92,31 @@ bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
     Eigen::MatrixXi F_tmp;
     if (file_format == "off" || file_format == "OFF") {
         if (!igl::readOFF(GArgs::args().input, V_tmp, F_tmp)) {
-            std::cout << "Libigl read .off fail. Please check your mesh!" << std::endl;
+            logger().debug("Libigl read .off fail. Please check your mesh!");
             return false;
         }
     } else if (file_format == "stl" || file_format == "STL") {
         Eigen::MatrixXd _;
         if (!igl::readSTL(GArgs::args().input, V_tmp, F_tmp, _)) {
-            std::cout << "Libigl read .stl fail. Please check your mesh!" << std::endl;
+            logger().debug("Libigl read .stl fail. Please check your mesh!");
             return false;
         }
     } else if (file_format == "obj" || file_format == "OBJ") {
         if (!igl::readOBJ(GArgs::args().input, V_tmp, F_tmp)) {
-            std::cout << "Libigl read .obj fail. Please check your mesh!" << std::endl;
+            logger().debug("Libigl read .obj fail. Please check your mesh!");
             return false;
         }
     } else if (file_format == "ply" || file_format == "PLY") {
         if (!igl::readPLY(GArgs::args().input, V_tmp, F_tmp)) {
-            std::cout << "Libigl read .ply fail. Please check your mesh!" << std::endl;
+            logger().debug("Libigl read .ply fail. Please check your mesh!");
             return false;
         }
     } else {
-        std::cout << "Only support .off/.stl/.obj/.ply formats!" << std::endl;
+        logger().debug("Only support .off/.stl/.obj/.ply formats!");
         return false;
     }
 
-    std::cout << "Mesh read in!" << std::endl;
+    logger().debug("Mesh read in!");
 
     return init(V_tmp, F_tmp, geo_b_mesh, geo_sf_mesh);
 }
@@ -129,7 +129,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //    std::cout.rdbuf(NULL);
 //#endif
 
-    std::cout << V_tmp.rows() << " " << F_tmp.rows() << std::endl;
+    logger().debug("{} {}", V_tmp.rows(), F_tmp.rows());
 
     Eigen::VectorXi IV, _;
 //        igl::unique_rows(V_tmp, V_in, _, IV);
@@ -144,8 +144,8 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //            }
 //        }
 #ifndef MUTE_COUT
-    std::cout << "#v = " << V_tmp.rows() << " -> " << V_in.rows() << std::endl;
-    std::cout << "#f = " << F_tmp.rows() << " -> " << F_in.rows() << std::endl;
+    logger().debug("#v = {} -> {}", V_tmp.rows(), V_in.rows());
+    logger().debug("#f = {} -> {}", F_tmp.rows(), F_in.rows());
 #endif
 //    checkBoundary(V_in, F_in);
 
@@ -174,8 +174,8 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
     State::state().g_ideal_l = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
 
-//    std::cout << "eps = " << State::state().g_eps << std::endl;
-//    std::cout << "ideal_l = " << State::state().g_ideal_l << std::endl;
+//    logger().debug("eps = {}", State::state().g_eps);
+//    logger().debug("ideal_l = {}", State::state().g_ideal_l);
 
     ////get GEO meshes
     geo_sf_mesh.vertices.clear();
@@ -211,7 +211,7 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
     //check isolated vertices
 //    for(int i=0;i<conn_f4v.size();i++){
 //        if(conn_f4v[i].size()==0)
-//            std::cout<<"iso"<<std::endl;
+//            logger().debug("iso");
 //    }
 
     std::vector<std::array<int, 2>> b_edges;
@@ -326,8 +326,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     }
 //    igl::writeSTL(State::state().g_working_dir+GArgs::args().postfix+"_simplified.stl", V_out, F_out);
 #ifndef MUTE_COUT
-    std::cout<<"#v = "<<V_out.rows()<<std::endl;
-    std::cout<<"#f = "<<F_out.rows()<<std::endl;
+    logger().debug("#v = {}", V_out.rows());
+    logger().debug("#f = {}", F_out.rows());
 #endif
 
     V_in = V_out;
@@ -356,8 +356,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             m_faces.push_back(f);
     }
 #ifndef MUTE_COUT
-    std::cout << "#v = " << m_vertices.size() << std::endl;
-    std::cout << "#f = " << F_in.rows()<<"->"<<m_faces.size() << std::endl;
+    logger().debug("#v = {}", m_vertices.size());
+    logger().debug("#f = {}->{}", F_in.rows(), m_faces.size());
 #endif
 
     State::state().g_eps /= eps_scalar;
@@ -463,7 +463,7 @@ void Preprocess::swap(GEO::MeshFacetsAABB& face_aabb_tree) {
             cnt++;
     }
 #ifndef MUTE_COUT
-    std::cout << cnt << " faces are swapped!!" << std::endl;
+    logger().debug("{} faces are swapped!!", cnt);
 #endif
 }
 
@@ -476,7 +476,7 @@ double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
 
 void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
     int cnt = 0;
-//    std::cout << "queue.size() = " << sm_queue.size() << std::endl;
+//    logger().debug("queue.size() = {}", sm_queue.size());
     while (!sm_queue.empty()) {
         std::array<int, 2> v_ids = sm_queue.top().v_ids;
         double old_weight = sm_queue.top().weight;
@@ -492,13 +492,13 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
             cnt++;
 #ifndef MUTE_COUT
             if (cnt % 1000 == 0)
-                std::cout << "1000 vertices removed" << std::endl;
+                logger().debug("1000 vertices removed");
 #endif
         }
     }
 #ifndef MUTE_COUT
-    std::cout << cnt << std::endl;
-    std::cout << c << std::endl;
+    logger().debug("{}", cnt);
+    logger().debug("{}", c);
 #endif
 
     if (cnt > 0)
@@ -507,7 +507,7 @@ void Preprocess::simplify(GEO::MeshFacetsAABB& face_aabb_tree) {
 
 void Preprocess::postProcess(GEO::MeshFacetsAABB& face_aabb_tree){
 #ifndef MUTE_COUT
-    std::cout << "postProcess!" << std::endl;
+    logger().debug("postProcess!");
 #endif
 
     std::vector<std::array<int, 2>> tmp_inf_es;
@@ -544,7 +544,7 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
     std::vector<int> n12_f_ids;
     setIntersection(conn_fs[v1_id], conn_fs[v2_id], n12_f_ids);
     if (n12_f_ids.size() != 2) {//!!!
-//        std::cout << "error: n12_f_ids.size()!=2" << std::endl;
+//        logger().debug("error: n12_f_ids.size()!=2");
         return false;
     }
 
@@ -718,8 +718,8 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 
         sampleTriangle(vs, ps);
 
-//        std::cout << "ps.size = " << ps.size() << std::endl;
-//        std::cout << "is output samples?" << std::endl;
+//        logger().debug("ps.size = {}", ps.size());
+//        logger().debug("is output samples?");
 //        int anw = 0;
 //        cin >> anw;
 //        if (anw != 0) {
@@ -821,13 +821,13 @@ int calEuclidean(const std::vector<std::array<int, 3>>& fs){
 }
 
 bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
-//    std::cout<<"v1:"<<v1_id<<std::endl;
+//    logger().debug("v1:{}", v1_id);
 //    for (int f_id:conn_fs[v1_id]) {
-//        std::cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<std::endl;
+//        logger().debug("{}{}{} {}", F_in(f_id, 0), ' ', F_in(f_id, 1), F_in(f_id, 2));
 //    }
-//    std::cout<<"v2:"<<v2_id<<std::endl;
+//    logger().debug("v2:{}", v2_id);
 //    for (int f_id:conn_fs[v2_id]) {
-//        std::cout<<F_in(f_id, 0)<<' '<<F_in(f_id, 1)<<" "<<F_in(f_id, 2)<<std::endl;
+//        logger().debug("{}{}{} {}", F_in(f_id, 0), ' ', F_in(f_id, 1), F_in(f_id, 2));
 //    }
 
     std::vector<std::array<int, 3>> fs;
@@ -843,9 +843,9 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
     }
     std::sort(fs.begin(), fs.end());
     fs.erase(std::unique(fs.begin(), fs.end()), fs.end());
-//    std::cout<<"fs.size() = "<<fs.size()<<std::endl;
+//    logger().debug("fs.size() = {}", fs.size());
     int ec0=calEuclidean(fs);
-//    std::cout<<ec0<<std::endl;
+//    logger().debug("{}", ec0);
 
     std::vector<std::array<int, 3>> fs1;
     for(int i=0;i<fs.size();i++){
@@ -855,7 +855,7 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
                 break;
             }
         }
-//        std::cout<<fs[i][0]<<" "<<fs[i][1]<<" "<<fs[i][2]<<std::endl;
+//        logger().debug("{} {} {}", fs[i][0], fs[i][1], fs[i][2]);
         if(fs[i][0]!=fs[i][1]&&fs[i][1]!=fs[i][2]&&fs[i][0]!=fs[i][2]){
             std::array<int, 3> f = {fs[i][0], fs[i][1], fs[i][2]};
             std::sort(f.begin(), f.end());
@@ -864,9 +864,9 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
     }
     std::sort(fs1.begin(), fs1.end());
     fs1.erase(std::unique(fs1.begin(), fs1.end()), fs1.end());
-//    std::cout<<"fs1.size() = "<<fs1.size()<<std::endl;
+//    logger().debug("fs1.size() = {}", fs1.size());
     int ec1=calEuclidean(fs1);
-//    std::cout<<ec1<<std::endl;
+//    logger().debug("{}", ec1);
 
 //    pausee();
 
@@ -945,7 +945,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //            geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
 //            double dis = current_point.distance2(nearest_point);
 //            if(f_id==2514)
-//                std::cout<<cnt<<": "<<dis<<" "<<sq_dist<<" "<<int(prev_facet)<<std::endl;
+//                logger().debug("{}: {} {} {}", cnt, dis, sq_dist, int(prev_facet));
             if (dis > max_dis) {
                 max_dis = dis;
                 pp=current_point;
@@ -956,46 +956,42 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
         cnt = 0;
         if(f_id==1681) {
             for (const GEO::vec3 &p:ps) {
-                std::cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt] << "; "
-                     << geo_face_tree.squared_distance(p) << std::endl;
+                logger().debug("{}: {}, {}, {}; {}; {}", cnt, p[0], p[1], p[2], fs[cnt], geo_face_tree.squared_distance(p));
                 cnt++;
             }
         }
 
         eps_dis(f_id) = sqrt(max_dis / State::state().g_eps_2);
         if(eps_dis(f_id)>1) {
-            std::cout << "ERROR: simplified input goes outside of the envelop" << std::endl;
-            std::cout<<f_id<<std::endl;
-            std::cout << eps_dis(f_id) << std::endl;
-            std::cout<<max_dis <<" "<< State::state().g_eps_2<<std::endl;
+            logger().debug("ERROR: simplified input goes outside of the envelop");
+            logger().debug("{}", f_id);
+            logger().debug("{}", eps_dis(f_id));
+            logger().debug("{} {}", max_dis, State::state().g_eps_2);
             cnt = 0;
             for (const GEO::vec3 &p:ps) {
-                std::cout << cnt << ": " << p[0] << ", " << p[1] << ", " << p[2] << "; " << fs[cnt]<<"; "<< geo_face_tree.squared_distance(p)<< std::endl;
+                logger().debug("{}: {}, {}, {}; {}; {}", cnt, p[0], p[1], p[2], fs[cnt], geo_face_tree.squared_distance(p));
                 cnt++;
             }
-//            std::cout<<geo_face_tree.squared_distance(pp)<<std::endl;
+//            logger().debug("{}", geo_face_tree.squared_distance(pp));
 //            double dd;
-//            std::cout << int(geo_face_tree.nearest_facet(pp, nearest_point, dd)) << std::endl;
-//            std::cout << dd << std::endl;
+//            logger().debug("{}", int(geo_face_tree.nearest_facet(pp, nearest_point, dd)));
+//            logger().debug("{}", dd);
 
             std::vector<int> vf={1681, 1675, 1671, 1666};
             for(int j=0;j<vf.size();j++) {
-                std::cout << "f " << vf[j] << ": ";
-                std::cout << GEO::Geom::triangle_area(
+                logger().debug("f {}: {}", vf[j], GEO::Geom::triangle_area(
                         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 0)),
                         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 1)),
-                        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 2))) << std::endl;
+                        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 2))));
 
-//                std::cout << geo_sf_mesh.facets.vertex(vf[j], 0) << " " << geo_sf_mesh.facets.vertex(vf[j], 1) << " "
-//                     << geo_sf_mesh.facets.vertex(vf[j], 2) << std::endl;
+//                logger().debug("{} {}{}{}", geo_sf_mesh.facets.vertex(vf[j], 0), geo_sf_mesh.facets.vertex(vf[j], 1), " "
+//, geo_sf_mesh.facets.vertex(vf[j], 2));
                 int v1_id = geo_sf_mesh.facets.vertex(vf[j], 0);
                 int v2_id = geo_sf_mesh.facets.vertex(vf[j], 1);
                 int v3_id = geo_sf_mesh.facets.vertex(vf[j], 2);
                 std::array<int, 3> v_ids = {v1_id ,v2_id, v3_id};
                 for (int k = 0; k < 3; k++) {
-                    std::cout << v_ids[k] << ": " << geo_sf_mesh.vertices.point(v_ids[k])[0] << " "
-                         << geo_sf_mesh.vertices.point(v_ids[k])[1]
-                         << " " << geo_sf_mesh.vertices.point(v_ids[k])[2] << std::endl;
+                    logger().debug("{}: {} {} {}", v_ids[k], geo_sf_mesh.vertices.point(v_ids[k])[0], geo_sf_mesh.vertices.point(v_ids[k])[1], geo_sf_mesh.vertices.point(v_ids[k])[2]);
                 }
             }
 
@@ -1023,20 +1019,20 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             }
             for(int i=0;i<geo_sf_mesh.facets.nb();i++) {
                 if(diss[i]==min_dis)
-                    std::cout<<"vf_id = "<<i<<std::endl;
+                    logger().debug("vf_id = {}", i);
             }
-            std::cout << "something" << std::endl;
-            std::cout<<"double check 1681 "<<GEO::Geom::point_triangle_squared_distance(ps[10],
+            logger().debug("something");
+            logger().debug("double check 1681 {}", GEO::Geom::point_triangle_squared_distance(ps[10],
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 0)),
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 1)),
                                                                       geo_sf_mesh.vertices.point(
                                                                               geo_sf_mesh.facets.vertex(1681, 2)),
-                                                                                   nearest_p, _1, _2, _3)<<std::endl;
+                                                                                   nearest_p, _1, _2, _3));
 
-            std::cout<<"min_dis = "<<min_dis<<std::endl;
-            std::cout<<"diag = "<<State::state().g_diag_l<<std::endl;
+            logger().debug("min_dis = {}", min_dis);
+            logger().debug("diag = {}", State::state().g_diag_l);
 //            exit(250);
         }
 

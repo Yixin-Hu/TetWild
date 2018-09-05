@@ -38,7 +38,7 @@ void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::
     ///cal arrangement & tetrahedralization
     triangulation(tet_vertices, tets);
 #ifndef MUTE_COUT
-    std::cout<<"#v = "<<tet_vertices.size()<<" #t = "<<tets.size()<<std::endl;
+    logger().debug("#v = {} #t = {}", tet_vertices.size(), tets.size());
 #endif
 
     for (int i = 0; i < tets.size(); i++) {
@@ -201,7 +201,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         }
     }
 #ifndef MUTE_COUT
-    std::cout<<"2D arr "<<tmp_timer.getElapsedTime()<<std::endl;
+    logger().debug("2D arr {}", tmp_timer.getElapsedTime());
 #endif
     tmp_timer.start();
 
@@ -256,7 +256,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     }
 
 #ifndef MUTE_COUT
-    std::cout<<"improvement "<<tmp_timer.getElapsedTime()<<std::endl;
+    logger().debug("improvement {}", tmp_timer.getElapsedTime());
 #endif
     tmp_timer.start();
     ///cal CDT & insert tets
@@ -282,7 +282,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
                                   MC.to2d(bsp_vertices[bsp_edges[bsp_faces[i].edges[j]].vertices[1]]));
         }
         if(cdt.number_of_vertices() != bsp_faces[i].vertices.size()){
-            std::cout<<"error: cdt.number_of_vertices() != bsp_faces[i].vertices.size()"<<std::endl;
+            logger().debug("error: cdt.number_of_vertices() != bsp_faces[i].vertices.size()");
         }
         std::map<Point_2, int> vs_cdt2bsp;
         for (int j = 0; j < bsp_faces[i].vertices.size(); j++) {
@@ -366,10 +366,10 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         }
     }
 #ifndef MUTE_COUT
-    std::cout<<"all_cnt = "<<all_cnt<<std::endl;
-    std::cout<<"rounded_cnt = "<<rounded_cnt<<std::endl;
+    logger().debug("all_cnt = {}", all_cnt);
+    logger().debug("rounded_cnt = {}", rounded_cnt);
 
-    std::cout<<"CDT "<<tmp_timer.getElapsedTime()<<std::endl;
+    logger().debug("CDT {}", tmp_timer.getElapsedTime());
 #endif
 }
 
@@ -540,7 +540,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
             CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 
             if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-                std::cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << std::endl;
+                logger().debug("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
                 exit(250);
             }
             if (side == CGAL::ON_POSITIVE_SIDE)//outside
@@ -568,7 +568,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
                     else
                         is_surface_fs[i][j] -= delta;
 //                    else {
-//                        std::cout << "wrong direction!!" << std::endl;
+//                        logger().debug("wrong direction!!");
 //                        pausee();
 //                    }
                 }
@@ -580,7 +580,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
 //                CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 //
 //                if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-//                    std::cout << "ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!" << std::endl;
+//                    logger().debug("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
 //                    exit(250);
 //                }
 //                if (side == CGAL::ON_POSITIVE_SIDE)//outside
@@ -659,7 +659,7 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
         i++;
     }
 #ifndef MUTE_COUT
-    std::cout<<"#v on bbox = "<<i<<std::endl;
+    logger().debug("#v on bbox = {}", i);
 #endif
 }
 
@@ -718,8 +718,8 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
             cnt_surface++;
     }
 #ifndef MUTE_COUT
-    std::cout << cnt_boundary << " vertices on boundary" << std::endl;
-    std::cout << cnt_surface << " vertices on surface" << std::endl;
+    logger().debug("{} vertices on boundary", cnt_boundary);
+    logger().debug("{} vertices on surface", cnt_surface);
 #endif
 }
 

@@ -82,7 +82,7 @@ void EdgeRemover::swap(){
         std::array<int, 2> v_ids=ele.v_ids;
         er_queue.pop();
 
-//        std::cout<<v_ids[0]<<" "<<v_ids[1]<<" "<<t_ids.size()<<" "<<std::endl;
+//        logger().debug("{} {} {} ", v_ids[0], v_ids[1], t_ids.size());
 
         while(!er_queue.empty()){
             std::array<int, 2> tmp_v_ids = er_queue.top().v_ids;
@@ -105,20 +105,20 @@ void EdgeRemover::swap(){
         }
 
 //        if(is_fail){
-//            std::cout<<"f"<<std::endl;
+//            logger().debug("f");
 //        } else
-//            std::cout<<"s"<<std::endl;
+//            logger().debug("s");
 
         counter++;
     }
 #ifndef MUTE_COUT
-    std::cout<<"tmp_cnt3 = "<<tmp_cnt3<<std::endl;
-    std::cout<<"tmp_cnt4 = "<<tmp_cnt4<<std::endl;
-    std::cout<<"tmp_cnt5 = "<<tmp_cnt5<<std::endl;
-    std::cout<<"tmp_cnt6 = "<<tmp_cnt6<<std::endl;
-    std::cout<<cnt5<<std::endl;
+    logger().debug("tmp_cnt3 = {}", tmp_cnt3);
+    logger().debug("tmp_cnt4 = {}", tmp_cnt4);
+    logger().debug("tmp_cnt5 = {}", tmp_cnt5);
+    logger().debug("tmp_cnt6 = {}", tmp_cnt6);
+    logger().debug("{}", cnt5);
 
-    std::cout<<"energy_time = "<<energy_time<<std::endl;
+    logger().debug("energy_time = {}", energy_time);
 #endif
 }
 
@@ -575,7 +575,7 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
             qs.push_back(tet_qs[(i - 1 + 5) % 5][j]);
         }
         if(qs.size() != 6){
-            std::cout<<"ERROR: qs.size() != 6"<<std::endl;
+            logger().debug("ERROR: qs.size() != 6");
             pausee();
         }
         getCheckQuality(qs, new_tq);

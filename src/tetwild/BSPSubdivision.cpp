@@ -29,8 +29,7 @@ void BSPSubdivision::init() {
 		nf+=1;
 	}
 #ifndef MUTE_COUT
-	std::cout << "# nodes need subdivision = " << nf<<"/"<< processing_n_ids.size() << "/"
-         << MC.bsp_nodes.size() << std::endl;
+	logger().debug("# nodes need subdivision = {}/{}/{}", nf, processing_n_ids.size(), MC.bsp_nodes.size());
 #endif
 }
 
@@ -207,7 +206,7 @@ void BSPSubdivision::subdivideBSPNodes() {
 
                     v_sides[new_v_id] = V_ON;//fixed
                 } else {
-                    std::cout << "error cal p!" << std::endl;
+                    logger().debug("error cal p!");
                     exit(250);
                 }
 
