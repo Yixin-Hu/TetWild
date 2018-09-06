@@ -22,7 +22,6 @@ matrix:
       osx_image: xcode8.3
 
 before_install:
-  - git submodule update --init --recursive
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     else
