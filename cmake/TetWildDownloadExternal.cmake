@@ -36,3 +36,11 @@ function(tetwild_download_spdlog)
         GIT_TAG        v1.1.0
     )
 endfunction()
+
+## CLI11
+function(tetwild_download_cli11)
+    tetwild_download_project(cli11
+        URL     https://github.com/CLIUtils/CLI11/archive/v1.6.1.tar.gz
+        URL_MD5 48ef97262adb0b47a2f0a7edbda6e2aa
+    )
+endfunction()

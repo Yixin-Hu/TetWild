@@ -34,8 +34,8 @@ if(TETWILD_WITH_HUNTER)
 	# Needs to be set before the main project... argh =/
 	include(HunterGate)
 	HunterGate(
- 	   URL "https://github.com/ruslo/hunter/archive/v0.23.25.tar.gz"
-    	SHA1 "cb75cce9a3a8d552e70e7118f3203eb4ac05c201"
+		URL "https://github.com/ruslo/hunter/archive/v0.23.25.tar.gz"
+		SHA1 "cb75cce9a3a8d552e70e7118f3203eb4ac05c201"
 	)
 endif()
 
@@ -70,7 +70,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # 3rd party libraries
 ################################################################################
-
 include(TetWildDependencies)
 
 ################################################################################
@@ -150,3 +149,23 @@ igl_copy_cgal_dll(TetWild)
 
 # Install
 install(TARGETS TetWild RUNTIME DESTINATION bin)
+
+################################################################################
+# Folders for Visual Studio/XCode IDEs
+################################################################################
+
+# geogram
+set_target_properties(geogram PROPERTIES FOLDER extern/geogram)
+set_target_properties(geogram_third_party PROPERTIES FOLDER extern/geogram)
+set_target_properties(uninstall PROPERTIES FOLDER extern/geogram)
+# spdlog
+set_target_properties(async_bench PROPERTIES FOLDER extern/spdlog)
+set_target_properties(bench PROPERTIES FOLDER extern/spdlog)
+set_target_properties(example PROPERTIES FOLDER extern/spdlog)
+set_target_properties(latency PROPERTIES FOLDER extern/spdlog)
+set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
+set_target_properties(spdlog_headers_for_ide PROPERTIES FOLDER extern/spdlog)
+set_target_properties(spdlog-utests PROPERTIES FOLDER extern/spdlog)
+set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
+# pymesh
+set_target_properties(pymesh_tiny PROPERTIES FOLDER extern/pymesh)
