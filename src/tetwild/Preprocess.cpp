@@ -170,7 +170,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
         State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
     }
 
-    // State::state().g_ideal_l = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
+    State::state().g_ideal_l = State::state().g_diag_l / GArgs::args().i_ideal_edge_length;
 
 //    logger().debug("eps = {}", State::state().g_eps);
 //    logger().debug("ideal_l = {}", State::state().g_ideal_l);
