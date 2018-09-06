@@ -68,14 +68,17 @@ if(NOT TARGET spdlog::spdlog)
 	add_subdirectory(${TETWILD_EXTERNAL}/spdlog)
 endif()
 
-# cgal
-find_package(CGAL REQUIRED)
-
 # libigl
-find_package(LIBIGL REQUIRED)
+if(NOT TARGET igl::core)
+	tetwild_download_libigl()
+	find_package(LIBIGL REQUIRED)
+endif()
 
 # geogram
-include(geogram)
+if(NOT TARGET geogram)
+	tetwild_download_geogram()
+	include(geogram)
+endif()
 
 # pymesh loaders
 add_subdirectory(${TETWILD_EXTERNAL}/pymesh)
@@ -134,9 +137,10 @@ target_link_libraries(libTetWild
 	PUBLIC
 		geogram
 		igl::core
-		igl::cgal
 		pymesh::pymesh
 		spdlog::spdlog
+	PRIVATE
+		igl::cgal
 )
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 
@@ -150,10 +154,12 @@ endif()
 # Building executable
 add_executable(TetWild src/main.cpp)
 target_link_libraries(TetWild
-	libTetWild
-	CLI11::CLI11
+		libTetWild
+		CLI11::CLI11
+		igl::cgal
 )
 target_include_directories(TetWild PRIVATE src)
+igl_copy_cgal_dll(TetWild)
 
 # Install
 install(TARGETS TetWild RUNTIME DESTINATION bin)
