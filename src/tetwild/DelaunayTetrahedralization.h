@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 3/29/17.
@@ -12,11 +12,14 @@
 #ifndef GTET_DELAUNAYTETRAHEDRALIZATION_H
 #define GTET_DELAUNAYTETRAHEDRALIZATION_H
 
-#include <tetwild/heads.h>
-
+#include <tetwild/Common.h>
 #include <tetwild/BSPElements.h>
+#include <geogram/mesh/mesh.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
+
+namespace tetwild {
+
 typedef CGAL::Triangulation_vertex_base_with_info_3<unsigned, K> Vb;
 typedef CGAL::Triangulation_data_structure_3<Vb> Tds;
 typedef CGAL::Delaunay_triangulation_3<K, Tds> Delaunay;
@@ -39,5 +42,6 @@ public:
                        const std::string& output_file);
 };
 
+} // namespace tetwild
 
 #endif //GTET_DELAUNAYTETRAHEDRALIZATION_H

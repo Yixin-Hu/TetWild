@@ -1,15 +1,17 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 4/3/17.
 //
 
 #include <tetwild/BSPSubdivision.h>
+
+namespace tetwild {
 
 void BSPSubdivision::init() {
     for (int old_n_id = 0; old_n_id < MC.bsp_nodes.size(); old_n_id++) {
@@ -26,10 +28,7 @@ void BSPSubdivision::init() {
 		}
 		nf+=1;
 	}
-#ifndef MUTE_COUT
-	cout << "# nodes need subdivision = " << nf<<"/"<< processing_n_ids.size() << "/"
-         << MC.bsp_nodes.size() << endl;
-#endif
+	logger().debug("# nodes need subdivision = {}/{}/{}", nf, processing_n_ids.size(), MC.bsp_nodes.size());
 }
 
 void BSPSubdivision::subdivideBSPNodes() {
@@ -205,7 +204,7 @@ void BSPSubdivision::subdivideBSPNodes() {
 
                     v_sides[new_v_id] = V_ON;//fixed
                 } else {
-                    cout << "error cal p!" << endl;
+                    logger().debug("error cal p!");
                     exit(250);
                 }
 
@@ -380,3 +379,5 @@ void BSPSubdivision::getVertices(BSPFace& face){
     for(auto it=vs.begin();it!=vs.end();it++)
         face.vertices.push_back(*it);
 }
+
+} // namespace tetwild

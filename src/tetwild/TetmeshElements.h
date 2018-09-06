@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by yihu on 8/22/17.
@@ -12,7 +12,9 @@
 #ifndef NEW_GTET_TETMESHELEMENTS_H
 #define NEW_GTET_TETMESHELEMENTS_H
 
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
+
+namespace tetwild {
 
 //const int ON_SURFACE_FALSE = 0;//delete
 //const int ON_SURFACE_TRUE_INSIDE = 1;//delete
@@ -53,13 +55,12 @@ public:
     }
 
     void printInfo(){
-        cout<<"is_on_surface = "<<is_on_surface<<endl;
-        cout<<"is_on_bbox = "<<is_on_bbox<<endl;
-        cout<<"conn_tets: ";
+        logger().debug("is_on_surface = {}", is_on_surface);
+        logger().debug("is_on_bbox = {}", is_on_bbox);
+        std::cout<<"conn_tets: ";
         for(auto it=conn_tets.begin();it!=conn_tets.end();it++){
-            cout<<*it<<" ";
+            std::cout<<*it<<" ";
         }
-        cout<<endl;
     }
 
     bool is_locked = false;
@@ -90,20 +91,20 @@ public:
 //    }
 
     bool isBetterThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == ENERGY_AMIPS || energy_type == ENERGY_DIRICHLET) {
+        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
             return slim_energy < tq.slim_energy;
         }
-        else if (energy_type == ENERGY_AD) {
+        else if (energy_type == State::state().ENERGY_AD) {
             return min_d_angle > tq.min_d_angle && max_d_angle < tq.max_d_angle;
         }
         else
             return false;
     }
     bool isBetterOrEqualThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == ENERGY_AMIPS || energy_type == ENERGY_DIRICHLET) {
+        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
             return slim_energy <= tq.slim_energy;
         }
-        else if (energy_type == ENERGY_AD) {
+        else if (energy_type == State::state().ENERGY_AD) {
             return min_d_angle >= tq.min_d_angle && max_d_angle <= tq.max_d_angle;
         }
         else
@@ -156,10 +157,12 @@ public:
     }
 };
 
+} // namespace tetwild
+
 namespace igl {
     namespace serialization {
         template<>
-        inline void serialize(const TetVertex &v, std::vector<char> &buffer) {
+        inline void serialize(const tetwild::TetVertex &v, std::vector<char> &buffer) {
             ::igl::serialize(v.pos, std::string("pos"), buffer);
             ::igl::serialize(v.posf, std::string("posf"), buffer);
 
@@ -186,7 +189,7 @@ namespace igl {
         }
 
         template<>
-        inline void deserialize(TetVertex &v, const std::vector<char> &buffer) {
+        inline void deserialize(tetwild::TetVertex &v, const std::vector<char> &buffer) {
             ::igl::deserialize(v.pos, std::string("pos"), buffer);
             ::igl::deserialize(v.posf, std::string("posf"), buffer);
 

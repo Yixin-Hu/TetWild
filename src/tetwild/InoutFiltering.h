@@ -1,9 +1,9 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by yihu on 6/13/17.
@@ -12,8 +12,10 @@
 #ifndef NEW_GTET_INOUTFILTERING_H
 #define NEW_GTET_INOUTFILTERING_H
 
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
 #include <tetwild/TetmeshElements.h>
+
+namespace tetwild {
 
 class InoutFiltering {
 public:
@@ -37,5 +39,6 @@ public:
     void outputWindingNumberField(const Eigen::VectorXd& W);
 };
 
+} // namespace tetwild
 
 #endif //NEW_GTET_INOUTFILTERING_H

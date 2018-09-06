@@ -1,15 +1,17 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
+//
 // Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Created by Yixin Hu on 3/29/17.
 //
 
 #include <tetwild/MeshConformer.h>
+
+namespace tetwild {
 
 void MeshConformer::match() {
     is_matched.assign(m_faces.size(), false);
@@ -173,9 +175,7 @@ void MeshConformer::matchDivFaces() {
             seed_nids.insert(new_nids.begin(), new_nids.end());//c++11
         }
     }
-#ifndef MUTE_COUT
-    cout << std::count(is_matched.begin(), is_matched.end(), true) << " faces matched!" << endl;
-#endif
+    logger().debug("{} faces matched!", std::count(is_matched.begin(), is_matched.end(), true));
 }
 
 void MeshConformer::getOrientedVertices(int bsp_f_id){
@@ -208,9 +208,8 @@ void MeshConformer::getOrientedVertices(int bsp_f_id){
     bsp_faces[bsp_f_id].vertices=vertices;
 
     if(vertices.size()!=bsp_faces[bsp_f_id].vertices.size()){
-        cout<<"error!"<<endl;
-        cout<<bsp_faces[bsp_f_id].vertices.size()<<", "
-            <<bsp_faces[bsp_f_id].edges.size()<<endl;
+        logger().debug("error!");
+        logger().debug("{}, {}", bsp_faces[bsp_f_id].vertices.size(), bsp_faces[bsp_f_id].edges.size());
         exit(250);
     }
 }
@@ -379,10 +378,9 @@ Point_3 MeshConformer::to3d(const Point_2& p, const Plane_3& pln) {
         const Point_3 *p = boost::get<Point_3>(&*result);
         return *p;
     } else {
-        cout << "error to3d!" << endl;
+        logger().debug("error to3d!");
         exit(250);
     }
 }
 
-
-
+} // namespace tetwild

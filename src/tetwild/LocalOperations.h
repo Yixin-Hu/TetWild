@@ -13,12 +13,15 @@
 #define NEW_GTET_LOCALOPERATIONS_H
 
 #include <tetwild/TetmeshElements.h>
-#include <igl/grad.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <igl/grad.h>
+#include <igl/Timer.h>
 
 #ifdef TETWILD_WITH_ISPC
 #include <ispc/energy.h>
 #endif
+
+namespace tetwild {
 
 enum class EnvelopSide{
     OUTSIDE=0,
@@ -111,5 +114,7 @@ public:
     bool isLocked_ui(const std::array<int, 2>& e);
     bool isTetLocked_ui(int tid);
 };
+
+} // namespace tetwild
 
 #endif //NEW_GTET_LOCALOPERATIONS_H

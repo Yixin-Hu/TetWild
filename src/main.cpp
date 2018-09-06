@@ -5,21 +5,25 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License
 // v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
 #include <tetwild/Preprocess.h>
 #include <tetwild/DelaunayTetrahedralization.h>
 #include <tetwild/BSPSubdivision.h>
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <igl/writeOBJ.h>
+#include <pymesh/MshSaver.h>
 #include <CLI/CLI11.hpp>
+
+using namespace tetwild;
 
 MeshRefinement MR;
 
 void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
                         const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
                         const std::vector<int>& v_ids) {
-    cout << "final quality:" << endl;
+    logger().debug("final quality:");
     double min = 10, max = 0;
     double min_avg = 0, max_avg = 0;
 //    double max_asp_ratio = 0, avg_asp_ratio = 0;
@@ -54,20 +58,10 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
                 cmp_cnt[j + 3]++;
         }
     }
-    cout << "min_d_angle = " << min
-         << ", max_d_angle = " << max
-//         << ", max_aspect_ratio = " << max_asp_ratio
-         << ", max_slim_energy = " << max_slim_energy
-         << endl;
-    cout << "avg_min_d_angle = " << min_avg / cnt
-         << ", avg_max_d_angle = " << max_avg / cnt
-//         << ", avg_aspect_ratio = " << avg_asp_ratio / cnt
-         << ", avg_slim_energy = " << avg_slim_energy / cnt
-         << endl;
-    cout << "min_d_angle: <6 " << cmp_cnt[0] / cnt << ";   <12 " << cmp_cnt[1] / cnt << ";  <18 " << cmp_cnt[2] / cnt
-         << endl;
-    cout << "max_d_angle: >174 " << cmp_cnt[5] / cnt << "; >168 " << cmp_cnt[4] / cnt << "; >162 " << cmp_cnt[3] / cnt
-         << endl;
+    logger().debug("min_d_angle = {}, max_d_angle = {}, max_slim_energy = {}", min, max, max_slim_energy);
+    logger().debug("avg_min_d_angle = {}, avg_max_d_angle = {}, avg_slim_energy = {}", min_avg / cnt, max_avg / cnt, avg_slim_energy / cnt);
+    logger().debug("min_d_angle: <6 {};   <12 {};  <18 {}", cmp_cnt[0] / cnt, cmp_cnt[1] / cnt, cmp_cnt[2] / cnt);
+    logger().debug("max_d_angle: >174 {}; >168 {}; >162 {}", cmp_cnt[5] / cnt, cmp_cnt[4] / cnt, cmp_cnt[3] / cnt);
 
     addRecord(MeshRecord(MeshRecord::OpType::OP_WN, time, v_ids.size(), cnt,
                                       min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt));
@@ -78,7 +72,7 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
         if (!tet_vertices[v_id].is_rounded)
             cnt++;
     }
-    cout << cnt << "/" << v_ids.size() << " vertices are unrounded!!!" << endl;
+    logger().debug("{}/{} vertices are unrounded!!!", cnt, v_ids.size());
     addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1));
 }
 
@@ -140,7 +134,7 @@ void outputFinalSurface(MeshRefinement& MR){
                 break;
             }
     }
-    igl::writeOBJ(g_working_dir+g_postfix+"_sf.obj", V_sf, F_sf);
+    igl::writeOBJ(State::state().g_working_dir+State::state().g_postfix+"_sf.obj", V_sf, F_sf);
 }
 
 void outputFinalTetmesh(MeshRefinement& MR) {
@@ -151,23 +145,19 @@ void outputFinalTetmesh(MeshRefinement& MR) {
     std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
-    if (!args.is_laplacian) {
+    if (!GArgs::args().is_laplacian) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
-#ifndef MUTE_COUT
         igl::Timer igl_timer;
         igl_timer.start();
-#endif
         IOF.filter();
         t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << t_cnt << " tets inside!" << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
+        logger().debug("{} tets inside!", t_cnt);
     }
 
     //output result
-    cout<<"Writing mesh to "<<g_output_file<<"..."<<endl;
+    logger().debug("Writing mesh to {}...", State::state().g_output_file);
     std::vector<int> v_ids;
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
@@ -195,12 +185,12 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             oT(cnt * 4 + j) = map_ids[tets[i][j]];
         cnt++;
     }
-    cout << "#v = " << oV.rows() / 3 << endl;
-    cout << "#t = " << oT.rows() / 4 << endl;
+    logger().debug("#v = {}", oV.rows() / 3);
+    logger().debug("#t = {}", oT.rows() / 4);
 
-    std::string output_format = g_output_file.substr(g_output_file.size() - 4, 4);
+    std::string output_format = State::state().g_output_file.substr(State::state().g_output_file.size() - 4, 4);
     if (output_format == "mesh") {
-        std::fstream f(g_output_file, std::ios::out);
+        std::fstream f(State::state().g_output_file, std::ios::out);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
@@ -208,8 +198,8 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "Vertices" << std::endl << oV.rows() / 3 << std::endl;
         for (int i = 0; i < oV.rows() / 3; i++)
             f << oV(i * 3) << " " << oV(i * 3 + 1) << " " << oV(i * 3 + 2) << " " << 0 << std::endl;
-        f << "Triangles" << endl << 0 <<endl;
-        f << "Tetrahedra" << endl;
+        f << "Triangles" << std::endl << 0 <<std::endl;
+        f << "Tetrahedra" << std::endl;
         f << oT.rows() / 4 << std::endl;
         for (int i = 0; i < oT.rows() / 4; i++) {
             for (int j = 0; j < 4; j++)
@@ -220,9 +210,8 @@ void outputFinalTetmesh(MeshRefinement& MR) {
         f << "End";
         f.close();
     } else {
-        PyMesh::MshSaver mSaver(g_output_file, true);
+        PyMesh::MshSaver mSaver(State::state().g_output_file, true);
         mSaver.save_mesh(oV, oT, 3, mSaver.TET);
-#ifndef MUTE_COUT
         Eigen::VectorXd angle(t_cnt);
         cnt = 0;
         for (int i = 0; i < tet_qualities.size(); i++) {
@@ -232,48 +221,41 @@ void outputFinalTetmesh(MeshRefinement& MR) {
             cnt++;
         }
         mSaver.save_elem_scalar_field("min_dihedral_angle", angle);
-#endif
     }
 
-#ifndef MUTE_COUT
-    if (args.is_quiet)
+    if (GArgs::args().is_quiet)
         return;
     outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
     outputFinalSurface(MR);
-#endif
 }
 
 void gtet_new() {
-    is_using_energy_max = true;
-    is_use_project = false;
-    is_using_sampling = true;
+    State::state().is_using_energy_max = true;
+    State::state().is_use_project = false;
+    State::state().is_using_sampling = true;
 
-    int energy_type = ENERGY_AMIPS;
-//    int energy_type = ENERGY_DIRICHLET;
+    int energy_type = State::state().ENERGY_AMIPS;
+//    int energy_type = State::state().ENERGY_DIRICHLET;
     bool is_sm_single = true;
     bool is_preprocess = true;
     bool is_check_correctness = false;
     bool is_ec_check_quality = true;
 
-#ifndef MUTE_COUT
     igl::Timer igl_timer;
     double tmp_time = 0;
     double sum_time = 0;
-#endif
 
     ////pipeline
 //    MeshRefinement MR;
     {/// STAGE 1
         //preprocess
-#ifndef MUTE_COUT
         igl_timer.start();
-        cout << "Preprocessing..." << endl;
-#endif
+        logger().info("Preprocessing...");
         Preprocess pp;
         if (!pp.init(MR.geo_b_mesh, MR.geo_sf_mesh)) {
-            cout << "Empty!" << endl;
+            logger().debug("Empty!");
             //todo: output a empty tetmesh
-            PyMesh::MshSaver mSaver(g_working_dir + g_postfix + ".msh", true);
+            PyMesh::MshSaver mSaver(State::state().g_working_dir + State::state().g_postfix + ".msh", true);
             Eigen::VectorXd oV;
             Eigen::VectorXi oT;
             oV.resize(0);
@@ -281,25 +263,18 @@ void gtet_new() {
             mSaver.save_mesh(oV, oT, 3, mSaver.TET);
             exit(250);
         }
-#ifndef MUTE_COUT
         addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()));
-#endif
         std::vector<Point_3> m_vertices;
         std::vector<std::array<int, 3>> m_faces;
         pp.process(MR.geo_sf_mesh, m_vertices, m_faces);
-#ifndef MUTE_COUT
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()));
         sum_time += tmp_time;
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
 
         //delaunay tetrahedralization
-#ifndef MUTE_COUT
         igl_timer.start();
-        cout << "Delaunay tetrahedralizing..." << endl;
-#endif
+        logger().info("Delaunay tetrahedralizing...");
         DelaunayTetrahedralization DT;
         std::vector<int> raw_e_tags;
         std::vector<std::vector<int>> raw_conn_e4v;
@@ -310,90 +285,67 @@ void gtet_new() {
         std::vector<BSPFace> bsp_faces;
         std::vector<BSPtreeNode> bsp_nodes;
         DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
-#ifndef MUTE_COUT
-        cout << "# bsp_vertices = " << bsp_vertices.size() << endl;
-        cout << "# bsp_edges = " << bsp_edges.size() << endl;
-        cout << "# bsp_faces = " << bsp_faces.size() << endl;
-        cout << "# bsp_nodes = " << bsp_nodes.size() << endl;
-        cout << "Delaunay tetrahedralization done!" << endl;
+        logger().debug("# bsp_vertices = {}", bsp_vertices.size());
+        logger().debug("# bsp_edges = {}", bsp_edges.size());
+        logger().debug("# bsp_faces = {}", bsp_faces.size());
+        logger().debug("# bsp_nodes = {}", bsp_nodes.size());
+        logger().info("Delaunay tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
 
         //mesh conforming
-#ifndef MUTE_COUT
         igl_timer.start();
-        cout << "Divfaces matching..." << endl;
-#endif
+        logger().info("Divfaces matching...");
         MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
         MC.match();
-#ifndef MUTE_COUT
-        cout << "Divfaces matching done!" << endl;
+        logger().info("Divfaces matching done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
 
         //bsp subdivision
-#ifndef MUTE_COUT
         igl_timer.start();
-        cout << "BSP subdivision ..." << endl;
-#endif
+        logger().info("BSP subdivision ...");
         BSPSubdivision BS(MC);
         BS.init();
         BS.subdivideBSPNodes();
-#ifndef MUTE_COUT
-        cout << "Output: " << endl;
-        cout << "# node = " << MC.bsp_nodes.size() << endl;
-        cout << "# face = " << MC.bsp_faces.size() << endl;
-        cout << "# edge = " << MC.bsp_edges.size() << endl;
-        cout << "# vertex = " << MC.bsp_vertices.size() << endl;
-        cout << "BSP subdivision done!" << endl;
+        logger().debug("Output: ");
+        logger().debug("# node = {}", MC.bsp_nodes.size());
+        logger().debug("# face = {}", MC.bsp_faces.size());
+        logger().debug("# edge = {}", MC.bsp_edges.size());
+        logger().debug("# vertex = {}", MC.bsp_vertices.size());
+        logger().info("BSP subdivision done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()));
         sum_time += tmp_time;
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
 
         //simple tetrahedralization
-#ifndef MUTE_COUT
         igl_timer.start();
-        cout << "Tetrehedralizing ..." << endl;
-#endif
+        logger().info("Tetrehedralizing ...");
         SimpleTetrahedralization ST(MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
-        if (!g_is_close)//if input is an open mesh
+        if (!State::state().g_is_close)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
-#ifndef MUTE_COUT
-        cout << "# tet_vertices = " << MR.tet_vertices.size() << endl;
-        cout << "# tets = " << MR.tets.size() << endl;
-        cout << "Tetrahedralization done!" << endl;
+        logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
+        logger().debug("# tets = {}", MR.tets.size());
+        logger().info("Tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
         sum_time += tmp_time;
-        cout << "time = " << tmp_time << "s" << endl;
-        cout << endl;
-        cout << "Total time for the first stage = " << sum_time << endl;
-#endif
+        logger().info("time = {}s", tmp_time);
+        logger().info("Total time for the first stage = {}", sum_time);
     }
 
     /// STAGE 2
     //init
-#ifndef MUTE_COUT
-    cout << "Refinement initializing..." << endl;
-#endif
+    logger().info("Refinement initializing...");
     MR.prepareData();
-#ifndef MUTE_COUT
-    cout << "Refinement intialization done!" << endl;
-    cout << endl;
-#endif
+    logger().info("Refinement intialization done!");
 
     //improvement
     MR.refine(energy_type);
@@ -408,29 +360,34 @@ void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int m
     MR.deserialization(sf_file, slz_file);
 
 //    MR.is_dealing_unrounded = true;
-    MR.refine(ENERGY_AMIPS, ops, false, true);
+    MR.refine(State::state().ENERGY_AMIPS, ops, false, true);
 
     outputFinalTetmesh(MR);
 }
 
 int main(int argc, char *argv[]) {
 #ifdef MUTE_COUT
-    cout<<"Unnecessary checks are muted."<<endl;
+    logger().debug("Unnecessary checks are muted.");
 #endif
-    CLI::App app{"RobustTetMeshing"};
-    app.add_option("--input", args.input, "--input INPUT. Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
-    app.add_option("--postfix", args.postfix, "--postfix P. Postfix P for output files. (string, optinal, default: '_')");
-    app.add_option("--output", args.output, "--output OUTPUT. Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
-    app.add_option("--ideal-edge-length", args.i_ideal_edge_length, "--ideal-edge-length L. ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
-    app.add_option("--epsilon", args.i_epsilon, "--epsilon EPS. epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
-    app.add_option("--stage", args.stage, "--stage STAGE. Run pipeline in stage STAGE. (integer, optional, default: 1)");
-    app.add_option("--filter-energy", args.filter_energy, "--filter-energy ENERGY. Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
-    app.add_option("--max-pass", args.max_pass, "--max-pass PASS. Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+    int log_level = 1; // debug
+    std::string log_filename = "";
 
-    app.add_option("--is-laplacian", args.is_laplacian, "--is-laplacian ISLAP. Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
-    app.add_option("--targeted-num-v", args.targeted_num_v, "--targeted-num-v TV. Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
-    app.add_option("--bg-mesh", args.bg_mesh, "--bg-mesh BGMESH. Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("--is-quiet", args.is_quiet, "--is-quiet Q. Mute log info and only output tetmesh if Q = 1. (integer, optional, default: 0)");
+    CLI::App app{"RobustTetMeshing"};
+    app.add_option("input,--input", GArgs::args().input, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
+    app.add_option("output,--output", GArgs::args().output, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("--postfix", GArgs::args().postfix, "Postfix P for output files. (string, optional, default: '_')");
+    app.add_option("-l,--ideal-edge-length", GArgs::args().i_ideal_edge_length, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
+    app.add_option("-e,--epsilon", GArgs::args().i_epsilon, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("--stage", GArgs::args().stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
+    app.add_option("--filter-energy", GArgs::args().filter_energy, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
+    app.add_option("--max-pass", GArgs::args().max_pass, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+
+    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
+    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
+    app.add_option("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (integer, optional, default: 0)");
+    app.add_option("--log", log_filename, "Log info to given file.");
+    app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
     try {
         app.parse(argc, argv);
@@ -438,36 +395,46 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
+    Logger::init(!GArgs::args().is_quiet, log_filename);
+    log_level = std::max(0, std::min(6, log_level));
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
+    spdlog::flush_every(std::chrono::seconds(3));
+
+    // logger().info("this is a test");
+    // logger().debug("debug stuff");
+
     //initalization
     GEO::initialize();
-    g_postfix = args.postfix;
-    if(args.slz_file != "")
-        g_working_dir = args.input.substr(0, args.slz_file.size() - 4);
+    State::state().g_postfix = GArgs::args().postfix;
+    if(GArgs::args().slz_file != "")
+        State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().slz_file.size() - 4);
     else
-        g_working_dir = args.input.substr(0, args.input.size() - 4);
+        State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
 
-    if(args.csv_file == "")
-        g_stat_file = g_working_dir + g_postfix + ".csv";
+    if(GArgs::args().csv_file == "")
+        State::state().g_stat_file = State::state().g_working_dir + State::state().g_postfix + ".csv";
     else
-        g_stat_file = args.csv_file;
+        State::state().g_stat_file = GArgs::args().csv_file;
 
-    if(args.output == "")
-        g_output_file = g_working_dir + g_postfix + ".msh";
+    if(GArgs::args().output == "")
+        State::state().g_output_file = State::state().g_working_dir + State::state().g_postfix + ".msh";
     else
-        g_output_file = args.output;
+        State::state().g_output_file = GArgs::args().output;
 
-    if(args.is_quiet) {
-        args.is_output_csv = false;
-        std::streambuf* orig_buf = cout.rdbuf();
-        cout.rdbuf(NULL);
-//        cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
+    if(GArgs::args().is_quiet) {
+        GArgs::args().is_output_csv = false;
+        std::streambuf* orig_buf = std::cout.rdbuf();
+        std::cout.rdbuf(NULL);
+//        std::cout.setstate(std::ios_base::failbit);//use std::std::cout.clear() to get it back
     }
 
     //do tetrahedralization
-    if(args.slz_file != "")
-        gtet_new_slz(args.input, args.slz_file, args.max_pass, std::array<bool, 4>({true, false, true, true}));
+    if(GArgs::args().slz_file != "")
+        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({true, false, true, true}));
     else
         gtet_new();
+
+    spdlog::shutdown();
 
     return 0;
 }

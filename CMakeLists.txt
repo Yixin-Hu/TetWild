@@ -8,7 +8,6 @@ project(TetWild)
 # Options
 ################################################################################
 # tetwild
-option(TETWILD_QUIET     "Mute log and unnecassary checks" OFF)
 option(TETWILD_WITH_ISPC "Use ISPC"                        OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
@@ -44,6 +43,9 @@ endif()
 set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Color output
+include(UseColors)
+
 # Use folder in Visual Studio
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -56,6 +58,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # 3rd party libraries
 ################################################################################
+
+# download external dependencies
+include(TetWildDownloadExternal)
+
+# spdlog
+if(NOT TARGET spdlog::spdlog)
+	tetwild_download_spdlog()
+	add_subdirectory(${TETWILD_EXTERNAL}/spdlog)
+endif()
+
 # cgal
 find_package(CGAL REQUIRED)
 
@@ -71,44 +83,45 @@ add_subdirectory(${TETWILD_EXTERNAL}/pymesh)
 # CL11
 add_subdirectory(${TETWILD_EXTERNAL}/CLI)
 
-# cout
-if(TETWILD_QUIET)
-	add_definitions(-DMUTE_COUT)
-endif()
-
 ################################################################################
 # TetWild
 ################################################################################
 # Build static library for executable
 add_library(libTetWild STATIC
-		src/tetwild/Preprocess.h
-		src/tetwild/Preprocess.cpp
-		src/tetwild/DelaunayTetrahedralization.h
-		src/tetwild/DelaunayTetrahedralization.cpp
-		src/tetwild/MeshConformer.h
-		src/tetwild/MeshConformer.cpp
-		src/tetwild/BSPSubdivision.h
 		src/tetwild/BSPSubdivision.cpp
-		src/tetwild/SimpleTetrahedralization.h
-		src/tetwild/SimpleTetrahedralization.cpp
-		src/tetwild/MeshRefinement.h
-		src/tetwild/MeshRefinement.cpp
-		src/tetwild/LocalOperations.h
-		src/tetwild/LocalOperations.cpp
-		src/tetwild/EdgeSplitter.h
-		src/tetwild/EdgeSplitter.cpp
-		src/tetwild/EdgeCollapser.h
+		src/tetwild/BSPSubdivision.h
+		src/tetwild/CGALCommon.cpp
+		src/tetwild/CGALCommon.h
+		src/tetwild/Common.cpp
+		src/tetwild/Common.h
+		src/tetwild/DelaunayTetrahedralization.cpp
+		src/tetwild/DelaunayTetrahedralization.h
 		src/tetwild/EdgeCollapser.cpp
-		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeCollapser.h
 		src/tetwild/EdgeRemover.cpp
-		src/tetwild/VertexSmoother.h
-		src/tetwild/VertexSmoother.cpp
-		src/tetwild/InoutFiltering.h
+		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeSplitter.cpp
+		src/tetwild/EdgeSplitter.h
 		src/tetwild/InoutFiltering.cpp
-		src/tetwild/heads.h
-		src/tetwild/heads.cpp
-		src/tetwild/tetwild.cpp
+		src/tetwild/InoutFiltering.h
+		src/tetwild/LocalOperations.cpp
+		src/tetwild/LocalOperations.h
+		src/tetwild/Logger.cpp
+		src/tetwild/Logger.h
+		src/tetwild/MeshConformer.cpp
+		src/tetwild/MeshConformer.h
+		src/tetwild/MeshRefinement.cpp
+		src/tetwild/MeshRefinement.h
+		src/tetwild/Preprocess.cpp
+		src/tetwild/Preprocess.h
+		src/tetwild/SimpleTetrahedralization.cpp
+		src/tetwild/SimpleTetrahedralization.h
+		src/tetwild/State.cpp
+		src/tetwild/State.h
 		src/tetwild/TetmeshElements.h
+		src/tetwild/tetwild.cpp
+		src/tetwild/VertexSmoother.cpp
+		src/tetwild/VertexSmoother.h
 		include/tetwild/tetwild.h
 )
 target_include_directories(libTetWild
@@ -123,6 +136,7 @@ target_link_libraries(libTetWild
 		igl::core
 		igl::cgal
 		pymesh::pymesh
+		spdlog::spdlog
 )
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 

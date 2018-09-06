@@ -1,54 +1,30 @@
 // This file is part of TetWild, a software for generating tetrahedral meshes.
-// 
-// Copyright (C) 2018 Yixin Hu <yixin.hu@nyu.edu>
-// 
-// This Source Code Form is subject to the terms of the Mozilla Public License 
-// v. 2.0. If a copy of the MPL was not distributed with this file, You can 
+//
+// Copyright (C) 2018 Jeremie Dumas <jeremie.dumas@ens-lyon.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License
+// v. 2.0. If a copy of the MPL was not distributed with this file, You can
 // obtain one at http://mozilla.org/MPL/2.0/.
 //
-// Created by Yixin Hu on 3/29/17.
+// Created by Jeremie Dumas on 09/04/18.
 //
 
-#include <tetwild/heads.h>
+#include <tetwild/Common.h>
+#include <fstream>
+#include <algorithm>
 
-//Eigen::MatrixXd G;
-std::string g_working_dir = "";
-std::string g_stat_file = "";
-std::string g_postfix = "";
-std::string g_output_file = "";
+namespace tetwild {
 
-bool is_using_energy_max = true;
-
-bool is_using_sampling = true;
-bool is_use_project = false;
-
-int NOT_SURFACE = 0;
-
-double g_eps = 0;
-double g_eps_2 = 0;
-double g_dd = 0;
-double g_ideal_l = 0;
-double g_diag_l = 0;
-bool g_is_close = true;
-
-double g_eps_input = 0;
-double g_eps_delta = 0;
-int g_cur_stage = 1;
-
-bool is_print_tmp = false;
-
-Args args;
-//std::vector<MeshRecord> mesh_records = std::vector<MeshRecord>();
-bool is_app_csv=false;
 void addRecord(const MeshRecord& record) {
-    if (!args.is_output_csv)
+    if (!GArgs::args().is_output_csv)
         return;
+    static bool first_time = true;
     std::ofstream f;
-    if (is_app_csv)
-        f.open(g_stat_file, std::ios::app);
-    else {
-        f.open(g_stat_file);
-        is_app_csv = true;
+    if (first_time) {
+        f.open(State::state().g_stat_file);
+        first_time = false;
+    } else {
+        f.open(State::state().g_stat_file, std::ios::app);
     }
     f << record.op << "," << record.timing << "," << record.n_v << "," << record.n_t << ","
       << record.min_min_d_angle << "," << record.avg_min_d_angle << ","
@@ -58,9 +34,9 @@ void addRecord(const MeshRecord& record) {
 }
 
 void pausee(){
-    cout<<"Is pausing... (Enter '0' to exit and other characters to continue.)"<<endl;
+    logger().debug("Is pausing... (Enter '0' to exit and other characters to continue.)");
     char c;
-    cin>>c;
+    std::cin>>c;
     if(c=='0')
         exit(0);
 }
@@ -134,7 +110,7 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
     auto min_max = std::minmax_element(ls.begin(), ls.end());
     int min_i = min_max.first - ls.begin();
     int max_i = min_max.second - ls.begin();
-    double N = sqrt(ls[max_i]) / g_dd;
+    double N = sqrt(ls[max_i]) / State::state().g_dd;
     if (N <= 1) {
         for (int i = 0; i < 3; i++)
             ps.push_back(vs[i]);
@@ -149,12 +125,12 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 
     GEO::vec3 n_v0v1 = GEO::normalize(v1 - v0);
     for (int n = 0; n <= N; n++) {
-        ps.push_back(v0 + n_v0v1 * g_dd * n);
+        ps.push_back(v0 + n_v0v1 * State::state().g_dd * n);
     }
     ps.push_back(v1);
 
     double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
-    int M = h / (sqrt3_2 * g_dd);
+    int M = h / (sqrt3_2 * State::state().g_dd);
     if (M < 1) {
         ps.push_back(v2);
         return;
@@ -174,45 +150,45 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
         if (m % 2 == 0 && n == n1) {
             n += 1;
         }
-        GEO::vec3 v0_m = v0 + m * sqrt3_2 * g_dd / sin_v0 * n_v0v2;
-        GEO::vec3 v1_m = v1 + m * sqrt3_2 * g_dd / sin_v1 * n_v1v2;
-        if (GEO::distance(v0_m, v1_m) <= g_dd)
+        GEO::vec3 v0_m = v0 + m * sqrt3_2 * State::state().g_dd / sin_v0 * n_v0v2;
+        GEO::vec3 v1_m = v1 + m * sqrt3_2 * State::state().g_dd / sin_v1 * n_v1v2;
+        if (GEO::distance(v0_m, v1_m) <= State::state().g_dd)
             break;
 
-        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * g_dd;
+        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * State::state().g_dd;
         GEO::vec3 v = v0_m + delta_d * n_v0v1;
-        int N1 = GEO::distance(v, v1_m) / g_dd;
+        int N1 = GEO::distance(v, v1_m) / State::state().g_dd;
 //        ps.push_back(v0_m);
         for (int i = 0; i <= N1; i++) {
-            ps.push_back(v + i * n_v0v1 * g_dd);
+            ps.push_back(v + i * n_v0v1 * State::state().g_dd);
         }
 //        ps.push_back(v1_m);
     }
     ps.push_back(v2);
 
     //sample edges
-    N = sqrt(ls[(max_i + 1) % 3]) / g_dd;
+    N = sqrt(ls[(max_i + 1) % 3]) / State::state().g_dd;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v1v2 = GEO::normalize(v2 - v1);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v1 + n_v1v2 * g_dd * n);
+            ps.push_back(v1 + n_v1v2 * State::state().g_dd * n);
         }
     }
 
-    N = sqrt(ls[(max_i + 2) % 3]) / g_dd;
+    N = sqrt(ls[(max_i + 2) % 3]) / State::state().g_dd;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v2v0 = GEO::normalize(v0 - v2);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v2 + n_v2v0 * g_dd * n);
+            ps.push_back(v2 + n_v2v0 * State::state().g_dd * n);
         }
     }
 
-//    cout << "ps.size = " << ps.size() << endl;
-//    cout << "is output samples?" << endl;
+//    logger().debug("ps.size = {}", ps.size());
+//    logger().debug("is output samples?");
 //    int anw = 0;
 //    cin >> anw;
 //    if (anw != 0) {
@@ -232,6 +208,8 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 //                F_tmp(1 + i, k) = (1 + i) * 3 + k;
 //            }
 //        }
-//        igl::writeSTL(g_working_dir + "_sample.stl", V_tmp, F_tmp);
+//        igl::writeSTL(State::state().g_working_dir + "_sample.stl", V_tmp, F_tmp);
 //    }
 }
+
+} // namespace tetwild
