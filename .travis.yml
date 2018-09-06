@@ -9,6 +9,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.9
+      - libmpfr-dev
       - libboost1.54-all-dev
       - libxi-dev
 
