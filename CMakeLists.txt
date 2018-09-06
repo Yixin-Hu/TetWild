@@ -5,8 +5,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Options
 ################################################################################
 # tetwild
-option(TETWILD_WITH_ISPC   "Use ISPC"                                   OFF)
 option(TETWILD_WITH_HUNTER "Use Hunter to download and configure Boost" OFF)
+option(TETWILD_WITH_ISPC   "Use ISPC"                                   OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -31,6 +31,7 @@ option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
 option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
 
 if(TETWILD_WITH_HUNTER)
+	# Needs to be set before the main project... argh =/
 	include(HunterGate)
 	HunterGate(
  	   URL "https://github.com/ruslo/hunter/archive/v0.23.25.tar.gz"

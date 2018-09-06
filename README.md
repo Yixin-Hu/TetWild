@@ -28,7 +28,6 @@ Here is pre-generated tetmeshes and the extracted surface meshes for research-pu
 ## Installation
 
 Our code was originally developed on MacOS and has been tested on Linux and Windows.
-You need to have Boost installed on your machine (for CGAL). Everything other dependency is included automatically via CMake.
 
 - Clone the repository into your local machine:
 
@@ -47,6 +46,8 @@ cd build
 cmake ..
 make
 ```
+
+💡 If you do not have Boost installed (which is need for CGAL), you can enable the cmake option `-DTETWILD_WITH_HUNTER=ON`. This will let CMake use [Hunter](https://github.com/ruslo/hunter) to download and configure Boost automatically. Other options include installing Boost via Conda, compile from source, etc.
 
 💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used. 
 
