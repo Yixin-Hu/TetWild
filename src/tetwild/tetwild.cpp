@@ -30,9 +30,9 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     double min_avg = 0, max_avg = 0;
 //    double max_asp_ratio = 0, avg_asp_ratio = 0;
     double max_slim_energy = 0, avg_slim_energy = 0;
-    std::array<double, 6> cmp_cnt = {0, 0, 0, 0, 0, 0};
-    std::array<double, 6> cmp_d_angles = {6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
-                                          162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI};
+    std::array<double, 6> cmp_cnt = {{0, 0, 0, 0, 0, 0}};
+    std::array<double, 6> cmp_d_angles = {{6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
+                                           162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI}};
     int cnt = 0;
     for (int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
@@ -115,16 +115,16 @@ void outputFinalTetmesh(MeshRefinement& MR,
 
     out_vertices.reserve(v_ids.size());
     for (int i = 0; i < v_ids.size(); i++) {
-        out_vertices.push_back(std::array<double, 3>({tet_vertices[v_ids[i]].posf[0],
-                                                      tet_vertices[v_ids[i]].posf[1],
-                                                      tet_vertices[v_ids[i]].posf[2]}));
+        out_vertices.push_back(std::array<double, 3>({{tet_vertices[v_ids[i]].posf[0],
+                                                       tet_vertices[v_ids[i]].posf[1],
+                                                       tet_vertices[v_ids[i]].posf[2]}}));
     }
     out_tets.reserve(std::count(t_is_removed.begin(), t_is_removed.end(), false));
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
             continue;
-        out_tets.push_back(std::array<int, 4>({map_ids[tets[i][0]], map_ids[tets[i][1]], map_ids[tets[i][2]],
-                                               map_ids[tets[i][3]]}));
+        out_tets.push_back(std::array<int, 4>({{map_ids[tets[i][0]], map_ids[tets[i][1]], map_ids[tets[i][2]],
+                                                map_ids[tets[i][3]]}}));
     }
 
     if(GArgs::args().is_quiet)

@@ -24,12 +24,12 @@ void EdgeRemover::init() {
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {tets[i][0], tets[i][j + 1]};
-            if (e[0] > e[1]) e = {e[1], e[0]};
+            std::array<int, 2> e = {{tets[i][0], tets[i][j + 1]}};
+            if (e[0] > e[1]) e = {{e[1], e[0]}};
             if (!isLocked_ui(e))
                 edges.push_back(e);
-            e = {tets[i][j + 1], tets[i][(j + 1) % 3 + 1]};
-            if (e[0] > e[1]) e = {e[1], e[0]};
+            e = {{tets[i][j + 1], tets[i][(j + 1) % 3 + 1]}};
+            if (e[0] > e[1]) e = {{e[1], e[0]}};
             if (!isLocked_ui(e))
                 edges.push_back(e);
         }
@@ -143,11 +143,11 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     if (it != tets[old_t_ids[1]].end()) {
         new_tets.push_back(tets[old_t_ids[1]]);
         new_tets.push_back(tets[old_t_ids[2]]);
-        t_ids = {old_t_ids[1], old_t_ids[2]};
+        t_ids = {{old_t_ids[1], old_t_ids[2]}};
     } else {
         new_tets.push_back(tets[old_t_ids[2]]);
         new_tets.push_back(tets[old_t_ids[1]]);
-        t_ids = {old_t_ids[2], old_t_ids[1]};
+        t_ids = {{old_t_ids[2], old_t_ids[1]}};
     }
     it = std::find(new_tets[0].begin(), new_tets[0].end(), v1_id);
     *it = v_ids[1];
@@ -179,8 +179,8 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     for(int i=0;i<old_t_ids.size();i++) {
         for (int j = 0; j < 4; j++) {
             if (tets[old_t_ids[i]][j] == v1_id || tets[old_t_ids[i]][j] == v2_id) {
-                std::array<int, 3> tmp = {tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
-                                          tets[old_t_ids[i]][(j + 3) % 4]};
+                std::array<int, 3> tmp = {{tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
+                                           tets[old_t_ids[i]][(j + 3) % 4]}};
                 std::sort(tmp.begin(), tmp.end());
                 fs.push_back(tmp);
                 is_sf_fs.push_back(is_surface_fs[old_t_ids[i]][j]);
@@ -194,8 +194,8 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
 
     for(int i=0;i<4;i++) {
         if (tets[t_ids[0]][i] != v2_id) {
-            std::array<int, 3> tmp = {tets[t_ids[0]][(i + 1) % 4], tets[t_ids[0]][(i + 2) % 4],
-                                      tets[t_ids[0]][(i + 3) % 4]};
+            std::array<int, 3> tmp = {{tets[t_ids[0]][(i + 1) % 4], tets[t_ids[0]][(i + 2) % 4],
+                                       tets[t_ids[0]][(i + 3) % 4]}};
             std::sort(tmp.begin(), tmp.end());
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[0]][i] = is_sf_fs[it - fs.begin()];
@@ -203,8 +203,8 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
             is_surface_fs[t_ids[0]][i] = State::state().NOT_SURFACE;
 
         if (tets[t_ids[1]][i] != v1_id) {
-            std::array<int, 3> tmp = {tets[t_ids[1]][(i + 1) % 4], tets[t_ids[1]][(i + 2) % 4],
-                                      tets[t_ids[1]][(i + 3) % 4]};
+            std::array<int, 3> tmp = {{tets[t_ids[1]][(i + 1) % 4], tets[t_ids[1]][(i + 2) % 4],
+                                       tets[t_ids[1]][(i + 3) % 4]}};
             std::sort(tmp.begin(), tmp.end());
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[1]][i] = is_sf_fs[it - fs.begin()];
@@ -230,8 +230,9 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     tet_vertices[v2_id].conn_tets.erase(std::find(tet_vertices[v2_id].conn_tets.begin(),
                                                   tet_vertices[v2_id].conn_tets.end(), t_ids[1]));
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) {
         tet_qualities[t_ids[i]] = tet_qs[i];
+    }
 
     //repush new edges
     //Note that you need to pop out the current element first!!
@@ -244,20 +245,20 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     }
 
 //    for(auto it=n12_v_ids.begin();it!=n12_v_ids.end();it++) {
-//        addNewEdge(std::array<int, 2>({*it, v1_id}));
-//        addNewEdge(std::array<int, 2>({*it, v2_id}));
+//        addNewEdge(std::array<int, 2>({{*it, v1_id}}));
+//        addNewEdge(std::array<int, 2>({{*it, v2_id}}));
 //    }
 
     std::vector<std::array<int, 2>> es;
     es.reserve(new_tets.size()*6);
     for(int i=0;i<new_tets.size();i++) {
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {new_tets[i][0], new_tets[i][j + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            std::array<int, 2> e = {{new_tets[i][0], new_tets[i][j + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
-            e = {new_tets[i][j + 1], new_tets[i][(j + 1) % 3 + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            e = {{new_tets[i][j + 1], new_tets[i][(j + 1) % 3 + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
         }
@@ -328,7 +329,7 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
         std::vector<int> tmp_tags;
         std::vector<TetQuality> tmp_tet_qs;
         std::array<int, 2> tmp_v_ids;
-        tmp_v_ids = {n12_v_ids[0 + i], n12_v_ids[2 + i]};
+        tmp_v_ids = {{n12_v_ids[0 + i], n12_v_ids[2 + i]}};
         for (int j = 0; j < old_t_ids.size(); j++) {
             std::array<int, 4> t = tets[old_t_ids[j]];
             auto it = std::find(t.begin(), t.end(), tmp_v_ids[0]);
@@ -375,8 +376,8 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
     for (int i = 0; i < old_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {
             if (tets[old_t_ids[i]][j] == v1_id || tets[old_t_ids[i]][j] == v2_id) {
-                std::array<int, 3> tmp = {tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
-                                          tets[old_t_ids[i]][(j + 3) % 4]};
+                std::array<int, 3> tmp = {{tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
+                                           tets[old_t_ids[i]][(j + 3) % 4]}};
                 std::sort(tmp.begin(), tmp.end());
                 fs.push_back(tmp);
                 is_sf_fs.push_back(is_surface_fs[old_t_ids[i]][j]);
@@ -404,8 +405,8 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
         for (int j = 0; j < 4; j++) {
             is_surface_fs[old_t_ids[i]][j] = State::state().NOT_SURFACE;
             if (tets[old_t_ids[i]][j] == v_ids[0] || tets[old_t_ids[i]][j] == v_ids[1]) {
-                std::array<int, 3> tmp = {tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
-                                          tets[old_t_ids[i]][(j + 3) % 4]};
+                std::array<int, 3> tmp = {{tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
+                                           tets[old_t_ids[i]][(j + 3) % 4]}};
                 std::sort(tmp.begin(), tmp.end());
                 auto it = std::find(fs.begin(), fs.end(), tmp);
                 is_surface_fs[old_t_ids[i]][j] = is_sf_fs[it - fs.begin()];
@@ -418,12 +419,12 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
     es.reserve(new_tets.size()*6);
     for (int i = 0; i < new_tets.size(); i++) {
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {new_tets[i][0], new_tets[i][j + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            std::array<int, 2> e = {{new_tets[i][0], new_tets[i][j + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
-            e = {new_tets[i][j + 1], new_tets[i][(j + 1) % 3 + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            e = {{new_tets[i][j + 1], new_tets[i][(j + 1) % 3 + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
         }
@@ -528,15 +529,15 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
         tmp_timer.start();
         calTetQualities(new_ts, qs);
         energy_time+=tmp_timer.getElapsedTime();
-        tet_qs[i] = std::array<TetQuality, 2>({qs[0], qs[1]});
-        new_tets[i] = std::array<std::array<int, 4>, 2>({new_ts[0], new_ts[1]});
+        tet_qs[i] = std::array<TetQuality, 2>({{qs[0], qs[1]}});
+        new_tets[i] = std::array<std::array<int, 4>, 2>({{new_ts[0], new_ts[1]}});
 
 //        std::vector<TetQuality> qs;
 //        calTetQualities(new_ts, qs);
 //        getCheckQuality(qs, new_tq);
 //        if(new_tq.isBetterThan(old_tq, energy_type)){
-//            tet_qs[i] = std::array<TetQuality, 2>({qs[0], qs[1]});
-//            new_tets[i] = std::array<std::array<int, 4>, 2>({new_ts[0], new_ts[1]});
+//            tet_qs[i] = std::array<TetQuality, 2>({{qs[0], qs[1]}});
+//            new_tets[i] = std::array<std::array<int, 4>, 2>({{new_ts[0], new_ts[1]}});
 //        } else {
 //            is_v_valid[(i + 1) % 5] = false;
 //            is_v_valid[(i - 1 + 5) % 5] = false;
@@ -588,8 +589,8 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
 
         old_tq = new_tq;
         selected_id = i;
-        tet_qs[i + 5] = std::array<TetQuality, 2>({qs[0], qs[1]});
-        new_tets[i + 5] = std::array<std::array<int, 4>, 2>({new_ts[0], new_ts[1]});
+        tet_qs[i + 5] = std::array<TetQuality, 2>({{qs[0], qs[1]}});
+        new_tets[i + 5] = std::array<std::array<int, 4>, 2>({{new_ts[0], new_ts[1]}});
     }
     if (selected_id < 0)
         return false;
@@ -601,8 +602,8 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
     for (int i = 0; i < old_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {
             if (tets[old_t_ids[i]][j] == v1_id || tets[old_t_ids[i]][j] == v2_id) {
-                std::array<int, 3> tmp = {tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
-                                          tets[old_t_ids[i]][(j + 3) % 4]};
+                std::array<int, 3> tmp = {{tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
+                                           tets[old_t_ids[i]][(j + 3) % 4]}};
                 std::sort(tmp.begin(), tmp.end());
                 fs.push_back(tmp);
                 is_sf_fs.push_back(is_surface_fs[old_t_ids[i]][j]);
@@ -630,8 +631,8 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
             if (tets[new_t_ids[i]][j] != v1_id && tets[new_t_ids[i]][j] != v2_id
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id + 1) % 5]
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id - 1 + 5) % 5]) {
-                std::array<int, 3> tmp = {tets[new_t_ids[i]][(j + 1) % 4], tets[new_t_ids[i]][(j + 2) % 4],
-                                          tets[new_t_ids[i]][(j + 3) % 4]};
+                std::array<int, 3> tmp = {{tets[new_t_ids[i]][(j + 1) % 4], tets[new_t_ids[i]][(j + 2) % 4],
+                                           tets[new_t_ids[i]][(j + 3) % 4]}};
                 std::sort(tmp.begin(), tmp.end());
                 auto it = std::find(fs.begin(), fs.end(), tmp);
                 if (it != fs.end())
@@ -657,24 +658,24 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
     }
 
     //repush
-//    addNewEdge(std::array<int, 2>({n12_v_ids[selected_id], n12_v_ids[(selected_id + 2) % 5]}));
-//    addNewEdge(std::array<int, 2>({n12_v_ids[selected_id], n12_v_ids[(selected_id - 2 + 5) % 5]}));
+//    addNewEdge(std::array<int, 2>({{n12_v_ids[selected_id], n12_v_ids[(selected_id + 2) % 5]}}));
+//    addNewEdge(std::array<int, 2>({{n12_v_ids[selected_id], n12_v_ids[(selected_id - 2 + 5) % 5]}}));
 //
-//    addNewEdge(std::array<int, 2>({v1_id, n12_v_ids[(selected_id + 1) % 5]}));
-//    addNewEdge(std::array<int, 2>({v1_id, n12_v_ids[(selected_id - 1 + 5) % 5]}));
-//    addNewEdge(std::array<int, 2>({v2_id, n12_v_ids[(selected_id + 1) % 5]}));
-//    addNewEdge(std::array<int, 2>({v2_id, n12_v_ids[(selected_id - 1 + 5) % 5]}));
+//    addNewEdge(std::array<int, 2>({{v1_id, n12_v_ids[(selected_id + 1) % 5]}}));
+//    addNewEdge(std::array<int, 2>({{v1_id, n12_v_ids[(selected_id - 1 + 5) % 5]}}));
+//    addNewEdge(std::array<int, 2>({{v2_id, n12_v_ids[(selected_id + 1) % 5]}}));
+//    addNewEdge(std::array<int, 2>({{v2_id, n12_v_ids[(selected_id - 1 + 5) % 5]}}));
 
     std::vector<std::array<int, 2>> es;
     es.reserve(new_t_ids.size()*6);
     for(int i=0;i<new_t_ids.size();i++) {
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {tets[new_t_ids[i]][0], tets[new_t_ids[i]][j + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            std::array<int, 2> e = {{tets[new_t_ids[i]][0], tets[new_t_ids[i]][j + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
-            e = {tets[new_t_ids[i]][j + 1], tets[new_t_ids[i]][(j + 1) % 3 + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            e = {{tets[new_t_ids[i]][j + 1], tets[new_t_ids[i]][(j + 1) % 3 + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 es.push_back(e);
         }
@@ -760,7 +761,7 @@ void EdgeRemover::addNewEdge(const std::array<int, 2>& e){
         double weight = calEdgeLength(e);
         if (isSwappable_cd2(weight)) {
             if (e[0] > e[1]) {
-                ElementInQueue_er ele(std::array<int, 2>({e[1], e[0]}), weight);
+                ElementInQueue_er ele(std::array<int, 2>({{e[1], e[0]}}), weight);
                 er_queue.push(ele);
             } else {
                 ElementInQueue_er ele(e, weight);

@@ -123,25 +123,25 @@ struct MeshRecord {
     double max_energy = -1;
     double avg_energy = -1;
 
-    MeshRecord(int op, double timing, int n_v, int n_t, double min_min_d_angle, double avg_min_d_angle,
-               double max_max_d_angle, double avg_max_d_angle, double max_energy, double avg_energy) {
-        this->op = op;
-        this->timing = timing;
-        this->n_v = n_v;
-        this->n_t = n_t;
-        this->min_min_d_angle = min_min_d_angle;
-        this->avg_min_d_angle = avg_min_d_angle;
-        this->max_max_d_angle = max_max_d_angle;
-        this->avg_max_d_angle = avg_max_d_angle;
-        this->max_energy = max_energy;
-        this->avg_energy = avg_energy;
+    MeshRecord(int op_, double timing_, int n_v_, int n_t_, double min_min_d_angle_, double avg_min_d_angle_,
+               double max_max_d_angle_, double avg_max_d_angle_, double max_energy_, double avg_energy_) {
+        this->op = op_;
+        this->timing = timing_;
+        this->n_v = n_v_;
+        this->n_t = n_t_;
+        this->min_min_d_angle = min_min_d_angle_;
+        this->avg_min_d_angle = avg_min_d_angle_;
+        this->max_max_d_angle = max_max_d_angle_;
+        this->avg_max_d_angle = avg_max_d_angle_;
+        this->max_energy = max_energy_;
+        this->avg_energy = avg_energy_;
     }
 
-    MeshRecord(int op, double timing, int n_v, int n_t) {
-        this->op = op;
-        this->timing = timing;
-        this->n_v = n_v;
-        this->n_t = n_t;
+    MeshRecord(int op_, double timing_, int n_v_, int n_t_) {
+        this->op = op_;
+        this->timing = timing_;
+        this->n_v = n_v_;
+        this->n_t = n_t_;
     }
 };
 

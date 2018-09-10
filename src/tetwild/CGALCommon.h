@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <tetwild/DisableWarnings.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/intersections.h>
@@ -21,6 +22,7 @@
 #include <igl/copyleft/cgal/assign_scalar.h>
 #include <igl/serialize.h>
 #include <igl/STR.h>
+#include <tetwild/EnableWarnings.h>
 
 namespace tetwild {
 

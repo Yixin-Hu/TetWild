@@ -61,6 +61,9 @@ include(UseColors)
 # Use folder in Visual Studio
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Extra warnings
+include(Warnings)
+
 # Export compile flags (used for autocompletion of the C++ code)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
@@ -107,6 +110,7 @@ add_library(libTetWild STATIC
 		src/tetwild/SimpleTetrahedralization.h
 		src/tetwild/State.cpp
 		src/tetwild/State.h
+		src/tetwild/TetmeshElements.cpp
 		src/tetwild/TetmeshElements.h
 		src/tetwild/tetwild.cpp
 		src/tetwild/VertexSmoother.cpp
@@ -127,6 +131,7 @@ target_link_libraries(libTetWild
 		spdlog::spdlog
 	PRIVATE
 		igl::cgal
+		warnings::all
 )
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 
@@ -143,6 +148,7 @@ target_link_libraries(TetWild
 		libTetWild
 		CLI11::CLI11
 		igl::cgal
+		warnings::all
 )
 target_include_directories(TetWild PRIVATE src)
 igl_copy_cgal_dll(TetWild)

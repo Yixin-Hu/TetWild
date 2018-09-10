@@ -45,13 +45,13 @@ public:
 
     int sf_id = 0;
     int doOperations(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
-                     VertexSmoother& smoother, const std::array<bool, 4>& ops={true, true, true, true});
+                     VertexSmoother& smoother, const std::array<bool, 4>& ops={{true, true, true, true}});
     int doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
-                         VertexSmoother& smoother, int max_pass, const std::array<bool, 4>& ops={true, true, true, true});
+                         VertexSmoother& smoother, int max_pass, const std::array<bool, 4>& ops={{true, true, true, true}});
     bool is_dealing_unrounded = false;
     bool is_dealing_local = false;
 
-    void refine(int energy_type, const std::array<bool, 4>& ops={true, true, true, true},
+    void refine(int energy_type, const std::array<bool, 4>& ops={{true, true, true, true}},
                 bool is_pre = true, bool is_post = true, int scalar_update = 3);
     void refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                     VertexSmoother& smoother);

@@ -407,7 +407,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //            if (is_surface_fs[i][j] != State::state().NOT_SURFACE) {
 //                std::array<int, 3> f = {tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]};
 //                std::sort(f.begin(), f.end());
-//                fs.push_back(std::array<int, 4>({f[0], f[1], f[2], is_surface_fs[i][j]}));
+//                fs.push_back(std::array<int, 4>({{f[0], f[1], f[2], is_surface_fs[i][j]}}));
 //            }
 //        }
 //    }
@@ -489,7 +489,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
     double min = 10, max = 0;
     double min_avg = 0, max_avg = 0;
     double max_slim_energy = 0, avg_slim_energy = 0;
-    std::array<double, 6> cmp_cnt = {0, 0, 0, 0, 0, 0};
+    std::array<double, 6> cmp_cnt = {{0, 0, 0, 0, 0, 0}};
     cnt = 0;
 
     for (int i = 0; i < tet_qualities.size(); i++) {
@@ -843,7 +843,7 @@ void LocalOperations::calTetQuality_AD(const std::array<int, 4>& tet, TetQuality
 //        }
 
         //re-scale
-        std::array<double, 3> tmp_nv = {CGAL::abs(nv[i][0]), CGAL::abs(nv[i][1]), CGAL::abs(nv[i][2])};
+        std::array<double, 3> tmp_nv = {{CGAL::abs(nv[i][0]), CGAL::abs(nv[i][1]), CGAL::abs(nv[i][2])}};
         auto tmp = std::max_element(tmp_nv.begin(), tmp_nv.end());
         if(*tmp == 0 || heights[i] == 0){
             t_quality.min_d_angle = 0;
@@ -860,8 +860,8 @@ void LocalOperations::calTetQuality_AD(const std::array<int, 4>& tet, TetQuality
 
     std::vector<std::array<int, 2>> opp_edges;
     for (int i = 0; i < 3; i++) {
-        opp_edges.push_back(std::array<int, 2>({0, i + 1}));
-        opp_edges.push_back(std::array<int, 2>({i + 1, (i + 1) % 3 + 1}));
+        opp_edges.push_back(std::array<int, 2>({{0, i + 1}}));
+        opp_edges.push_back(std::array<int, 2>({{i + 1, (i + 1) % 3 + 1}}));
     }
 
     ////compute dihedral angles
@@ -1078,9 +1078,9 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
 #if TIMING_BREAKDOWN
     igl_timer0.start();
 #endif
-    std::array<GEO::vec3, 3> vs = {GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
-                                   GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
-                                   GEO::vec3(tri[2][0], tri[2][1], tri[2][2])};
+    std::array<GEO::vec3, 3> vs = {{GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
+                                    GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
+                                    GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
     std::vector<GEO::vec3> ps;
     sampleTriangle(vs, ps);
 #if TIMING_BREAKDOWN
@@ -1201,9 +1201,9 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
             } else {
                 Triangle_3f tri(tet_vertices[v_id].posf, tet_vertices[v2_id].posf, old_pf);
                 std::vector<GEO::vec3> ps;
-                std::array<GEO::vec3, 3> vs = {GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
-                                               GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
-                                               GEO::vec3(tri[2][0], tri[2][1], tri[2][2])};
+                std::array<GEO::vec3, 3> vs = {{GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
+                                                GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
+                                                GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
                 sampleTriangle(vs, ps);
 
 //                sampleTriangle(tri, ps);//CANNOT directly push the sampling points into b_points
@@ -1402,10 +1402,10 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
     for (int f_id = 0; f_id < F_in.rows(); f_id++) {
         //sample triangles except one-ring of v1v2
         std::vector<GEO::vec3> ps;
-        std::array<GEO::vec3, 3> vs = {
+        std::array<GEO::vec3, 3> vs = {{
                 GEO::vec3(V_in(F_in(f_id, 0), 0), V_in(F_in(f_id, 0), 1), V_in(F_in(f_id, 0), 2)),
                 GEO::vec3(V_in(F_in(f_id, 1), 0), V_in(F_in(f_id, 1), 1), V_in(F_in(f_id, 1), 2)),
-                GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))};
+                GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))}};
 //        sampleTriangle(vs, ps);
         double sqrt3_2 = sqrt(3) / 2;
 
