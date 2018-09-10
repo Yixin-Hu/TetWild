@@ -281,7 +281,7 @@ namespace tetwild {
         out_vertices.clear();
         out_tets.clear();
 
-        args.i_epsilon = parameters.i_epsilon;
+        // args.i_epsilon = parameters.i_epsilon;
         args.bg_mesh = parameters.bg_mesh;
         args.filter_energy = parameters.filter_energy;
         //args.i_ideal_edge_length = parameters.i_ideal_edge_length;
