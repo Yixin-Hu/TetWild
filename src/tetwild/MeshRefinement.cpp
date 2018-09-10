@@ -1333,8 +1333,9 @@ bool MeshRefinement::deserialization(const std::string& sf_file, const std::stri
     t_is_removed = std::vector<bool>(tets.size(), false);
     v_is_removed = std::vector<bool>(tet_vertices.size(), false);
     for (int i = 0; i < tets.size(); i++) {
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++) {
             tet_vertices[tets[i][j]].conn_tets.insert(i);
+        }
     }
 
     prepareData(false);

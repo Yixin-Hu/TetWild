@@ -110,6 +110,7 @@ add_library(libTetWild STATIC
 		src/tetwild/SimpleTetrahedralization.h
 		src/tetwild/State.cpp
 		src/tetwild/State.h
+		src/tetwild/TetmeshElements.cpp
 		src/tetwild/TetmeshElements.h
 		src/tetwild/tetwild.cpp
 		src/tetwild/VertexSmoother.cpp

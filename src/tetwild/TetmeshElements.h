@@ -13,6 +13,7 @@
 #define NEW_GTET_TETMESHELEMENTS_H
 
 #include <tetwild/Common.h>
+#include <unordered_set>
 
 namespace tetwild {
 
@@ -49,18 +50,16 @@ public:
     //for adaptive refinement
     double adaptive_scale = 1.0;
 
-    TetVertex(){}
+    TetVertex() = default;
+
     TetVertex(const Point_3& p) {
         pos = p;
     }
 
-    void printInfo(){
+    void printInfo() const {
         logger().debug("is_on_surface = {}", is_on_surface);
         logger().debug("is_on_bbox = {}", is_on_bbox);
-        std::cout<<"conn_tets: ";
-        for(auto it=conn_tets.begin();it!=conn_tets.end();it++){
-            std::cout<<*it<<" ";
-        }
+        logger().debug("conn_tets = {}", conn_tets);
     }
 
     bool is_locked = false;
@@ -76,9 +75,10 @@ public:
     double slim_energy = 0;
     double volume = 0;
 
-    TetQuality(){}
-    TetQuality(double d_min, double d_max, double r):
-            min_d_angle(d_min), max_d_angle(d_max){}
+    TetQuality() = default;
+    TetQuality(double d_min, double d_max, double r)
+        : min_d_angle(d_min), max_d_angle(d_max)
+    { }
 
 //    bool operator < (const TetQuality& tq) {
 //        if (min_d_angle < tq.min_d_angle)
@@ -113,7 +113,7 @@ public:
 };
 
 ///for visualization
-class Stage{
+class Stage {
 public:
     std::vector<TetVertex> tet_vertices;
     std::vector<std::array<int, 4>> tets;
@@ -125,12 +125,13 @@ public:
     std::vector<bool> is_shown;
     double resolution;
 
-    Stage(){}
+    Stage() = default;
     Stage(const std::vector<TetVertex>& tet_vs, const std::vector<std::array<int, 4>>& ts,
           const std::vector<std::array<int, 4>>& is_sf_fs,
-          const std::vector<bool>& v_is_rd, const std::vector<bool>& t_is_rd, const std::vector<TetQuality>& tet_qs):
-            tet_vertices(tet_vs), tets(ts), is_surface_fs(is_sf_fs),
-            v_is_removed(v_is_rd), t_is_removed(t_is_rd), tet_qualities(tet_qs) {}
+          const std::vector<bool>& v_is_rd, const std::vector<bool>& t_is_rd, const std::vector<TetQuality>& tet_qs)
+        : tet_vertices(tet_vs), tets(ts), is_surface_fs(is_sf_fs)
+        , v_is_removed(v_is_rd), t_is_removed(t_is_rd), tet_qualities(tet_qs)
+    { }
 
     void serialize(std::string serialize_file){
         igl::serialize(tet_vertices, "tet_vertices", serialize_file, true);

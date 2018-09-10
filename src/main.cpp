@@ -387,7 +387,7 @@ int main(int argc, char *argv[]) {
     app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
     app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
     app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (integer, optional, default: 0)");
+    app.add_flag("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
@@ -400,7 +400,7 @@ int main(int argc, char *argv[]) {
     Logger::init(!GArgs::args().is_quiet, log_filename);
     log_level = std::max(0, std::min(6, log_level));
     spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
-    spdlog::flush_every(std::chrono::seconds(3));
+    // spdlog::flush_every(std::chrono::seconds(3));
 
     // logger().info("this is a test");
     // logger().debug("debug stuff");

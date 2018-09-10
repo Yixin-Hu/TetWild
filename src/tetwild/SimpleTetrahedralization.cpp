@@ -45,8 +45,9 @@ void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::
     logger().debug("#v = {} #t = {}", tet_vertices.size(), tets.size());
 
     for (int i = 0; i < tets.size(); i++) {
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++) {
             tet_vertices[tets[i][j]].conn_tets.insert(i);
+        }
     }
 }
 
@@ -388,18 +389,21 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
     std::vector<std::vector<int>> track_on_faces;
     track_on_faces.resize(bsp_vertices.size());
     for (unsigned int i = 0; i < m_faces.size(); i++) {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) {
 //            tet_vertices[centroid_size+m_faces[i][j]].on_face.insert(i);
             tet_vertices[m_faces[i][j]].on_face.insert(i);
+        }
     }
 
     std::vector<std::vector<int>> track_on_edges = conn_e4v;
     track_on_edges.resize(bsp_vertices.size());
     for (unsigned int i = 0; i < m_vertices.size(); i++) {
-        for (int j = 0; j < track_on_edges[i].size(); j++)
-            if (m_e_tags[track_on_edges[i][j]] >= 0)
+        for (int j = 0; j < track_on_edges[i].size(); j++) {
+            if (m_e_tags[track_on_edges[i][j]] >= 0) {
 //                tet_vertices[centroid_size+i].on_edge.insert(m_e_tags[track_on_edges[i][j]]);
                 tet_vertices[i].on_edge.insert(m_e_tags[track_on_edges[i][j]]);
+            }
+        }
     }
 
     for (unsigned int i = 0; i < bsp_faces.size(); i++) {
@@ -645,8 +649,9 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
                 if (a[j] < 0)
                     continue;
                 tet_vertices[I].on_face.insert(bbx_f_tags[bbx_faces[j * 2 + a[j]]]);
-                if (a[(j + 1) % 3] >= 0)
+                if (a[(j + 1) % 3] >= 0) {
                     tet_vertices[I].on_edge.insert(bbx_e_tags[bbx_edges[j * 4 + a[j] * 2 + a[(j + 1) % 3]]]);
+                }
             }
         }
         if (i == 0)

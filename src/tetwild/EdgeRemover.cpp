@@ -230,8 +230,9 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     tet_vertices[v2_id].conn_tets.erase(std::find(tet_vertices[v2_id].conn_tets.begin(),
                                                   tet_vertices[v2_id].conn_tets.end(), t_ids[1]));
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) {
         tet_qualities[t_ids[i]] = tet_qs[i];
+    }
 
     //repush new edges
     //Note that you need to pop out the current element first!!
