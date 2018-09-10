@@ -28,8 +28,8 @@ void EdgeCollapser::init() {
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            std::array<int, 2> e = {tets[i][j], tets[i][(j + 1) % 4]};
-            if (e[0] > e[1]) e = {e[1], e[0]};
+            std::array<int, 2> e = {{tets[i][j], tets[i][(j + 1) % 4]}};
+            if (e[0] > e[1]) e = {{e[1], e[0]}};
             if(!isLocked_ui(e))
                 edges.push_back(e);
         }
@@ -52,7 +52,7 @@ void EdgeCollapser::init() {
         if (isCollapsable_cd1(edges[i][1], edges[i][0])) {
             weight = weight == -1 ? calEdgeLength(edges[i][0], edges[i][1]) : weight;
             if (isCollapsable_cd3(edges[i][0], edges[i][1], weight)) {
-                ElementInQueue_ec ele(std::array<int, 2>({edges[i][1], edges[i][0]}), weight);
+                ElementInQueue_ec ele({{edges[i][1], edges[i][0]}}, weight);
                 ec_queue.push(ele);
             }
         }
@@ -60,8 +60,8 @@ void EdgeCollapser::init() {
 
     counter = 0;
     suc_counter = 0;
-    breakdown_timing = {0, 0, 0, 0, 0};
-    breakdown_timing0 = {0, 0};
+    breakdown_timing = {{0, 0, 0, 0, 0}};
+    breakdown_timing0 = {{0, 0}};
 }
 
 void EdgeCollapser::collapse() {
@@ -604,7 +604,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
         if (isCollapsable_cd1(v2_id, *it)) {
             weight = calEdgeLength(v2_id, *it);
             if (isCollapsable_cd3(v2_id, *it, weight)) {
-                std::array<int, 2> e={v2_id, *it};
+                std::array<int, 2> e={{v2_id, *it}};
                 if(!isLocked_ui(e)) {
                     ElementInQueue_ec ele(e, weight);
                     ec_queue.push(ele);
@@ -615,7 +615,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
         if (isCollapsable_cd1(*it, v2_id)) {
             weight = weight == -1 ? calEdgeLength(*it, v2_id) : weight;
             if (isCollapsable_cd3(*it, v2_id, weight)) {
-                std::array<int, 2> e={*it, v2_id};
+                std::array<int, 2> e={{*it, v2_id}};
                 if(!isLocked_ui(e)) {
                     ElementInQueue_ec ele(e, weight);
                     ec_queue.push(ele);
@@ -730,7 +730,7 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
     for (auto it = tet_vertices[v1_id].conn_tets.begin(); it != tet_vertices[v1_id].conn_tets.end(); it++) {
         for (int j = 0; j < 4; j++) {
             if (tets[*it][j] != v1_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
-                std::array<int, 3> tri = {tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]};
+                std::array<int, 3> tri = {{tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]}};
                 std::sort(tri.begin(), tri.end());
                 tri_ids.push_back(tri);
             }

@@ -57,7 +57,7 @@ void MeshConformer::matchDivFaces() {
     seed_v_list.reserve(bsp_faces.size() * 3);
     for (int i = 0; i < bsp_faces.size(); i++) {
         for (int j = 0; j < 3; j++)
-            seed_v_list.push_back(std::array<int, 2>({bsp_faces[i].vertices[j], i}));
+            seed_v_list.push_back(std::array<int, 2>({{bsp_faces[i].vertices[j], i}}));
     }
     std::sort(seed_v_list.begin(), seed_v_list.end(), [](const std::array<int, 2> &a, const std::array<int, 2> &b) {
         return a[0] < b[0];//todo: there should be a O(n) algorithm
@@ -66,7 +66,7 @@ void MeshConformer::matchDivFaces() {
     const int m_faces_size = m_faces.size();
     for (int i = 0; i < m_faces_size; i++) {
         int m_f_id = i;
-        std::array<Point_3, 3> tri1 = {m_vertices[m_faces[i][0]], m_vertices[m_faces[i][1]], m_vertices[m_faces[i][2]]};
+        std::array<Point_3, 3> tri1 = {{m_vertices[m_faces[i][0]], m_vertices[m_faces[i][1]], m_vertices[m_faces[i][2]]}};
 
         ///find seed info
         std::unordered_set<int> seed_fids, seed_nids;
@@ -93,8 +93,8 @@ void MeshConformer::matchDivFaces() {
                                   std::back_inserter(tmp1));//todo: find a better way to cal intersection
             //todo: you can use unordered_set and set a *good* hash function to find identical triangles on bsp tree
             if (tmp1.size() == 1) {
-                std::array<int, 3> tmp_bsp = {bsp_faces[tmp1[0]].vertices[0], bsp_faces[tmp1[0]].vertices[1],
-                                              bsp_faces[tmp1[0]].vertices[2]};
+                std::array<int, 3> tmp_bsp = {{bsp_faces[tmp1[0]].vertices[0], bsp_faces[tmp1[0]].vertices[1],
+                                               bsp_faces[tmp1[0]].vertices[2]}};
                 std::array<int, 3> tmp_m = m_faces[i];
                 std::sort(tmp_bsp.begin(), tmp_bsp.end());
                 std::sort(tmp_m.begin(), tmp_m.end());
@@ -111,9 +111,9 @@ void MeshConformer::matchDivFaces() {
 
         for (auto it = seed_fids.begin(); it != seed_fids.end(); it++) {
             ////cal intersection type
-            std::array<Point_3, 3> tri2 = {bsp_vertices[bsp_faces[*it].vertices[0]],
-                                           bsp_vertices[bsp_faces[*it].vertices[1]],
-                                           bsp_vertices[bsp_faces[*it].vertices[2]]};
+            std::array<Point_3, 3> tri2 = {{bsp_vertices[bsp_faces[*it].vertices[0]],
+                                            bsp_vertices[bsp_faces[*it].vertices[1]],
+                                            bsp_vertices[bsp_faces[*it].vertices[2]]}};
             int int_type = triangleIntersection3d(tri1, tri2, true);
             if (int_type == COPLANAR_INT) {
                 bsp_faces[*it].div_faces.insert(i);
@@ -138,9 +138,9 @@ void MeshConformer::matchDivFaces() {
                         ///if intersected -> insert into new_fids
                         /////if coplanar-intersecting -> divface for face
                         /////else if crossing-intersecting -> divface for node
-                        std::array<Point_3, 3> tri2 = {bsp_vertices[bsp_faces[bsp_f_id].vertices[0]],
-                                                       bsp_vertices[bsp_faces[bsp_f_id].vertices[1]],
-                                                       bsp_vertices[bsp_faces[bsp_f_id].vertices[2]]};
+                        std::array<Point_3, 3> tri2 = {{bsp_vertices[bsp_faces[bsp_f_id].vertices[0]],
+                                                        bsp_vertices[bsp_faces[bsp_f_id].vertices[1]],
+                                                        bsp_vertices[bsp_faces[bsp_f_id].vertices[2]]}};
                         int int_type = triangleIntersection3d(tri1, tri2, false);
                         if (int_type != NONE_INT)
                             new_fids.insert(bsp_f_id);
@@ -343,7 +343,7 @@ int MeshConformer::triangleIntersection3d(const std::array<Point_3, 3>& tri1, co
 }
 
 void MeshConformer::initT(const Vector_3& nv) {
-    std::vector<Vector_3> vs = {Vector_3(1, 0, 0), Vector_3(0, 1, 0), Vector_3(0, 0, 1)};
+    std::vector<Vector_3> vs {Vector_3(1, 0, 0), Vector_3(0, 1, 0), Vector_3(0, 0, 1)};
     std::vector<bool> is_ppd(3, false);
 
     for (int i = 0; i < 3; i++) {

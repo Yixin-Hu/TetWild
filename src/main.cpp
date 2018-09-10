@@ -14,7 +14,9 @@
 #include <tetwild/InoutFiltering.h>
 #include <igl/writeOBJ.h>
 #include <pymesh/MshSaver.h>
+#include <tetwild/DisableWarnings.h>
 #include <CLI/CLI.hpp>
+#include <tetwild/EnableWarnings.h>
 
 using namespace tetwild;
 
@@ -28,9 +30,9 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     double min_avg = 0, max_avg = 0;
 //    double max_asp_ratio = 0, avg_asp_ratio = 0;
     double max_slim_energy = 0, avg_slim_energy = 0;
-    std::array<double, 6> cmp_cnt = {0, 0, 0, 0, 0, 0};
-    std::array<double, 6> cmp_d_angles = {6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
-                                          162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI};
+    std::array<double, 6> cmp_cnt = {{0, 0, 0, 0, 0, 0}};
+    std::array<double, 6> cmp_d_angles = {{6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
+                                           162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI}};
     int cnt = 0;
     for (int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
@@ -89,9 +91,9 @@ void outputFinalSurface(MeshRefinement& MR){
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            std::array<int, 3> f = {tets[i][j], tets[i][(j + 1) % 4], tets[i][(j + 2) % 4]};
+            std::array<int, 3> f = {{tets[i][j], tets[i][(j + 1) % 4], tets[i][(j + 2) % 4]}};
             std::sort(f.begin(), f.end());
-            tet_faces.push_back(std::array<int, 4>({f[0], f[1], f[2], i}));
+            tet_faces.push_back(std::array<int, 4>({{f[0], f[1], f[2], i}}));
         }
     }
     std::sort(tet_faces.begin(), tet_faces.end());//we can sort all 4 digits!!!
@@ -430,7 +432,7 @@ int main(int argc, char *argv[]) {
 
     //do tetrahedralization
     if(GArgs::args().slz_file != "")
-        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({true, false, true, true}));
+        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({{true, false, true, true}}));
     else
         gtet_new();
 

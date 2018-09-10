@@ -38,12 +38,12 @@ void EdgeSplitter::init() {
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {tets[i][0], tets[i][j + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            std::array<int, 2> e = {{tets[i][0], tets[i][j + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 edges.push_back(e);
-            e = {tets[i][j + 1], tets[i][(j + 1) % 3 + 1]};
-            if(e[0]>e[1]) e={e[1], e[0]};
+            e = {{tets[i][j + 1], tets[i][(j + 1) % 3 + 1]}};
+            if(e[0]>e[1]) e={{e[1], e[0]}};
             if(!isLocked_ui(e))
                 edges.push_back(e);
         }
@@ -304,7 +304,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     //push new ele into queue
     double weight = calEdgeLength(v1_id, v_id);
     if (isSplittable_cd1(v1_id, v_id, weight)) {
-        std::array<int, 2> e={v1_id, v_id};
+        std::array<int, 2> e={{v1_id, v_id}};
         if(!isLocked_ui(e)) {
             ElementInQueue_es ele(e, weight);
             es_queue.push(ele);
@@ -313,7 +313,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
 
     weight = calEdgeLength(v2_id, v_id);
     if (isSplittable_cd1(v2_id, v_id, weight)) {
-        std::array<int, 2> e={v2_id, v_id};
+        std::array<int, 2> e={{v2_id, v_id}};
         if(!isLocked_ui(e)) {
             ElementInQueue_es ele(e, weight);
             es_queue.push(ele);
@@ -325,7 +325,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     for (auto it = n12_v_ids.begin(); it != n12_v_ids.end(); it++) {
         weight = calEdgeLength(*it, v_id);
         if (isSplittable_cd1(*it, v_id, weight)) {
-            std::array<int, 2> e = {*it, v_id};
+            std::array<int, 2> e = {{*it, v_id}};
             if(!isLocked_ui(e)) {
                 ElementInQueue_es ele(e, weight);
                 es_queue.push(ele);

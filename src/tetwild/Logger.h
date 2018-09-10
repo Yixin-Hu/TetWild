@@ -11,8 +11,10 @@
 
 #pragma once
 
+#include <tetwild/DisableWarnings.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
+#include <tetwild/EnableWarnings.h>
 
 namespace tetwild {
 

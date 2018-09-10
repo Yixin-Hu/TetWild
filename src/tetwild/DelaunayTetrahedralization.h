@@ -15,8 +15,10 @@
 #include <tetwild/Common.h>
 #include <tetwild/BSPElements.h>
 #include <geogram/mesh/mesh.h>
+#include <tetwild/DisableWarnings.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
+#include <tetwild/EnableWarnings.h>
 
 namespace tetwild {
 
