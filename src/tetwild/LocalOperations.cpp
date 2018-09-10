@@ -969,13 +969,14 @@ bool LocalOperations::isEdgeOnBoundary(int v1_id, int v2_id) {
 
     int cnt = 0;
     for (int t_id: tet_vertices[v1_id].conn_tets) {
-        std::vector<int> opp_js;
+		std::array<int, 4> opp_js;
+		int cnt = 0;
         for (int j = 0; j < 4; j++) {
             if (tets[t_id][j] == v1_id || tets[t_id][j] == v2_id)
                 continue;
-            opp_js.push_back(j);
+            opp_js[cnt++] = j;
         }
-        if (opp_js.size() == 2) {
+        if (cnt == 2) {
             if (is_surface_fs[t_id][opp_js[0]] != State::state().NOT_SURFACE)
                 cnt++;
             if (is_surface_fs[t_id][opp_js[1]] != State::state().NOT_SURFACE)

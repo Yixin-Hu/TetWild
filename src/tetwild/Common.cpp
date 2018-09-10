@@ -42,13 +42,27 @@ void pausee(){
 }
 
 bool isHaveCommonEle(const std::unordered_set<int>& v1, const std::unordered_set<int>& v2) {
-    for (auto it = v1.begin(); it != v1.end(); it++)
-        if(std::find(v2.begin(), v2.end(), *it)!=v2.end())
-            return true;
+    if (v1.size() < v2.size()) {
+        for (int x : v1) {
+            if (v2.count(x)) {
+				return true;
+			}
+        }
+    } else {
+        for (int x : v2) {
+            if (v1.count(x)) {
+				return true;
+			}
+        }
+    }
+    // for (auto it = v1.begin(); it != v1.end(); it++)
+    //     if(std::find(v2.begin(), v2.end(), *it)!=v2.end())
+    //         return true;
     return false;
 }
 
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::unordered_set<int>& s) {
+#if 0
     std::unordered_set<int> s_tmp;
     std::vector<int> v1, v2;
     v1.reserve(s1.size());
@@ -61,6 +75,16 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
     std::sort(v2.begin(), v2.end());
     std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::inserter(s_tmp, s_tmp.end()));
     s = s_tmp;
+#else
+	if (s2.size() < s1.size()) { setIntersection(s2, s1, s); return; }
+	s.clear();
+	s.reserve(std::min(s1.size(), s2.size()));
+	for (int x : s1) {
+		if (s2.count(x)) {
+			s.insert(x);
+		}
+	}
+#endif
 
 //    s.clear();
 //    s.reserve(std::min(s1.size(), s2.size()));
@@ -87,6 +111,7 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
 //        } else
 //            s.push_back(ele);
 //    }
+#if 0
     std::vector<int> v1, v2;
     v1.reserve(s1.size());
     for(auto it=s1.begin();it!=s1.end();it++)
@@ -97,6 +122,16 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
     std::sort(v1.begin(), v1.end());
     std::sort(v2.begin(), v2.end());
     std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(s));
+#else
+	if (s2.size() < s1.size()) { setIntersection(s2, s1, s); return; }
+	s.clear();
+	s.reserve(std::min(s1.size(), s2.size()));
+	for (int x : s1) {
+		if (s2.count(x)) {
+			s.push_back(x);
+		}
+	}
+#endif
 }
 
 
