@@ -400,7 +400,7 @@ int main(int argc, char *argv[]) {
     Logger::init(!GArgs::args().is_quiet, log_filename);
     log_level = std::max(0, std::min(6, log_level));
     spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
-    // spdlog::flush_every(std::chrono::seconds(3));
+    spdlog::flush_every(std::chrono::seconds(3));
 
     // logger().info("this is a test");
     // logger().debug("debug stuff");
