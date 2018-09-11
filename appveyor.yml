@@ -23,8 +23,6 @@ install:
   - cmd: conda.exe config --remove channels defaults
   - cmd: conda.exe config --add channels defaults
   - cmd: conda.exe config --add channels conda-forge
-  - cmd: git submodule update --init --recursive
-  - cmd: git apply geogram_win.patch
 
 build: off
 

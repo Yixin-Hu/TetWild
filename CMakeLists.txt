@@ -1,14 +1,12 @@
-################################################################################
-# TetWild CMake
-################################################################################
 cmake_minimum_required(VERSION 3.3)
-project(TetWild)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ################################################################################
 # Options
 ################################################################################
 # tetwild
-option(TETWILD_WITH_ISPC "Use ISPC"                        OFF)
+option(TETWILD_WITH_HUNTER "Use Hunter to download and configure Boost" OFF)
+option(TETWILD_WITH_ISPC   "Use ISPC"                                   OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -32,6 +30,21 @@ option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
 #geogram
 option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
 
+if(TETWILD_WITH_HUNTER)
+	# Needs to be set before the main project... argh =/
+	include(HunterGate)
+	HunterGate(
+		URL "https://github.com/ruslo/hunter/archive/v0.23.25.tar.gz"
+		SHA1 "cb75cce9a3a8d552e70e7118f3203eb4ac05c201"
+	)
+endif()
+
+################################################################################
+# Project name
+################################################################################
+
+project(TetWild)
+
 ################################################################################
 # Settings
 ################################################################################
@@ -41,7 +54,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Color output
 include(UseColors)
@@ -58,30 +70,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # 3rd party libraries
 ################################################################################
-
-# download external dependencies
-include(TetWildDownloadExternal)
-
-# spdlog
-if(NOT TARGET spdlog::spdlog)
-	tetwild_download_spdlog()
-	add_subdirectory(${TETWILD_EXTERNAL}/spdlog)
-endif()
-
-# cgal
-find_package(CGAL REQUIRED)
-
-# libigl
-find_package(LIBIGL REQUIRED)
-
-# geogram
-include(geogram)
-
-# pymesh loaders
-add_subdirectory(${TETWILD_EXTERNAL}/pymesh)
-
-# CL11
-add_subdirectory(${TETWILD_EXTERNAL}/CLI)
+include(TetWildDependencies)
 
 ################################################################################
 # TetWild
@@ -134,9 +123,10 @@ target_link_libraries(libTetWild
 	PUBLIC
 		geogram
 		igl::core
-		igl::cgal
 		pymesh::pymesh
 		spdlog::spdlog
+	PRIVATE
+		igl::cgal
 )
 set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
 
@@ -150,10 +140,32 @@ endif()
 # Building executable
 add_executable(TetWild src/main.cpp)
 target_link_libraries(TetWild
-	libTetWild
-	CLI11::CLI11
+		libTetWild
+		CLI11::CLI11
+		igl::cgal
 )
 target_include_directories(TetWild PRIVATE src)
+igl_copy_cgal_dll(TetWild)
 
 # Install
 install(TARGETS TetWild RUNTIME DESTINATION bin)
+
+################################################################################
+# Folders for Visual Studio/XCode IDEs
+################################################################################
+
+# geogram
+set_target_properties(geogram PROPERTIES FOLDER extern/geogram)
+set_target_properties(geogram_third_party PROPERTIES FOLDER extern/geogram)
+set_target_properties(uninstall PROPERTIES FOLDER extern/geogram)
+# spdlog
+set_target_properties(async_bench PROPERTIES FOLDER extern/spdlog)
+set_target_properties(bench PROPERTIES FOLDER extern/spdlog)
+set_target_properties(example PROPERTIES FOLDER extern/spdlog)
+set_target_properties(latency PROPERTIES FOLDER extern/spdlog)
+set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
+set_target_properties(spdlog_headers_for_ide PROPERTIES FOLDER extern/spdlog)
+set_target_properties(spdlog-utests PROPERTIES FOLDER extern/spdlog)
+set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
+# pymesh
+set_target_properties(pymesh_tiny PROPERTIES FOLDER extern/pymesh)

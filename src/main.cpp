@@ -14,7 +14,7 @@
 #include <tetwild/InoutFiltering.h>
 #include <igl/writeOBJ.h>
 #include <pymesh/MshSaver.h>
-#include <CLI/CLI11.hpp>
+#include <CLI/CLI.hpp>
 
 using namespace tetwild;
 

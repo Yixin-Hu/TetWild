@@ -15,11 +15,11 @@ requirements:
     - vc 14 # [win]
     - cmake
     - ninja
-    - cgal
+    - boost-cpp
 
   run:
     - vc 14 # [win]
-    - cgal
+    - boost-cpp
 
 about:
   home: https://github.com/Yixin-Hu/TetWild

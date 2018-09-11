@@ -27,21 +27,15 @@ Here is pre-generated tetmeshes and the extracted surface meshes for research-pu
 
 ## Installation
 
-Our code was originally developed on MacOS and has been tested on Lunix and Windows.
+Our code was originally developed on MacOS and has been tested on Linux and Windows.
 
 - Clone the repository into your local machine:
 
 ```bash
-git clone https://github.com/Yixin-Hu/TetWild --recursive
+git clone https://github.com/Yixin-Hu/TetWild
 ```
 
-- For Windows users, a patch needs to be applied to the geogram library to avoid a link error:
-
-```bash
-git apply geogram_win.patch
-```
-
-- Compile the code using cmake (default in release mode):
+- Compile the code using cmake (default in Release mode):
 
 You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.
 
@@ -52,6 +46,8 @@ cd build
 cmake ..
 make
 ```
+
+💡 If you do not have Boost installed (which is need for CGAL), you can enable the cmake option `-DTETWILD_WITH_HUNTER=ON`. This will let CMake use [Hunter](https://github.com/ruslo/hunter) to download and configure Boost automatically. Other options include installing Boost via Conda, compile from source, etc.
 
 💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used. 
 
