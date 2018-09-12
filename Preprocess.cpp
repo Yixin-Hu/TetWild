@@ -127,18 +127,12 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
 	// TODO Better heuristics for calculating epsilon
 	g_diag_l = igl::bounding_box_diagonal(V_in);
-	Eigen::Vector3d minV = V_in.colwise().minCoeff();
-	Eigen::Vector3d maxV = V_in.colwise().maxCoeff();
-	double dx = std::abs(maxV.x() - minV.x());
-	double dy = std::abs(maxV.y() - minV.y());
-	double dz = std::abs(maxV.z() - minV.z());
-	double davg = (dx + dy + dz) / 3.0;
-	g_eps_input = davg / g_diag_l * args.i_epsilon;
+	g_eps_input = g_diag_l / 1000.0 * args.i_epsilon;
 
 	// TODO What is all this?
     g_dd = g_eps_input / args.stage;
     g_cur_stage = 1;
-	g_eps = g_eps_input;// -g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
+	g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
     g_eps_delta = g_dd / std::sqrt(3);
     g_eps_2 = g_eps * g_eps;
     
