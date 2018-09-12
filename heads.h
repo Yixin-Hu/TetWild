@@ -121,7 +121,7 @@ struct Args{
     std::string postfix = "_";
     double i_ideal_edge_length = 20;
     double i_min_edge_length = 1.f;
-    double i_epsilon = 1000;
+    double i_epsilon = 0.2;
     int i_dd = -1;
     int stage = 1;
     double adaptive_scalar = 0.6;
