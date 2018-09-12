@@ -125,6 +125,9 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     Eigen::VectorXi IV, _;
     igl::remove_duplicate_vertices(V_tmp, F_tmp, 1e-10, V_in, IV, _, F_in);
 
+	if (V_in.rows() == 0 || F_in.rows() == 0)
+		return false;
+
 	// TODO Better heuristics for calculating epsilon
 	g_diag_l = igl::bounding_box_diagonal(V_in);
 	g_eps_input = g_diag_l / 1000.0 * args.i_epsilon;
