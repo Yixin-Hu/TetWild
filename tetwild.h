@@ -18,7 +18,7 @@
 namespace tetwild {
     struct Args{
         double i_ideal_edge_length = 20;
-        double i_epsilon = 0.2;
+        double i_epsilon = 1.0;
         int stage = 1;
         double filter_energy = 10;
         int max_pass = 80;
@@ -35,7 +35,7 @@ namespace tetwild {
                             std::vector<std::array<double, 3>>& V_out,
                             std::vector<std::array<int, 4>>& T_out,
                             const double targetSize,
-                            const double deviationFactor=0.20,
+                            const double deviationFactor=1.0,
                             const double filteringEnergy=10.0);
 }
 
