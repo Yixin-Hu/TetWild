@@ -123,62 +123,24 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     cout << V_tmp.rows() << " " << F_tmp.rows() << endl;
 
     Eigen::VectorXi IV, _;
-//        igl::unique_rows(V_tmp, V_in, _, IV);
     igl::remove_duplicate_vertices(V_tmp, F_tmp, 1e-10, V_in, IV, _, F_in);
 
-    if (V_in.rows() == 0 || F_in.rows() == 0)
-        return false;
+	if (V_in.rows() == 0 || F_in.rows() == 0)
+		return false;
 
-//        for (int i = 0; i < F_in.rows(); i++) {
-//            for (int j = 0; j < 3; j++) {
-//                F_in(i, j) = IV(F_in(i, j));
-//            }
-//        }
+	// TODO Better heuristics for calculating epsilon
+	g_diag_l = igl::bounding_box_diagonal(V_in);
+	g_eps_input = g_diag_l / 1000.0 * args.i_epsilon;
 
-    cout << "#v = " << V_tmp.rows() << " -> " << V_in.rows() << endl;
-    cout << "#f = " << F_tmp.rows() << " -> " << F_in.rows() << endl;
-
-//    checkBoundary(V_in, F_in);
-
-    ////set global parameters
-    g_diag_l = igl::bounding_box_diagonal(V_in);
-    g_eps_input = g_diag_l / args.i_epsilon;
-
-    if (args.i_dd > 0) {//for testing only
-        g_dd = g_diag_l / args.i_dd;
-        g_eps = g_diag_l / args.i_epsilon;
-        g_eps_2 = g_eps * g_eps;
-        args.stage = 1;
-    } else {
-//        g_dd = g_eps_input / args.stage;
-//        g_cur_stage = 1;
-//        g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
-//        g_eps_delta = g_dd / std::sqrt(3);
-//        g_eps_2 = g_eps * g_eps;
-
-        g_dd = g_eps_input / args.stage;
-        g_cur_stage = 1;
-        g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
-        g_eps_delta = g_dd / std::sqrt(3);
-        g_eps_2 = g_eps * g_eps;
-    }
-
-    //g_ideal_l = g_diag_l / args.i_ideal_edge_length;
-    if (args.i_ideal_edge_length == -1)
-    {
-      g_ideal_l = g_diag_l / 20.0;
-      //args.i_ideal_edge_length = 20.0;
-    }
-    else
-    {
-      g_ideal_l = args.i_ideal_edge_length;
-      args.i_ideal_edge_length = g_ideal_l / args.i_ideal_edge_length;
-    }
-    //g_eps = args.i_epsilon;
-
-
-    //if (args.i_epsilon == -1)
-    //  g_eps = g_diag_l / 1000.f;
+	// TODO What is all this?
+    g_dd = g_eps_input / args.stage;
+    g_cur_stage = 1;
+	g_eps = g_eps_input - g_dd / std::sqrt(3) * (args.stage + 1 - g_cur_stage);
+    g_eps_delta = g_dd / std::sqrt(3);
+    g_eps_2 = g_eps * g_eps;
+    
+    g_ideal_l = args.i_ideal_edge_length;
+    args.i_ideal_edge_length = g_diag_l / args.i_ideal_edge_length;
 
     cout << "eps = " << g_eps << endl;
     cout << "ideal_l = " << g_ideal_l << endl;
