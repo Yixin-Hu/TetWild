@@ -10,6 +10,9 @@
 //
 
 #include <tetwild/Common.h>
+#include <geogram/basic/permutation.h>
+#include <geogram/mesh/mesh_reorder.h>
+#include <geogram/mesh/mesh.h>
 #include <fstream>
 #include <algorithm>
 
@@ -221,6 +224,8 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
             ps.push_back(v2 + n_v2v0 * State::state().g_dd * n);
         }
     }
+
+    // logger().trace("triangle_samples {}", ps.size());
 
 //    logger().debug("ps.size = {}", ps.size());
 //    logger().debug("is output samples?");

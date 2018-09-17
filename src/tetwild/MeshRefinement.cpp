@@ -175,7 +175,8 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
 }
 
 int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
-                     VertexSmoother& smoother, int max_pass, const std::array<bool, 4>& ops){
+    VertexSmoother& smoother, int max_pass, const std::array<bool, 4>& ops)
+{
     double avg_energy, max_energy;
     splitter.getAvgMaxEnergy(avg_energy, max_energy);
 
@@ -760,7 +761,19 @@ bool MeshRefinement::isRegionFullyRounded(){
     return true;
 }
 
-void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean_up_local, double filter_energy, bool is_lock) {
+void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean_up_local, double filter_energy, bool is_lock)
+{
+    // Whenever the mesh energy cannot be optimized too much (delta of avg and
+    // max energy is < `delta_energy`), we update the scalar field of the
+    // target edge length. The update is performed as follows:
+    // - Every vertex whose incident tets have a total energy below a given
+    //   threshold is selected.
+    // - For each selected vertex, place a ball around it (see code below for the
+    //   radius).
+    // - The scalar field is * `adaptive_scalar` (0.6 by default) at the center
+    //   of the ball, left untouched at its boundary, and linearly interpolated
+    //   in-between.
+
     igl_timer.start();
     logger().debug("marking adaptive scales...");
     double tmp_time = 0;

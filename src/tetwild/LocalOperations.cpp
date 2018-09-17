@@ -1081,7 +1081,8 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
     std::array<GEO::vec3, 3> vs = {{GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
                                     GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
                                     GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
-    std::vector<GEO::vec3> ps;
+    static thread_local std::vector<GEO::vec3> ps;
+    ps.clear();
     sampleTriangle(vs, ps);
 #if TIMING_BREAKDOWN
     breakdown_timing0[id_sampling] += igl_timer0.getElapsedTime();
@@ -1155,7 +1156,9 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
 #if TIMING_BREAKDOWN
     igl_timer0.start();
 #endif
-    std::vector<GEO::vec3> b_points;
+    static thread_local std::vector<GEO::vec3> b_points;
+    static thread_local std::vector<GEO::vec3> ps;
+    b_points.clear();
     for(int v_id:n_v_ids) {
         if (!isEdgeOnBoundary(v1_id, v_id))
             continue;
@@ -1200,10 +1203,10 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
                 b_points.push_back(p2);
             } else {
                 Triangle_3f tri(tet_vertices[v_id].posf, tet_vertices[v2_id].posf, old_pf);
-                std::vector<GEO::vec3> ps;
                 std::array<GEO::vec3, 3> vs = {{GEO::vec3(tri[0][0], tri[0][1], tri[0][2]),
                                                 GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
                                                 GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
+                ps.clear();
                 sampleTriangle(vs, ps);
 
 //                sampleTriangle(tri, ps);//CANNOT directly push the sampling points into b_points

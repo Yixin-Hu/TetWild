@@ -340,7 +340,7 @@ void gtet_new() {
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
-        logger().info("Total time for the first stage = {}", sum_time);
+        logger().info("Total time for the first stage = {}s", sum_time);
     }
 
     /// STAGE 2
@@ -384,8 +384,8 @@ int main(int argc, char *argv[]) {
     app.add_option("--filter-energy", GArgs::args().filter_energy, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
     app.add_option("--max-pass", GArgs::args().max_pass, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
 
-    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
-    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_flag("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
+    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)");
     app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
     app.add_flag("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
