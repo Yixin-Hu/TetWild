@@ -14,6 +14,7 @@
 #include <pymesh/MshSaver.h>
 #include <igl/fit_plane.h>
 #include <igl/remove_duplicate_vertices.h>
+#include <igl/write_triangle_mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -163,6 +164,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //        State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
 //        State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 
+        // d_err = d/sqrt(3)
         State::state().g_dd = State::state().g_eps_input / GArgs::args().stage;
         State::state().g_cur_stage = 1;
         State::state().g_eps = State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
@@ -273,6 +275,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     v_is_removed = std::vector<bool>(V_in.rows(), false);
     f_is_removed = std::vector<bool>(F_in.rows(), false);
 
+    // mesh_reorder(geo_sf_mesh, GEO::MESH_ORDER_HILBERT);
     GEO::MeshFacetsAABB geo_face_tree(geo_sf_mesh);
 
     std::vector<std::array<int, 2>> edges;
@@ -357,6 +360,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     State::state().g_eps /= eps_scalar;
     State::state().g_eps_2 /= eps_scalar_2;
 //    State::state().g_dd /= eps_scalar*2;
+
+    // igl::write_triangle_mesh("tmp.obj", V_in, F_in);
 
     //output colormap
     //    outputSurfaceColormap(geo_face_tree, geo_sf_mesh);
@@ -536,12 +541,14 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
 
     std::unordered_set<int> new_f_ids;
     for (int f_id:conn_fs[v1_id]) {
-        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1])
+        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1]) {
             new_f_ids.insert(f_id);
+        }
     }
     for (int f_id:conn_fs[v2_id]) {
-        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1])
+        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1]) {
             new_f_ids.insert(f_id);
+        }
     }
 
     //check euclidean characteristics (delete degenerate and duplicate elements
@@ -694,14 +701,16 @@ bool Preprocess::isOneRingClean(int v1_id){
 
 
 bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::MeshFacetsAABB& geo_face_tree) {
+    // size_t num_querried = 0;
+
+    static thread_local std::vector<GEO::vec3> ps;
     for (int f_id:new_f_ids) {
         //sample triangles except one-ring of v1v2
-        std::vector<GEO::vec3> ps;
         std::array<GEO::vec3, 3> vs = {{
                 GEO::vec3(V_in(F_in(f_id, 0), 0), V_in(F_in(f_id, 0), 1), V_in(F_in(f_id, 0), 2)),
                 GEO::vec3(V_in(F_in(f_id, 1), 0), V_in(F_in(f_id, 1), 1), V_in(F_in(f_id, 1), 2)),
                 GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))}};
-
+        ps.clear();
         sampleTriangle(vs, ps);
 
 //        logger().debug("ps.size = {}", ps.size());
@@ -767,16 +776,20 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
         GEO::vec3 current_point = ps[0];
         GEO::vec3 nearest_point;
         double sq_dist;
-        GEO::index_t prev_facet = geo_face_tree.nearest_facet(current_point, nearest_point, sq_dist);
+        GEO::index_t prev_facet = GEO::NO_FACET;
 
         for (const GEO::vec3 &current_point:ps) {
-            sq_dist = current_point.distance2(nearest_point);
+            sq_dist = State::state().g_eps_2;
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
+            // ++num_querried;
             double dis = current_point.distance2(nearest_point);
-            if (dis > State::state().g_eps_2)
+            if (dis > State::state().g_eps_2) {
+                // logger().trace("num_queries {} true", num_querried);
                 return true;
+            }
         }
     }
+    // logger().trace("num_queries {} false", num_querried);
 
     return false;
 }

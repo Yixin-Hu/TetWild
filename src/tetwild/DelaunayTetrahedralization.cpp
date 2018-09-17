@@ -20,6 +20,7 @@
 #include <igl/unique_simplices.h>
 #include <igl/boundary_loop.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_reorder.h>
 #include <bitset>
 
 namespace tetwild {

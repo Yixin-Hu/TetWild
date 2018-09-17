@@ -47,7 +47,7 @@ cmake ..
 make
 ```
 
-💡 If you do not have Boost installed (which is need for CGAL), you can enable the cmake option `-DTETWILD_WITH_HUNTER=ON`. This will let CMake use [Hunter](https://github.com/ruslo/hunter) to download and configure Boost automatically. Other options include installing Boost via Conda, compile from source, etc.
+💡 If you do not have Boost installed (which is needed for CGAL), you can enable the cmake option `-DTETWILD_WITH_HUNTER=ON`. This will let CMake use [Hunter](https://github.com/ruslo/hunter) to download and configure Boost automatically. Other options include installing Boost via Conda, compile from source, etc.
 
 💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used. 
 
