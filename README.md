@@ -143,9 +143,9 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 	|--epsilon|`parameters.i_epsilon`|
 	|--stage|`parameters.stage`|
 	|--filter-energy|`parameters.filter_energy`|
-	|--max-pass|`parameters.max_passes`|
+	|--max-pass|`parameters.max_pass`|
 	|--is-quiet|`parameters.is_quiet`|
-	|--targeted-num-v|`parameters.target_num_v`|
+	|--targeted-num-v|`parameters.targeted_num_v`|
 	|--bg-mesh|`parameters.bg_mesh`|
 	|--is-laplacian|`parameters.is_laplacian`|
 
