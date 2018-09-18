@@ -33,14 +33,14 @@ struct State {
 
     double g_eps = 0; // effective epsilon at the current stage (see \hat{\epsilon} in the paper)
     double g_eps_2 = 0;
-    double g_dd = 0; // sampling distance for triangles (see d_k p.8 of the paper)
+    double g_dd = 0; // sampling distance for triangles at the current stage (see d_k p.8 of the paper)
     double g_ideal_l = 0; // target edge-length
     double g_diag_l = 0; // bbox diagonal
     bool g_is_close = 0; // open mesh or closed mesh?
 
-    double g_eps_input = 0; // target epsilon desired by the user
-    double g_eps_delta = 0; // ??
-    int g_cur_stage = 1; // k
+    double g_eps_input = 0; // target epsilon entered by the user
+    double g_eps_delta = 0; // increment for the envelope at each sub-stage of the mesh optimization (see (3) p.8 of the paper)
+    int g_cur_stage = 1; // sub-stage within the stage that tetwild was called with
 
     ///////////////
     // [testing] //
@@ -76,12 +76,23 @@ struct GArgs {
     std::string postfix = "_";
 
     // [input] User-defined arguments
-    double i_ideal_edge_length = 20; // target edge-length = bbox diagonal / i_ideal_edge_length
-    double i_epsilon = 1000; // target epsilon = bbox_diagonal / i_epsilon
 
-    // Advanced options
-    int i_dd = -1; // explicitly specify a sampling distance for triangles
-    int stage = 1; // max_num_stage [p.8]
+    // Target edge-length = bbox diagonal / i_ideal_edge_length
+    double i_ideal_edge_length = 20;
+
+    // Target epsilon = bbox_diagonal / i_epsilon
+    double i_epsilon = 1000;
+
+    //////////////////////
+    // Advanced options //
+    //////////////////////
+
+    // Explicitly specify a sampling distance for triangles (= bbox_diagonal / i_dd)
+    int i_dd = -1;
+
+    // Run the algorithm in stage (as explain in p.8 of the paper)
+    // If the first stage didn't succeed, call again with `stage = 2`,  etc.
+    int stage = 1;
 
     // Multiplier for resizing the target-edge length around bad-quality vertices
     // See MeshRefinement::updateScalarField() for more details
