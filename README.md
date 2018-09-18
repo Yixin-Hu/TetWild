@@ -4,7 +4,7 @@
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
 ACM Transactions on Graphics (SIGGRAPH 2018). 
 
-💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper.**
+💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://drive.google.com/open?id=1VGOviRMLOsaTVEf9R6lB1b84a3aKP4eH).**
 
 💡💡💡 **If you don't have time to read the whole documentation, please always read the tips with (💡) in the front first.**
 
