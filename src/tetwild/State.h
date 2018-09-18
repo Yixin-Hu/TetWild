@@ -26,35 +26,35 @@ struct State {
     int NOT_SURFACE = 0;
 
     // paths used for i/o
-    std::string g_working_dir;
-    std::string g_stat_file;
-    std::string g_postfix;
-    std::string g_output_file;
+    std::string working_dir;
+    std::string stat_file;
+    std::string postfix;
+    std::string output_file;
 
-    double g_eps = 0; // effective epsilon at the current stage (see \hat{\epsilon} in the paper)
-    double g_eps_2 = 0;
-    double g_dd = 0; // sampling distance for triangles at the current stage (see d_k p.8 of the paper)
-    double g_ideal_l = 0; // target edge-length
-    double g_diag_l = 0; // bbox diagonal
-    bool g_is_close = 0; // open mesh or closed mesh?
+    double eps = 0; // effective epsilon at the current stage (see \hat{\epsilon} in the paper)
+    double eps_2 = 0;
+    double sampling_dist = 0; // sampling distance for triangles at the current stage (see d_k p.8 of the paper)
+    double initial_edge_len = 0; // initial target edge-length defined by the user (the final lengths can be lower, depending on mesh quality and feature size)
+    double bbox_diag = 0; // bbox diagonal
+    bool is_mesh_closed = 0; // open mesh or closed mesh?
 
-    double g_eps_input = 0; // target epsilon entered by the user
-    double g_eps_delta = 0; // increment for the envelope at each sub-stage of the mesh optimization (see (3) p.8 of the paper)
-    int g_cur_stage = 1; // sub-stage within the stage that tetwild was called with
+    double eps_input = 0; // target epsilon entered by the user
+    double eps_delta = 0; // increment for the envelope at each sub-stage of the mesh optimization (see (3) p.8 of the paper)
+    int sub_stage = 1; // sub-stage within the stage that tetwild was called with
 
     ///////////////
     // [testing] //
     ///////////////
 
     // Whether to use the max or the total energy when checking improvements in local operations
-    bool is_using_energy_max = true;
+    bool use_energy_max = true;
 
     // Use sampling to determine whether a face lies outside the envelope during mesh optimization
     // (if false, then only its vertices are tested)
-    bool is_using_sampling = true;
+    bool use_sampling = true;
 
     // Project vertices to the plane of their one-ring instead of the original surface during vertex smoothing
-    bool is_use_project = false;
+    bool use_onering_projection = false;
 
     // [debug]
     bool is_print_tmp = false;
@@ -77,18 +77,18 @@ struct GArgs {
 
     // [input] User-defined arguments
 
-    // Target edge-length = bbox diagonal / i_ideal_edge_length
-    double i_ideal_edge_length = 20;
+    // Target edge-length = bbox diagonal / initial_edge_len_rel
+    double initial_edge_len_rel = 20;
 
-    // Target epsilon = bbox_diagonal / i_epsilon
-    double i_epsilon = 1000;
+    // Target epsilon = bbox_diagonal / eps_rel
+    double eps_rel = 1000;
 
     //////////////////////
     // Advanced options //
     //////////////////////
 
-    // Explicitly specify a sampling distance for triangles (= bbox_diagonal / i_dd)
-    int i_dd = -1;
+    // Explicitly specify a sampling distance for triangles (= bbox_diagonal / sampling_dist)
+    int sampling_dist_rel = -1;
 
     // Run the algorithm in stage (as explain in p.8 of the paper)
     // If the first stage didn't succeed, call again with `stage = 2`,  etc.
@@ -101,31 +101,31 @@ struct GArgs {
     // Energy threshold
     // If the max tet energy is below this threshold, the mesh optimization process is stopped.
     // Also used to determine where to resize the scalar field (if a tet incident to a vertex has larger energy than this threshold, then resize around this vertex).
-    double filter_energy = 10;
+    double filter_energy_thres = 10;
 
     // Threshold on the energy delta (avg and max) below which to rescale the target edge length scalar field
-    double delta_energy = 0.1;
+    double delta_energy_thres = 0.1;
 
     // Maximum number of mesh optimization iterations
-    int max_pass = 80;
+    int max_num_passes = 80;
 
     // [debug] log files
-    int is_output_csv = true;
+    int write_csv_file = true;
     std::string csv_file = "";
     std::string slz_file = "";
-    int mid_result = -1; // save intermediate result
+    int save_mid_result = -1; // save intermediate result
 
     // Sample points at voxel centers for initial Delaunay triangulation
-    bool is_using_voxel = true;
+    bool use_voxel_stuffing = true;
 
     // Use Laplacian smoothing on the faces/vertices covering an open boundary after the mesh optimization step (post-processing)
-    bool is_laplacian = false;
+    bool smooth_open_boundary = false;
 
     // Target number of vertices (minimum), within 5% of tolerance
-    int targeted_num_v = -1;
+    int target_num_vertices = -1;
 
     // Background mesh for the edge length sizing field
-    std::string bg_mesh = "";
+    std::string background_mesh = "";
 
     bool is_quiet = false;
 

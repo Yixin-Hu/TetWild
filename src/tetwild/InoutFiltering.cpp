@@ -58,7 +58,7 @@ void InoutFiltering::filter() {
 //            F(i, 0) = F(i, 2);
 //            F(i, 2) = F(i, 0);
 //        }
-//        igl::writeSTL(State::state().g_working_dir+State::state().g_postfix+"_debug.stl", V, F);
+//        igl::writeSTL(State::state().working_dir+State::state().postfix_str+"_debug.stl", V, F);
 //
 //        tmp_t_is_removed = t_is_removed;
 //        cnt = 0;
@@ -115,7 +115,7 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
             F(i, j)=map_ids[fs[i][j]];
     }
 
-//    igl::writeSTL(State::state().g_working_dir+State::state().g_postfix+"_debug.stl", V, F);
+//    igl::writeSTL(State::state().working_dir+State::state().postfix+"_debug.stl", V, F);
 }
 
 void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
@@ -134,7 +134,7 @@ void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    PyMesh::MshSaver mSaver(State::state().g_working_dir+State::state().g_postfix+"_wn.msh", true);
+    PyMesh::MshSaver mSaver(State::state().working_dir+State::state().postfix+"_wn.msh", true);
     Eigen::VectorXd oV(v_ids.size() * 3);
     Eigen::VectorXi oT(t_cnt * 4);
     for (int i = 0; i < v_ids.size(); i++) {
