@@ -57,10 +57,10 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     GEO::MeshFacetsAABB geo_face_tree(geo_surface_mesh);
 
     double voxel_resolution;
-    if(GArgs::args().target_edge_len_rel > 20)
+    if(GArgs::args().initial_edge_len_rel > 20)
         voxel_resolution = State::state().bbox_diag / 20.0;
     else
-        voxel_resolution = State::state().bbox_diag / GArgs::args().target_edge_len_rel;
+        voxel_resolution = State::state().bbox_diag / GArgs::args().initial_edge_len_rel;
     std::array<double, 3> d;
     std::array<int, 3> N;
     for (int i = 0; i < 3; i++) {

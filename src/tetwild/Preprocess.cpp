@@ -363,6 +363,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
 
     // igl::write_triangle_mesh("tmp.obj", V_in, F_in);
 
+    // igl::write_triangle_mesh("tmp.obj", V_in, F_in);
+
     //output colormap
     //    outputSurfaceColormap(geo_face_tree, geo_sf_mesh);
 }
