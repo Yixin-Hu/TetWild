@@ -15,16 +15,20 @@
 #include <bitset>
 
 //triangulation
+#include <tetwild/DisableWarnings.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
+#include <tetwild/EnableWarnings.h>
 typedef CGAL::Constrained_Delaunay_triangulation_2<tetwild::K, CGAL::Default, CGAL::Exact_predicates_tag> CDT;
 typedef CDT::Point Point_cdt_2;
 typedef CGAL::Polygon_2<tetwild::K> Polygon_2;
 
 //arrangement
+#include <tetwild/DisableWarnings.h>
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
+#include <tetwild/EnableWarnings.h>
 typedef CGAL::Arr_segment_traits_2<tetwild::K> Traits_2;
 typedef Traits_2::Point_2 Point_arr_2;
 typedef Traits_2::X_monotone_curve_2 Segment_arr_2;
@@ -41,8 +45,9 @@ void SimpleTetrahedralization::tetra(std::vector<TetVertex>& tet_vertices, std::
     logger().debug("#v = {} #t = {}", tet_vertices.size(), tets.size());
 
     for (int i = 0; i < tets.size(); i++) {
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++) {
             tet_vertices[tets[i][j]].conn_tets.insert(i);
+        }
     }
 }
 
@@ -147,7 +152,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
             Point_2 &p2 = it->target()->point();
             if (vs_arr2bsp[p1] < 0 || vs_arr2bsp[p2] < 0)
                 continue;
-            std::array<int, 2> e = {vs_arr2bsp[p1], vs_arr2bsp[p2]};
+            std::array<int, 2> e = {{vs_arr2bsp[p1], vs_arr2bsp[p2]}};
             std::sort(e.begin(), e.end());
             es.push_back(e);
         }
@@ -175,7 +180,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
                     new_e_ids.push_back(bsp_edges.size() - 1);
                 }
 
-                std::array<int, 2> e = {new_es[k], new_es[k + 1]};
+                std::array<int, 2> e = {{new_es[k], new_es[k + 1]}};
                 std::sort(e.begin(), e.end());
                 tmp_es.push_back(e);
             }
@@ -237,7 +242,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
 
         if (is_tet) {
             is_tets[i] = true;
-            std::array<int, 4> t = {v_ids[0], v_ids[1], v_ids[2], v_ids[3]};
+            std::array<int, 4> t = {{v_ids[0], v_ids[1], v_ids[2], v_ids[3]}};
             if (CGAL::orientation(tet_vertices[t[0]].pos, tet_vertices[t[1]].pos, tet_vertices[t[2]].pos,
                                   tet_vertices[t[3]].pos) != CGAL::POSITIVE) {
                 int tmp = t[1];
@@ -259,8 +264,8 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     CDT cdt;
     for (unsigned int i = 0; i < bsp_faces.size(); i++) {
         if (bsp_faces[i].vertices.size() == 3) {
-            cdt_faces[i].push_back(std::array<int, 3>({bsp_faces[i].vertices[0], bsp_faces[i].vertices[1],
-                                                       bsp_faces[i].vertices[2]}));
+            cdt_faces[i].push_back(std::array<int, 3>({{bsp_faces[i].vertices[0], bsp_faces[i].vertices[1],
+                                                        bsp_faces[i].vertices[2]}}));
             if (bsp_faces[i].conn_nodes.size() == 1) {
                 for (int j = 0; j < bsp_faces[i].vertices.size(); j++)
                     tet_vertices[bsp_faces[i].vertices[j]].is_on_bbox = true;
@@ -284,9 +289,9 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
             vs_cdt2bsp[MC.to2d(bsp_vertices[bsp_faces[i].vertices[j]])] = bsp_faces[i].vertices[j];//todo: improve to2d
         }
         for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
-            cdt_faces[i].push_back(std::array<int, 3>({vs_cdt2bsp[fit->vertex(0)->point()],
-                                                       vs_cdt2bsp[fit->vertex(1)->point()],
-                                                       vs_cdt2bsp[fit->vertex(2)->point()]}));
+            cdt_faces[i].push_back(std::array<int, 3>({{vs_cdt2bsp[fit->vertex(0)->point()],
+                                                        vs_cdt2bsp[fit->vertex(1)->point()],
+                                                        vs_cdt2bsp[fit->vertex(2)->point()]}}));
             if (bsp_faces[i].conn_nodes.size() == 1) {
                 for (int j = 0; j < bsp_faces[i].vertices.size(); j++)
                     tet_vertices[bsp_faces[i].vertices[j]].is_on_bbox = true;
@@ -322,7 +327,7 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
         int t_cnt = 0;
         for (int j = 0; j < bsp_nodes[i].faces.size(); j++) {
             for (const std::array<int, 3> &f_ids:cdt_faces[bsp_nodes[i].faces[j]]) {
-                std::array<int, 4> t = {c_id, f_ids[0], f_ids[1], f_ids[2]};
+                std::array<int, 4> t = {{c_id, f_ids[0], f_ids[1], f_ids[2]}};
                 if (CGAL::orientation(tet_vertices[t[0]].pos, tet_vertices[t[1]].pos, tet_vertices[t[2]].pos,
                                       tet_vertices[t[3]].pos) != CGAL::POSITIVE) {
                     int tmp = t[1];
@@ -384,18 +389,21 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
     std::vector<std::vector<int>> track_on_faces;
     track_on_faces.resize(bsp_vertices.size());
     for (unsigned int i = 0; i < m_faces.size(); i++) {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) {
 //            tet_vertices[centroid_size+m_faces[i][j]].on_face.insert(i);
             tet_vertices[m_faces[i][j]].on_face.insert(i);
+        }
     }
 
     std::vector<std::vector<int>> track_on_edges = conn_e4v;
     track_on_edges.resize(bsp_vertices.size());
     for (unsigned int i = 0; i < m_vertices.size(); i++) {
-        for (int j = 0; j < track_on_edges[i].size(); j++)
-            if (m_e_tags[track_on_edges[i][j]] >= 0)
+        for (int j = 0; j < track_on_edges[i].size(); j++) {
+            if (m_e_tags[track_on_edges[i][j]] >= 0) {
 //                tet_vertices[centroid_size+i].on_edge.insert(m_e_tags[track_on_edges[i][j]]);
                 tet_vertices[i].on_edge.insert(m_e_tags[track_on_edges[i][j]]);
+            }
+        }
     }
 
     for (unsigned int i = 0; i < bsp_faces.size(); i++) {
@@ -427,8 +435,8 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
                 tet_vertices[i].on_face.insert(track_on_faces[i][j]);
 
                 ///check on_edge
-                std::array<int, 3> v_ids = {m_faces[track_on_faces[i][j]][0], m_faces[track_on_faces[i][j]][1],
-                                            m_faces[track_on_faces[i][j]][2]};
+                std::array<int, 3> v_ids = {{m_faces[track_on_faces[i][j]][0], m_faces[track_on_faces[i][j]][1],
+                                             m_faces[track_on_faces[i][j]][2]}};
                 std::vector<int> e_ids;
                 bool is_already_on_edge = false;
                 for (int k = 0; k < 3; k++) {
@@ -468,8 +476,8 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
     ////is face on surface////
     State::state().NOT_SURFACE = m_faces.size()+1;
     is_surface_fs=std::vector<std::array<int, 4>>(tets.size(),
-                                                  std::array<int, 4>({State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE}));
-//    std::vector<std::array<bool, 4>> is_visited(tets.size(), std::array<bool, 4>({false, false, false, false}));
+                                                  std::array<int, 4>({{State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE}}));
+//    std::vector<std::array<bool, 4>> is_visited(tets.size(), std::array<bool, 4>({{false, false, false, false}}));
 
     for(unsigned int i = 0; i < tets.size(); i++) {
         for (int j = 0; j < 4; j++) {
@@ -520,9 +528,9 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
             }
 
 //            if (tmp.size() > 1) {
-//                std::array<int, 3> f = {tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]};
+//                std::array<int, 3> f = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
 //                std::sort(f.begin(), f.end());
-//                folding_fs.push_back(std::array<int, 4>({f[0], f[1], f[2], i}));
+//                folding_fs.push_back(std::array<int, 4>({{f[0], f[1], f[2], i}}));
 //                continue;
 //            }
 
@@ -606,12 +614,12 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
         bbx_f_tags.push_back(-(i + 1));
     for (int i = 0; i < 12; i++)
         bbx_e_tags.push_back(-(i + 1));
-    std::vector<int> bbx_faces={0, 1,
-                                2, 3,
-                                4, 5};
-    std::vector<int> bbx_edges={0, 1, 2, 3,
-                                4, 5, 6, 7,
-                                8, 9, 10, 11};
+    std::vector<int> bbx_faces={{0, 1,
+                                 2, 3,
+                                 4, 5}};
+    std::vector<int> bbx_edges={{0, 1, 2, 3,
+                                 4, 5, 6, 7,
+                                 8, 9, 10, 11}};
 
     int i=0;
     int i0=0, i7=0;
@@ -628,7 +636,7 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
             }
         } else {
             //和bbx_v_ids[0], bbx_v_ids[7]比较
-            std::array<int, 3> a = {-1, -1, -1};
+            std::array<int, 3> a = {{-1, -1, -1}};
             for (int j = 0; j < 3; j++) {
 //                if (bsp_vertices[I - centroid_size][j] == bsp_vertices[i0 - centroid_size][j])
                 if (bsp_vertices[I][j] == bsp_vertices[i0][j])
@@ -641,8 +649,9 @@ void SimpleTetrahedralization::labelBbox(std::vector<TetVertex>& tet_vertices, s
                 if (a[j] < 0)
                     continue;
                 tet_vertices[I].on_face.insert(bbx_f_tags[bbx_faces[j * 2 + a[j]]]);
-                if (a[(j + 1) % 3] >= 0)
+                if (a[(j + 1) % 3] >= 0) {
                     tet_vertices[I].on_edge.insert(bbx_e_tags[bbx_edges[j * 4 + a[j] * 2 + a[(j + 1) % 3]]]);
+                }
             }
         }
         if (i == 0)
@@ -661,15 +670,15 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
     for (int i = 0; i < tets.size(); i++) {
         for (int j = 1; j < 4; j++) {
             if (tet_vertices[tets[i][0]].is_on_surface && tet_vertices[tets[i][j]].is_on_surface) {
-                std::array<int, 2> e = {tets[i][0], tets[i][j]};
+                std::array<int, 2> e = {{tets[i][0], tets[i][j]}};
                 if (e[1] < e[0])
-                    e = {e[1], e[0]};
+                    e = {{e[1], e[0]}};
                 edges_tmp.push_back(e);
             }
             if (tet_vertices[tets[i][j]].is_on_surface && tet_vertices[tets[i][j % 3 + 1]].is_on_surface) {
-                std::array<int, 2> e = {tets[i][j], tets[i][j % 3 + 1]};
+                std::array<int, 2> e = {{tets[i][j], tets[i][j % 3 + 1]}};
                 if (e[1] < e[0])
-                    e = {e[1], e[0]};
+                    e = {{e[1], e[0]}};
                 edges_tmp.push_back(e);
             }
         }

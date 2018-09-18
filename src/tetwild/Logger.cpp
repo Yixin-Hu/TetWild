@@ -10,10 +10,12 @@
 //
 
 #include <tetwild/Logger.h>
+#include <tetwild/DisableWarnings.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/details/registry.h>
 #include <spdlog/details/thread_pool.h>
+#include <tetwild/EnableWarnings.h>
 #include <memory>
 #include <mutex>
 #include <iostream>

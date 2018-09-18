@@ -14,6 +14,7 @@
 #include <pymesh/MshSaver.h>
 #include <igl/fit_plane.h>
 #include <igl/remove_duplicate_vertices.h>
+#include <igl/write_triangle_mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -163,6 +164,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //        State::state().g_eps_delta = State::state().g_dd / std::sqrt(3);
 //        State::state().g_eps_2 = State::state().g_eps * State::state().g_eps;
 
+        // d_err = d/sqrt(3)
         State::state().g_dd = State::state().g_eps_input / GArgs::args().stage;
         State::state().g_cur_stage = 1;
         State::state().g_eps = State::state().g_eps_input - State::state().g_dd / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().g_cur_stage);
@@ -220,7 +222,7 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
                                   conn_f4v[F_sf(i, (j + 1) % 3)].begin(), conn_f4v[F_sf(i, (j + 1) % 3)].end(),
                                   std::back_inserter(tmp));
             if (tmp.size() == 1)
-                b_edges.push_back(std::array<int, 2>({F_sf(i, j), F_sf(i, (j + 1) % 3)}));
+                b_edges.push_back(std::array<int, 2>({{F_sf(i, j), F_sf(i, (j + 1) % 3)}}));
         }
     }
 
@@ -273,14 +275,15 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     v_is_removed = std::vector<bool>(V_in.rows(), false);
     f_is_removed = std::vector<bool>(F_in.rows(), false);
 
+    // mesh_reorder(geo_sf_mesh, GEO::MESH_ORDER_HILBERT);
     GEO::MeshFacetsAABB geo_face_tree(geo_sf_mesh);
 
     std::vector<std::array<int, 2>> edges;
     edges.reserve(F_in.rows()*6);
     for (int i = 0; i < F_in.rows(); i++) {
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {F_in(i, j), F_in(i, (j + 1) % 3)};
-            if (e[0] > e[1]) e = {e[1], e[0]};
+            std::array<int, 2> e = {{F_in(i, j), F_in(i, (j + 1) % 3)}};
+            if (e[0] > e[1]) e = {{e[1], e[0]}};
             edges.push_back(e);
         }
     }
@@ -291,7 +294,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     for (int i = 0; i < edges_size; i++) {
         double weight = getEdgeLength(edges[i]);
         sm_queue.push(ElementInQueue_sm(edges[i], weight));
-        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({edges[i][1], edges[i][0]}), weight));
+        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{edges[i][1], edges[i][0]}}), weight));
     }
 
     //simplification
@@ -346,7 +349,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         m_vertices.push_back(Point_3(V_in(i, 0), V_in(i, 1), V_in(i, 2)));
     }
     for (int i = 0; i < F_in.rows(); i++) {
-        std::array<int, 3> f = {F_in(i, 0), F_in(i, 1), F_in(i, 2)};
+        std::array<int, 3> f = {{F_in(i, 0), F_in(i, 1), F_in(i, 2)}};
         Triangle_3 tr(m_vertices[f[0]], m_vertices[f[1]], m_vertices[f[2]]);
         if (!tr.is_degenerate())//delete all degenerate triangles
             m_faces.push_back(f);
@@ -357,6 +360,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     State::state().g_eps /= eps_scalar;
     State::state().g_eps_2 /= eps_scalar_2;
 //    State::state().g_dd /= eps_scalar*2;
+
+    // igl::write_triangle_mesh("tmp.obj", V_in, F_in);
 
     //output colormap
     //    outputSurfaceColormap(geo_face_tree, geo_sf_mesh);
@@ -378,7 +383,7 @@ void Preprocess::swap(GEO::MeshFacetsAABB& face_aabb_tree) {
                 continue;
             }
             if (n12_f_ids[1] == i)
-                n12_f_ids = {n12_f_ids[1], n12_f_ids[0]};
+                n12_f_ids = {{n12_f_ids[1], n12_f_ids[0]}};
             int v3_id = -1;
             for (int k = 0; k < 3; k++)
                 if (F_in(n12_f_ids[1], k) != v1_id && F_in(n12_f_ids[1], k) != v2_id) {
@@ -536,12 +541,14 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
 
     std::unordered_set<int> new_f_ids;
     for (int f_id:conn_fs[v1_id]) {
-        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1])
+        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1]) {
             new_f_ids.insert(f_id);
+        }
     }
     for (int f_id:conn_fs[v2_id]) {
-        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1])
+        if (f_id != n12_f_ids[0] && f_id != n12_f_ids[1]) {
             new_f_ids.insert(f_id);
+        }
     }
 
     //check euclidean characteristics (delete degenerate and duplicate elements
@@ -630,8 +637,8 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aa
     //push new edges into the queue
     for (int v_id:n_v_ids) {
         double weight = getEdgeLength(v2_id, v_id);
-        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({v2_id, v_id}), weight));
-        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({v_id, v2_id}), weight));
+        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{v2_id, v_id}}), weight));
+        sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{v_id, v2_id}}), weight));
     }
 
     return true;
@@ -674,9 +681,9 @@ bool Preprocess::isOneRingClean(int v1_id){
         for (int j = 0; j < 3; j++) {
             if (F_in(f_id, j) != v1_id) {
                 if (F_in(f_id, (j + 1) % 3) == v1_id)
-                    n1_es.push_back(std::array<int, 2>({F_in(f_id, j), 0}));
+                    n1_es.push_back(std::array<int, 2>({{F_in(f_id, j), 0}}));
                 else if (F_in(f_id, (j + 2) % 3) == v1_id)
-                    n1_es.push_back(std::array<int, 2>({F_in(f_id, j), 1}));
+                    n1_es.push_back(std::array<int, 2>({{F_in(f_id, j), 1}}));
             }
         }
     }
@@ -694,14 +701,16 @@ bool Preprocess::isOneRingClean(int v1_id){
 
 
 bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::MeshFacetsAABB& geo_face_tree) {
+    // size_t num_querried = 0;
+
+    static thread_local std::vector<GEO::vec3> ps;
     for (int f_id:new_f_ids) {
         //sample triangles except one-ring of v1v2
-        std::vector<GEO::vec3> ps;
-        std::array<GEO::vec3, 3> vs = {
+        std::array<GEO::vec3, 3> vs = {{
                 GEO::vec3(V_in(F_in(f_id, 0), 0), V_in(F_in(f_id, 0), 1), V_in(F_in(f_id, 0), 2)),
                 GEO::vec3(V_in(F_in(f_id, 1), 0), V_in(F_in(f_id, 1), 1), V_in(F_in(f_id, 1), 2)),
-                GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))};
-
+                GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))}};
+        ps.clear();
         sampleTriangle(vs, ps);
 
 //        logger().debug("ps.size = {}", ps.size());
@@ -767,16 +776,20 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
         GEO::vec3 current_point = ps[0];
         GEO::vec3 nearest_point;
         double sq_dist;
-        GEO::index_t prev_facet = geo_face_tree.nearest_facet(current_point, nearest_point, sq_dist);
+        GEO::index_t prev_facet = GEO::NO_FACET;
 
         for (const GEO::vec3 &current_point:ps) {
-            sq_dist = current_point.distance2(nearest_point);
+            sq_dist = State::state().g_eps_2;
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
+            // ++num_querried;
             double dis = current_point.distance2(nearest_point);
-            if (dis > State::state().g_eps_2)
+            if (dis > State::state().g_eps_2) {
+                // logger().trace("num_queries {} true", num_querried);
                 return true;
+            }
         }
     }
+    // logger().trace("num_queries {} false", num_querried);
 
     return false;
 }
@@ -794,9 +807,9 @@ int calEuclidean(const std::vector<std::array<int, 3>>& fs){
     for(int i=0;i<fs.size();i++){
         for(int j=0;j<3;j++){
             vs.insert(fs[i][j]);
-            std::array<int, 2> e={fs[i][j], fs[i][(j+1)%3]};
+            std::array<int, 2> e={{fs[i][j], fs[i][(j+1)%3]}};
             if(e[0]>e[1])
-                e={e[1], e[0]};
+                e={{e[1], e[0]}};
             es.push_back(e);
         }
     }
@@ -821,7 +834,7 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
         int v_id = I == 0 ? v1_id : v2_id;
         for (int f_id:conn_fs[v_id]) {
             if (F_in(f_id, 0) != F_in(f_id, 1) && F_in(f_id, 1) != F_in(f_id, 2) && F_in(f_id, 0) != F_in(f_id, 2)) {
-                std::array<int, 3> f = {F_in(f_id, 0), F_in(f_id, 1), F_in(f_id, 2)};
+                std::array<int, 3> f = {{F_in(f_id, 0), F_in(f_id, 1), F_in(f_id, 2)}};
                 std::sort(f.begin(), f.end());
                 fs.push_back(f);
             }
@@ -843,7 +856,7 @@ bool Preprocess::isEuclideanValid(int v1_id, int v2_id){
         }
 //        logger().debug("{} {} {}", fs[i][0], fs[i][1], fs[i][2]);
         if(fs[i][0]!=fs[i][1]&&fs[i][1]!=fs[i][2]&&fs[i][0]!=fs[i][2]){
-            std::array<int, 3> f = {fs[i][0], fs[i][1], fs[i][2]};
+            std::array<int, 3> f = {{fs[i][0], fs[i][1], fs[i][2]}};
             std::sort(f.begin(), f.end());
             fs1.push_back(f);
         }
@@ -870,10 +883,10 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //    for (int f_id = 0; f_id < F_in.rows(); f_id++) {
         //sample triangles except one-ring of v1v2
         std::vector<GEO::vec3> ps;
-        std::array<GEO::vec3, 3> vs = {
+        std::array<GEO::vec3, 3> vs = {{
         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(f_id, 0)),
         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(f_id, 1)),
-        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(f_id, 2))};
+        geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(f_id, 2))}};
 //                GEO::vec3(V_in(F_in(f_id, 0), 0), V_in(F_in(f_id, 0), 1), V_in(F_in(f_id, 0), 2)),
 //                GEO::vec3(V_in(F_in(f_id, 1), 0), V_in(F_in(f_id, 1), 1), V_in(F_in(f_id, 1), 2)),
 //                GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))};
@@ -963,7 +976,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //            logger().debug("{}", int(geo_face_tree.nearest_facet(pp, nearest_point, dd)));
 //            logger().debug("{}", dd);
 
-            std::vector<int> vf={1681, 1675, 1671, 1666};
+            std::vector<int> vf={{1681, 1675, 1671, 1666}};
             for(int j=0;j<vf.size();j++) {
                 logger().debug("f {}: {}", vf[j], GEO::Geom::triangle_area(
                         geo_sf_mesh.vertices.point(geo_sf_mesh.facets.vertex(vf[j], 0)),
@@ -975,7 +988,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
                 int v1_id = geo_sf_mesh.facets.vertex(vf[j], 0);
                 int v2_id = geo_sf_mesh.facets.vertex(vf[j], 1);
                 int v3_id = geo_sf_mesh.facets.vertex(vf[j], 2);
-                std::array<int, 3> v_ids = {v1_id ,v2_id, v3_id};
+                std::array<int, 3> v_ids = {{v1_id ,v2_id, v3_id}};
                 for (int k = 0; k < 3; k++) {
                     logger().debug("{}: {} {} {}", v_ids[k], geo_sf_mesh.vertices.point(v_ids[k])[0], geo_sf_mesh.vertices.point(v_ids[k])[1], geo_sf_mesh.vertices.point(v_ids[k])[2]);
                 }

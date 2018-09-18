@@ -84,7 +84,7 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
             continue;
         for (int j = 0; j < 4; j++) {
             if (is_surface_fs[i][j] != State::state().NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
-                std::array<int, 3> v_ids = {tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]};
+                std::array<int, 3> v_ids = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
                 if (CGAL::orientation(tet_vertices[v_ids[0]].pos, tet_vertices[v_ids[1]].pos,
                                       tet_vertices[v_ids[2]].pos, tet_vertices[tets[i][j]].pos) != CGAL::POSITIVE) {
                     int tmp = v_ids[0];

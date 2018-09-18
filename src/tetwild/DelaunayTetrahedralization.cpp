@@ -20,6 +20,7 @@
 #include <igl/unique_simplices.h>
 #include <igl/boundary_loop.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_reorder.h>
 #include <bitset>
 
 namespace tetwild {
@@ -33,9 +34,9 @@ void DelaunayTetrahedralization::init(const std::vector<Point_3>& m_vertices, co
     std::vector<std::array<int, 2>> m_edges;
     for (int i = 0; i < m_faces.size(); i++) {
         for (int j = 0; j < 3; j++) {
-            std::array<int, 2> e = {m_faces[i][j], m_faces[i][(j + 1) % 3]};
+            std::array<int, 2> e = {{m_faces[i][j], m_faces[i][(j + 1) % 3]}};
             if (e[0] > e[1])
-                e = {e[1], e[0]};
+                e = {{e[1], e[0]}};
             m_edges.push_back(e);
         }
     }
@@ -198,7 +199,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
         e[0] = it->first->vertex(it->second)->info();
         e[1] = it->first->vertex(it->third)->info();
         if(e[0]>e[1])
-            e={e[1], e[0]};
+            e={{e[1], e[0]}};
         edges.push_back(e);
     }
     std::sort(edges.begin(), edges.end());
@@ -217,7 +218,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     for (int i = 0; i < faces_size; i++) {
         std::array<int, 3> &f = faces[i];
         //vertices
-        bsp_faces[i].vertices = {f[0], f[1], f[2]};
+        bsp_faces[i].vertices = {{f[0], f[1], f[2]}};
         //conn_nodes
         std::vector<int> tmp;
         //no need to sort before intersection because elements have been sorted
@@ -237,7 +238,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     for (int i = 0; i < edges_size; i++) {
         std::array<int, 2> &e = edges[i];
         //vertices
-        bsp_edges[i].vertices = {e[0], e[1]};
+        bsp_edges[i].vertices = {{e[0], e[1]}};
         //conn_faces
         std::set_intersection(conn_f_ids[e[0]].begin(), conn_f_ids[e[0]].end(),
                               conn_f_ids[e[1]].begin(), conn_f_ids[e[1]].end(),

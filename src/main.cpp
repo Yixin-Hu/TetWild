@@ -14,7 +14,9 @@
 #include <tetwild/InoutFiltering.h>
 #include <igl/writeOBJ.h>
 #include <pymesh/MshSaver.h>
+#include <tetwild/DisableWarnings.h>
 #include <CLI/CLI.hpp>
+#include <tetwild/EnableWarnings.h>
 
 using namespace tetwild;
 
@@ -28,9 +30,9 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     double min_avg = 0, max_avg = 0;
 //    double max_asp_ratio = 0, avg_asp_ratio = 0;
     double max_slim_energy = 0, avg_slim_energy = 0;
-    std::array<double, 6> cmp_cnt = {0, 0, 0, 0, 0, 0};
-    std::array<double, 6> cmp_d_angles = {6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
-                                          162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI};
+    std::array<double, 6> cmp_cnt = {{0, 0, 0, 0, 0, 0}};
+    std::array<double, 6> cmp_d_angles = {{6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
+                                           162 / 180.0 * M_PI, 168 / 180.0 * M_PI, 174 / 180.0 * M_PI}};
     int cnt = 0;
     for (int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
@@ -89,9 +91,9 @@ void outputFinalSurface(MeshRefinement& MR){
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            std::array<int, 3> f = {tets[i][j], tets[i][(j + 1) % 4], tets[i][(j + 2) % 4]};
+            std::array<int, 3> f = {{tets[i][j], tets[i][(j + 1) % 4], tets[i][(j + 2) % 4]}};
             std::sort(f.begin(), f.end());
-            tet_faces.push_back(std::array<int, 4>({f[0], f[1], f[2], i}));
+            tet_faces.push_back(std::array<int, 4>({{f[0], f[1], f[2], i}}));
         }
     }
     std::sort(tet_faces.begin(), tet_faces.end());//we can sort all 4 digits!!!
@@ -338,7 +340,7 @@ void gtet_new() {
         addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()));
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
-        logger().info("Total time for the first stage = {}", sum_time);
+        logger().info("Total time for the first stage = {}s", sum_time);
     }
 
     /// STAGE 2
@@ -382,10 +384,10 @@ int main(int argc, char *argv[]) {
     app.add_option("--filter-energy", GArgs::args().filter_energy, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
     app.add_option("--max-pass", GArgs::args().max_pass, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
 
-    app.add_option("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)");
-    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)");
+    app.add_flag("--is-laplacian", GArgs::args().is_laplacian, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
+    app.add_option("--targeted-num-v", GArgs::args().targeted_num_v, "Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)");
     app.add_option("--bg-mesh", GArgs::args().bg_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_option("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (integer, optional, default: 0)");
+    app.add_flag("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
@@ -430,7 +432,7 @@ int main(int argc, char *argv[]) {
 
     //do tetrahedralization
     if(GArgs::args().slz_file != "")
-        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({true, false, true, true}));
+        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_pass, std::array<bool, 4>({{true, false, true, true}}));
     else
         gtet_new();
 

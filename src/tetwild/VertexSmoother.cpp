@@ -315,7 +315,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
         for (auto it = tet_vertices[v_id].conn_tets.begin(); it != tet_vertices[v_id].conn_tets.end(); it++) {
             for (int j = 0; j < 4; j++) {
                 if (tets[*it][j] != v_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
-                    std::array<int, 3> tri = {tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]};
+                    std::array<int, 3> tri = {{tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]}};
                     std::sort(tri.begin(), tri.end());
                     tri_ids.push_back(tri);
                 }
@@ -778,7 +778,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 //                        n_v_ids2.insert(tets[t_id][j]);
 //            }
 //        }
-        std::array<double, 3> vec ={0, 0, 0};
+        std::array<double, 3> vec ={{0, 0, 0}};
         for(int n_sf_v_id:n_sf_v_ids) {
             for (int j = 0; j < 3; j++)
                 vec[j] += tet_vertices[n_sf_v_id].posf[j];
