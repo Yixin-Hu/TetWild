@@ -18,24 +18,29 @@
 
 namespace tetwild {
 
-    struct Args {
-        double i_ideal_edge_length = 20;
-        double i_epsilon = 1000;
-        int stage = 1;
-        double filter_energy = 10;
-        int max_pass = 80;
+///
+/// Robust tetrahedralization of an input triangle soup, with an envelop constraint.
+///
+/// @param[in]  VI    { #VI x 3 input mesh vertices }
+/// @param[in]  FI    { #FI x 3 input mesh triangles }
+/// @param[out] VO    { #VO x 3 output mesh vertices }
+/// @param[out] TO    { #TO x 4 output mesh tetrahedra }
+/// @param[out] A     { #TO x 1 array of min dihedral angle over each tet }
+///
+void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
+    Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO);
 
-        bool is_laplacian = false;
-        int targeted_num_v = -1;
-        std::string bg_mesh = "";
-        bool is_quiet = false;
-    };
+///
+/// Extract the boundary facets of a triangle mesh, removing unreferenced vertices
+///
+/// @param[in]  VI    { #VI x 3 input mesh vertices }
+/// @param[in]  TI    { #TI x 4 input mesh tetrahedra }
+/// @param[out] VS    { #VS x 3 output mesh vertices }
+/// @param[out] FS    { #FS x 3 output mesh triangles }
+///
+void extractSurfaceMesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &TI,
+    Eigen::MatrixXd &VS, Eigen::MatrixXi &FS);
 
-    void tetrahedralization(const std::vector<std::array<double, 3>>& V_in,
-                            const std::vector<std::array<int, 3>>& F_in,
-                            std::vector<std::array<double, 3>>& V_out,
-                            std::vector<std::array<int, 4>>& T_out,
-                            Args params = Args());
 }
 
 #endif //TETWILD_TETWILD_H

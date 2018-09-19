@@ -83,45 +83,6 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
     logger().debug("boundary checked!");
 }
 
-bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
-    std::string file_format = GArgs::args().input.substr(GArgs::args().input.size() - 3, 3);
-//    logger().debug("{}", GArgs::args().input);
-//    pausee();
-
-    ////read the input file
-    Eigen::MatrixXd V_tmp;
-    Eigen::MatrixXi F_tmp;
-    if (file_format == "off" || file_format == "OFF") {
-        if (!igl::readOFF(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .off fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "stl" || file_format == "STL") {
-        Eigen::MatrixXd _;
-        if (!igl::readSTL(GArgs::args().input, V_tmp, F_tmp, _)) {
-            logger().debug("Libigl read .stl fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "obj" || file_format == "OBJ") {
-        if (!igl::readOBJ(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .obj fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "ply" || file_format == "PLY") {
-        if (!igl::readPLY(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .ply fail. Please check your mesh!");
-            return false;
-        }
-    } else {
-        logger().debug("Only support .off/.stl/.obj/.ply formats!");
-        return false;
-    }
-
-    logger().debug("Mesh read in!");
-
-    return init(V_tmp, F_tmp, geo_b_mesh, geo_sf_mesh);
-}
-
 bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp,
                       GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
 //#ifndef MUTE_COUT

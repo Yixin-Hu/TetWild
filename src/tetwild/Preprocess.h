@@ -53,7 +53,7 @@ public:
     std::vector<bool> v_is_removed;
     std::vector<bool> f_is_removed;
     std::vector<std::unordered_set<int>> conn_fs;
-    bool init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh);
+
     bool init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp, GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh);
 
     void getBoudnaryMesh(GEO::Mesh& b_mesh);

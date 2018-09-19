@@ -16,17 +16,24 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <igl/boundary_facets.h>
+#include <igl/remove_unreferenced.h>
 #include <pymesh/MshSaver.h>
+
 
 namespace tetwild {
 
-void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
-                        const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
-                        const std::vector<int>& v_ids) {
+
+void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
+                       const std::vector<std::array<int, 4>>& tets,
+                       const std::vector<bool> &t_is_removed,
+                       const std::vector<TetQuality>& tet_qualities,
+                       const std::vector<int>& v_ids)
+{
     logger().debug("final quality:");
     double min = 10, max = 0;
     double min_avg = 0, max_avg = 0;
-//    double max_asp_ratio = 0, avg_asp_ratio = 0;
+    // double max_asp_ratio = 0, avg_asp_ratio = 0;
     double max_slim_energy = 0, avg_slim_energy = 0;
     std::array<double, 6> cmp_cnt = {{0, 0, 0, 0, 0, 0}};
     std::array<double, 6> cmp_d_angles = {{6 / 180.0 * M_PI, 12 / 180.0 * M_PI, 18 / 180.0 * M_PI,
@@ -40,13 +47,13 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
             min = tet_qualities[i].min_d_angle;
         if (tet_qualities[i].max_d_angle > max)
             max = tet_qualities[i].max_d_angle;
-//        if (tet_qualities[i].asp_ratio_2 > max_asp_ratio)
-//            max_asp_ratio = tet_qualities[i].asp_ratio_2;
+        // if (tet_qualities[i].asp_ratio_2 > max_asp_ratio)
+            // max_asp_ratio = tet_qualities[i].asp_ratio_2;
         if (tet_qualities[i].slim_energy > max_slim_energy)
             max_slim_energy = tet_qualities[i].slim_energy;
         min_avg += tet_qualities[i].min_d_angle;
         max_avg += tet_qualities[i].max_d_angle;
-//        avg_asp_ratio += tet_qualities[i].asp_ratio_2;
+        // avg_asp_ratio += tet_qualities[i].asp_ratio_2;
         avg_slim_energy += tet_qualities[i].slim_energy;
 
         for (int j = 0; j < 3; j++) {
@@ -66,19 +73,28 @@ void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     addRecord(MeshRecord(MeshRecord::OpType::OP_WN, time, v_ids.size(), cnt,
                          min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt));
 
-    ////output unrounded vertices:
+    // output unrounded vertices:
     cnt = 0;
     for (int v_id: v_ids) {
-        if (!tet_vertices[v_id].is_rounded)
+        if (!tet_vertices[v_id].is_rounded) {
             cnt++;
+        }
     }
     logger().debug("{}/{} vertices are unrounded!!!", cnt, v_ids.size());
     addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1));
 }
 
-void outputFinalTetmesh(MeshRefinement& MR,
-                        std::vector<std::array<double, 3>>& out_vertices,
-                        std::vector<std::array<int, 4>>& out_tets) {
+void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
+    Eigen::MatrixXd &VS, Eigen::MatrixXi &FS)
+{
+    Eigen::VectorXi I;
+    igl::boundary_facets(T, FS);
+    igl::remove_unreferenced(V, FS, VS, FS, I);
+}
+
+void extractFinalTetmesh(MeshRefinement& MR,
+    Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out)
+{
     std::vector<TetVertex> &tet_vertices = MR.tet_vertices;
     std::vector<std::array<int, 4>> &tets = MR.tets;
     std::vector<bool> &v_is_removed = MR.v_is_removed;
@@ -91,13 +107,14 @@ void outputFinalTetmesh(MeshRefinement& MR,
         igl::Timer igl_timer;
         igl_timer.start();
         IOF.filter();
-        tmp_time = igl_timer.getElapsedTime();
-        logger().debug("time = {}s", tmp_time);
         t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
+        tmp_time = igl_timer.getElapsedTime();
+        logger().info("time = {}s", tmp_time);
         logger().debug("{} tets inside!", t_cnt);
     }
 
     //output result
+    logger().debug("Writing mesh to {}...", State::state().output_file);
     std::vector<int> v_ids;
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
@@ -111,29 +128,37 @@ void outputFinalTetmesh(MeshRefinement& MR,
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    out_vertices.reserve(v_ids.size());
+    V_out.resize(v_ids.size(), 3);
+    T_out.resize(t_cnt, 4);
+    A_out.resize(t_cnt);
     for (int i = 0; i < v_ids.size(); i++) {
-        out_vertices.push_back(std::array<double, 3>({{tet_vertices[v_ids[i]].posf[0],
-                                                       tet_vertices[v_ids[i]].posf[1],
-                                                       tet_vertices[v_ids[i]].posf[2]}}));
+        for (int j = 0; j < 3; j++) {
+            V_out(i, + j) = tet_vertices[v_ids[i]].posf[j];
+        }
     }
-    out_tets.reserve(std::count(t_is_removed.begin(), t_is_removed.end(), false));
+    int cnt = 0;
     for (int i = 0; i < tets.size(); i++) {
-        if (t_is_removed[i])
+        if (t_is_removed[i]) {
             continue;
-        out_tets.push_back(std::array<int, 4>({{map_ids[tets[i][0]], map_ids[tets[i][1]], map_ids[tets[i][2]],
-                                                map_ids[tets[i][3]]}}));
+        }
+        for (int j = 0; j < 4; j++) {
+            T_out(cnt, j) = map_ids[tets[i][j]];
+        }
+        A_out(cnt) = tet_qualities[i].min_d_angle;
+        cnt++;
     }
+    logger().debug("#v = {}", V_out.rows());
+    logger().debug("#t = {}", T_out.rows());
 
-    if(GArgs::args().is_quiet)
+    if (GArgs::args().is_quiet) {
         return;
-
-    outputFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
+    }
+    printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);
 }
 
-void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
-              std::vector<std::array<double, 3>>& out_vertices,
-              std::vector<std::array<int, 4>>& out_tets) {
+void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
+                        Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO)
+{
     State::state().use_energy_max = true;
     State::state().use_onering_projection = false;
     State::state().use_sampling = true;
@@ -155,7 +180,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         igl_timer.start();
         logger().info("Preprocessing...");
         Preprocess pp;
-        if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
+        if (!pp.init(VI, FI, MR.geo_b_mesh, MR.geo_sf_mesh)) {
             logger().debug("Empty!");
             //todo: output a empty tetmesh
             PyMesh::MshSaver mSaver(State::state().working_dir + State::state().postfix + ".msh", true);
@@ -243,7 +268,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
 
-        logger().info("Total time for the first stage = {}", sum_time);
+        logger().info("Total time for the first stage = {}s", sum_time);
     }
 
     /// STAGE 2
@@ -255,65 +280,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
     //improvement
     MR.refine(energy_type);
 
-    outputFinalTetmesh(MR, out_vertices, out_tets); //do winding number and output the tetmesh
-}
-
-void tetrahedralization(const std::vector<std::array<double, 3>>& in_vertices,
-                        const std::vector<std::array<int, 3>>& in_faces,
-                        std::vector<std::array<double, 3>>& out_vertices,
-                        std::vector<std::array<int, 4>>& out_tets,
-                        Args parameters)
-{
-    out_vertices.clear();
-    out_tets.clear();
-
-    GArgs::args().eps_rel = parameters.i_epsilon;
-    GArgs::args().background_mesh = parameters.bg_mesh;
-    GArgs::args().filter_energy_thres = parameters.filter_energy;
-    GArgs::args().initial_edge_len_rel = parameters.i_ideal_edge_length;
-    GArgs::args().smooth_open_boundary = parameters.is_laplacian;
-    GArgs::args().is_quiet = parameters.is_quiet;
-    GArgs::args().max_num_passes = parameters.max_pass;
-    GArgs::args().stage = parameters.stage;
-    GArgs::args().target_num_vertices = parameters.targeted_num_v;
-
-    //initalization
-    GEO::initialize();
-    State::state().postfix = GArgs::args().postfix;
-    State::state().working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
-
-    if (GArgs::args().csv_file == "")
-        State::state().stat_file = State::state().working_dir + State::state().postfix + ".csv";
-    else
-        State::state().stat_file = GArgs::args().csv_file;
-
-    if (GArgs::args().output == "")
-        State::state().output_file = State::state().working_dir + State::state().postfix + ".msh";
-    else
-        State::state().output_file = GArgs::args().output;
-
-    if (GArgs::args().is_quiet) {
-        GArgs::args().write_csv_file = false;
-        std::cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
-    }
-
-    //do tetrahedralization
-    Eigen::MatrixXd V;
-    Eigen::MatrixXi F;
-    V.resize(in_vertices.size(), 3);
-    F.resize(in_faces.size(), 3);
-    for (int i = 0; i < in_vertices.size(); i++)
-        for (int j = 0; j < 3; j++)
-            V(i, j) = in_vertices[i][j];
-    for (int i = 0; i < in_faces.size(); i++)
-        for (int j = 0; j < 3; j++)
-            F(i, j) = in_faces[i][j];
-    gtet_new(V, F, out_vertices, out_tets);
-
-    if (GArgs::args().is_quiet) {
-        std::cout.clear();
-    }
+    extractFinalTetmesh(MR, VO, TO, AO); //do winding number and output the tetmesh
 }
 
 } // namespace tetwild
-
