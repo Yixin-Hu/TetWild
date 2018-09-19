@@ -169,8 +169,10 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     bool is_ec_check_quality = true;
 
     igl::Timer igl_timer;
+    igl::Timer igl_timer_total;
     double tmp_time = 0;
     double sum_time = 0;
+    igl_timer_total.start();
 
     ////pipeline
     MeshRefinement MR;
@@ -280,6 +282,9 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     MR.refine(energy_type);
 
     extractFinalTetmesh(MR, VO, TO, AO); //do winding number and output the tetmesh
+
+    double total_time = igl_timer.getElapsedTime();
+    logger().info("Total time for all stages = {}s", total_time);
 }
 
 } // namespace tetwild

@@ -95,8 +95,8 @@ int main(int argc, char *argv[]) {
     app.add_option("input,--input", input_filename, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
     app.add_option("output,--output", output_filename, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
     app.add_option("--postfix", Args::args().postfix, "Postfix P for output files. (string, optional, default: '_')");
-    app.add_option("-l,--ideal-edge-length", Args::args().initial_edge_len_rel, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
-    app.add_option("-e,--epsilon", Args::args().eps_rel, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("-l,--ideal-edge-length", Args::args().initial_edge_len_rel, "ideal_edge_length = diag_of_bbox * L / 100. (double, optional, default: 5%)");
+    app.add_option("-e,--epsilon", Args::args().eps_rel, "epsilon = diag_of_bbox * EPS / 100. (double, optional, default: 0.1%)");
     app.add_option("--stage", Args::args().stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
     app.add_option("--filter-energy", Args::args().filter_energy_thres, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
     app.add_option("--max-pass", Args::args().max_num_passes, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");

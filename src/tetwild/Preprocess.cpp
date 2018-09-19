@@ -111,11 +111,11 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
     ////set global parameters
     State::state().bbox_diag = igl::bounding_box_diagonal(V_in);
-    State::state().eps_input = State::state().bbox_diag / Args::args().eps_rel;
+    State::state().eps_input = State::state().bbox_diag * Args::args().eps_rel / 100.0;
 
     if (Args::args().sampling_dist_rel > 0) {//for testing only
-        State::state().sampling_dist = State::state().bbox_diag / Args::args().sampling_dist_rel;
-        State::state().eps = State::state().bbox_diag / Args::args().eps_rel;
+        State::state().sampling_dist = State::state().bbox_diag * Args::args().sampling_dist_rel / 100.0;
+        State::state().eps = State::state().bbox_diag * Args::args().eps_rel / 100.0;
         State::state().eps_2 = State::state().eps * State::state().eps;
         Args::args().stage = 1;
     } else {
@@ -133,7 +133,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
         State::state().eps_2 = State::state().eps * State::state().eps;
     }
 
-    State::state().initial_edge_len = State::state().bbox_diag / Args::args().initial_edge_len_rel;
+    State::state().initial_edge_len = State::state().bbox_diag * Args::args().initial_edge_len_rel / 100.0;
 
 //    logger().debug("eps = {}", State::state().eps);
 //    logger().debug("ideal_l = {}", State::state().initial_edge_len);

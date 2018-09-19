@@ -68,7 +68,7 @@ Our software is quite easy to use. Basically, users only need to provide a surfa
 
 - Envelope of size *epsilon*
 
-Using smaller envelope preserves features better but also takes longer time. The default value of *epsilon* is *b/1000*, where *b* is the length of diaginal of bounding box.
+Using smaller envelope preserves features better but also takes longer time. The default value of *epsilon* is *b/1000*, where *b* is the length of the diagonal of the bounding box.
 
 - Ideal edge length
 
@@ -76,13 +76,13 @@ Using smaller ideal edge length gives a denser mesh but also takes longer time. 
 
 - Filtering energy
 
-Our mesher stops optmizing the mesh when maximum energy is smaller than filtering energy. Thus, larger filtering energy means less optimization and sooner stopping. If you do not care about quality, then give a larger filtering energy would let you get the result earlier. The energy we used here is conformal AMIPS whose range is from 3 to +inf. The default filtering energy is 10.
+Our mesher stops optimizing the mesh when maximum energy is smaller than filtering energy. Thus, larger filtering energy means less optimization and sooner stopping. If you do not care about quality, then give a larger filtering energy would let you get the result earlier. The energy we used here is conformal AMIPS whose range is from 3 to +inf. The default filtering energy is 10.
 
 💡 We suggest not to set filtering energy smaller than 8 for complex input.
 
-- Maximum number of optimzation passes
+- Maximum number of optimization passes
 
-Our mesher stops optmizing the mesh when the maximum number of passes is reached. The default number is 80.
+Our mesher stops optimizing the mesh when the maximum number of passes is reached. The default number is 80.
 
 - Targeted number of vertices
 
@@ -92,7 +92,7 @@ We allow users to input the targeted number of vertices and the mesher would try
 
 - Sizing field
 
-Users can provide a background tetmesh in .msh format with vertex scalar field `values` stored. The scalar field `values` is used for controling edge length. The scalars inside an element of the background mesh are linearly interpolated.
+Users can provide a background tetmesh in .msh format with vertex scalar field `values` stored. The scalar field `values` is used for controlling edge length. The scalars inside an element of the background mesh are linearly interpolated.
 
 💡 [Here](https://drive.google.com/open?id=1-5AyoQ-CdZnX8IAqZoqgW1tiNBTNvFjJ) is an example including input surface mesh, background mesh and output tetmeshes with/without sizing control.
 
@@ -117,8 +117,8 @@ Options:
   --output TEXT               Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
   --postfix TEXT              Postfix P for output files. (string, optional, default: '_')
   -l,--ideal-edge-length FLOAT
-                              ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
-  -e,--epsilon FLOAT          epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
+                              ideal_edge_length = diag_of_bbox * L / 100. (double, optional, default: 5%)
+  -e,--epsilon FLOAT          epsilon = diag_of_bbox * EPS / 100. (double, optional, default: 0.1%)
   --stage INT                 Run pipeline in stage STAGE. (integer, optional, default: 1)
   --filter-energy FLOAT       Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
   --max-pass INT              Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)

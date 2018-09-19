@@ -20,17 +20,17 @@ namespace tetwild {
 
 // Global arguments controlling the behavior of TetWild
 struct Args {
-    // Target edge-length = bbox diagonal / initial_edge_len_rel
-    double initial_edge_len_rel = 20;
+    // Initial target edge-length at every vertex (in % of the bbox diagonal)
+    double initial_edge_len_rel = 5.0;
 
-    // Target epsilon = bbox_diagonal / eps_rel
-    double eps_rel = 1000;
+    // Target epsilon (in % of the bbox diagonal)
+    double eps_rel = 0.1;
 
     //////////////////////
     // Advanced options //
     //////////////////////
 
-    // Explicitly specify a sampling distance for triangles (= bbox_diagonal / sampling_dist)
+    // Explicitly specify a sampling distance for triangles (in % of the bbox diagonal)
     int sampling_dist_rel = -1;
 
     // Run the algorithm in stage (as explain in p.8 of the paper)
