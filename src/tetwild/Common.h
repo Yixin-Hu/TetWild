@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <tetwild/tetwild.h>
 #include <tetwild/CGALCommon.h>
 #include <tetwild/State.h>
 #include <tetwild/Logger.h>

@@ -102,7 +102,7 @@ void extractFinalTetmesh(MeshRefinement& MR,
     std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
-    if (!GArgs::args().smooth_open_boundary) {
+    if (!Args::args().smooth_open_boundary) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
         igl::Timer igl_timer;
         igl_timer.start();
@@ -114,7 +114,6 @@ void extractFinalTetmesh(MeshRefinement& MR,
     }
 
     //output result
-    logger().debug("Writing mesh to {}...", State::state().output_file);
     std::vector<int> v_ids;
     for (int i = 0; i < tets.size(); i++) {
         if (t_is_removed[i])
@@ -150,7 +149,7 @@ void extractFinalTetmesh(MeshRefinement& MR,
     logger().debug("#v = {}", V_out.rows());
     logger().debug("#t = {}", T_out.rows());
 
-    if (GArgs::args().is_quiet) {
+    if (Args::args().is_quiet) {
         return;
     }
     printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids);

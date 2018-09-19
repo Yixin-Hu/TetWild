@@ -19,7 +19,7 @@
 namespace tetwild {
 
 void addRecord(const MeshRecord& record) {
-    if (!GArgs::args().write_csv_file)
+    if (!Args::args().write_csv_file)
         return;
     static bool first_time = true;
     std::ofstream f;

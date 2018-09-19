@@ -351,7 +351,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
             calTetQuality_AD(tets[i], tet_qualities[i]);
     }
 
-    if(GArgs::args().is_quiet)
+    if(Args::args().is_quiet)
         return;
 
     //some tmp checks for experiments
@@ -653,12 +653,12 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
     for (unsigned int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
             continue;
-        if (tet_qualities[i].slim_energy > GArgs::args().filter_energy_thres - 1 + 1e10)
+        if (tet_qualities[i].slim_energy > Args::args().filter_energy_thres - 1 + 1e10)
             buckets[10]++;
         else {
             for (int j = 0; j < 10; j++) {
-                if (tet_qualities[i].slim_energy > GArgs::args().filter_energy_thres - 1 + pow(10, j)
-                    && tet_qualities[i].slim_energy <= GArgs::args().filter_energy_thres - 1 + pow(10, j + 1)) {
+                if (tet_qualities[i].slim_energy > Args::args().filter_energy_thres - 1 + pow(10, j)
+                    && tet_qualities[i].slim_energy <= Args::args().filter_energy_thres - 1 + pow(10, j + 1)) {
                     buckets[j]++;
                     break;
                 }
@@ -682,7 +682,7 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
 
     for (int i = 0; i < 8; i++) {
         if (tmps1[i] < tmps2[i] && tmps1[i + 1] > tmps2[i + 1]){
-            return GArgs::args().filter_energy_thres - 1 + 5 * pow(10, i+1);
+            return Args::args().filter_energy_thres - 1 + 5 * pow(10, i+1);
         }
     }
 
@@ -1530,7 +1530,7 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(State::state().working_dir + GArgs::args().postfix + "_sf" + std::to_string(mid_id++) + ".msh");
+    PyMesh::MshSaver mshSaver(State::state().working_dir + Args::args().postfix + "_sf" + std::to_string(mid_id++) + ".msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 

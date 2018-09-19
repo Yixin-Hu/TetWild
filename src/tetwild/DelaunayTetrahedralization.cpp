@@ -57,10 +57,10 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     GEO::MeshFacetsAABB geo_face_tree(geo_surface_mesh);
 
     double voxel_resolution;
-    if(GArgs::args().initial_edge_len_rel > 20)
+    if(Args::args().initial_edge_len_rel > 20)
         voxel_resolution = State::state().bbox_diag / 20.0;
     else
-        voxel_resolution = State::state().bbox_diag / GArgs::args().initial_edge_len_rel;
+        voxel_resolution = State::state().bbox_diag / Args::args().initial_edge_len_rel;
     std::array<double, 3> d;
     std::array<int, 3> N;
     for (int i = 0; i < 3; i++) {
@@ -133,7 +133,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     }
     ///add voxel points
     std::vector<Point_d> voxel_points;
-    if(GArgs::args().use_voxel_stuffing)
+    if(Args::args().use_voxel_stuffing)
         getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points);
     for(int i=0;i<voxel_points.size();i++) {
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));

@@ -22,10 +22,13 @@ namespace tetwild {
     void extractFinalTetmesh(MeshRefinement& MR, Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out);
 } // namespace tetwild
 
-void saveFinalTetmesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &A) {
-    std::string output_format = State::state().output_file.substr(State::state().output_file.size() - 4, 4);
+void saveFinalTetmesh(const std::string &output_filename,
+    const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &A)
+{
+    logger().debug("Writing mesh to {}...", output_filename);
+    std::string output_format = output_filename.substr(output_filename.size() - 4, 4);
     if (output_format == "mesh") {
-        std::fstream f(State::state().output_file, std::ios::out);
+        std::ofstream f(output_filename);
         f.precision(std::numeric_limits<double>::digits10 + 1);
         f << "MeshVersionFormatted 1" << std::endl;
         f << "Dimension 3" << std::endl;
@@ -46,7 +49,7 @@ void saveFinalTetmesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const 
         f << "End";
         f.close();
     } else {
-        PyMesh::MshSaver mSaver(State::state().output_file, true);
+        PyMesh::MshSaver mSaver(output_filename, true);
         PyMesh::VectorF V_flat(V.size());
         PyMesh::VectorI T_flat(T.size());
         Eigen::MatrixXd VV = V.transpose();
@@ -57,7 +60,7 @@ void saveFinalTetmesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const 
         mSaver.save_elem_scalar_field("min_dihedral_angle", A);
     }
 
-    if (GArgs::args().is_quiet) {
+    if (Args::args().is_quiet) {
         return;
     }
     Eigen::MatrixXd V_sf;
@@ -85,21 +88,23 @@ int main(int argc, char *argv[]) {
 #endif
     int log_level = 1; // debug
     std::string log_filename = "";
+    std::string input_filename;
+    std::string output_filename;
 
     CLI::App app{"RobustTetMeshing"};
-    app.add_option("input,--input", GArgs::args().input, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
-    app.add_option("output,--output", GArgs::args().output, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
-    app.add_option("--postfix", GArgs::args().postfix, "Postfix P for output files. (string, optional, default: '_')");
-    app.add_option("-l,--ideal-edge-length", GArgs::args().initial_edge_len_rel, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
-    app.add_option("-e,--epsilon", GArgs::args().eps_rel, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
-    app.add_option("--stage", GArgs::args().stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
-    app.add_option("--filter-energy", GArgs::args().filter_energy_thres, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
-    app.add_option("--max-pass", GArgs::args().max_num_passes, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
+    app.add_option("input,--input", input_filename, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
+    app.add_option("output,--output", output_filename, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("--postfix", Args::args().postfix, "Postfix P for output files. (string, optional, default: '_')");
+    app.add_option("-l,--ideal-edge-length", Args::args().initial_edge_len_rel, "ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)");
+    app.add_option("-e,--epsilon", Args::args().eps_rel, "epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)");
+    app.add_option("--stage", Args::args().stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
+    app.add_option("--filter-energy", Args::args().filter_energy_thres, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
+    app.add_option("--max-pass", Args::args().max_num_passes, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
 
-    app.add_flag("--is-laplacian", GArgs::args().smooth_open_boundary, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
-    app.add_option("--targeted-num-v", GArgs::args().target_num_vertices, "Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)");
-    app.add_option("--bg-mesh", GArgs::args().background_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_flag("-q,--is-quiet", GArgs::args().is_quiet, "Mute console output. (optional)");
+    app.add_flag("--is-laplacian", Args::args().smooth_open_boundary, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
+    app.add_option("--targeted-num-v", Args::args().target_num_vertices, "Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)");
+    app.add_option("--bg-mesh", Args::args().background_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
+    app.add_flag("-q,--is-quiet", Args::args().is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
@@ -109,7 +114,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-    Logger::init(!GArgs::args().is_quiet, log_filename);
+    Logger::init(!Args::args().is_quiet, log_filename);
     log_level = std::max(0, std::min(6, log_level));
     spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
     spdlog::flush_every(std::chrono::seconds(3));
@@ -119,40 +124,39 @@ int main(int argc, char *argv[]) {
 
     //initalization
     GEO::initialize();
-    State::state().postfix = GArgs::args().postfix;
-    if(GArgs::args().slz_file != "")
-        State::state().working_dir = GArgs::args().input.substr(0, GArgs::args().slz_file.size() - 4);
+    State::state().postfix = Args::args().postfix;
+    if(Args::args().slz_file != "")
+        State::state().working_dir = input_filename.substr(0, Args::args().slz_file.size() - 4);
     else
-        State::state().working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
+        State::state().working_dir = input_filename.substr(0, input_filename.size() - 4);
 
-    if(GArgs::args().csv_file == "")
+    if(Args::args().csv_file == "")
         State::state().stat_file = State::state().working_dir + State::state().postfix + ".csv";
     else
-        State::state().stat_file = GArgs::args().csv_file;
+        State::state().stat_file = Args::args().csv_file;
 
-    if(GArgs::args().output == "")
-        State::state().output_file = State::state().working_dir + State::state().postfix + ".msh";
-    else
-        State::state().output_file = GArgs::args().output;
+    if(output_filename.empty()) {
+        output_filename = State::state().working_dir + State::state().postfix + ".msh";
+    }
 
-    if(GArgs::args().is_quiet) {
-        GArgs::args().write_csv_file = false;
+    if(Args::args().is_quiet) {
+        Args::args().write_csv_file = false;
     }
 
     //do tetrahedralization
     Eigen::MatrixXd VO;
     Eigen::MatrixXi TO;
     Eigen::VectorXd AO;
-    if(GArgs::args().slz_file != "") {
-        gtet_new_slz(GArgs::args().input, GArgs::args().slz_file, GArgs::args().max_num_passes,
+    if(Args::args().slz_file != "") {
+        gtet_new_slz(input_filename, Args::args().slz_file, Args::args().max_num_passes,
             {{true, false, true, true}}, VO, TO, AO);
     } else {
         Eigen::MatrixXd VI;
         Eigen::MatrixXi FI;
-        igl::read_triangle_mesh(GArgs::args().input, VI, FI);
+        igl::read_triangle_mesh(input_filename, VI, FI);
         tetwild::tetrahedralization(VI, FI, VO, TO, AO);
     }
-    saveFinalTetmesh(VO, TO, AO);
+    saveFinalTetmesh(output_filename, VO, TO, AO);
 
     spdlog::shutdown();
 

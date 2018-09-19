@@ -385,7 +385,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 //        if (is_edge_too_short)
 //            logger().debug("old {} new {}", old_tq.slim_energy, new_tq.slim_energy);
 //        if (is_soft && old_tq.slim_energy < soft_energy) {
-//            old_tq.slim_energy = GArgs::args().filter_energy_thres;
+//            old_tq.slim_energy = Args::args().filter_energy_thres;
 //        }
         if(is_soft)
             old_tq.slim_energy = soft_energy;
