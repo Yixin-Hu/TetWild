@@ -32,7 +32,7 @@
 namespace tetwild {
 
 void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-    PyMesh::MshSaver mSaver(State::state().working_dir+Args::args().postfix+"_boundary.msh", true);
+    PyMesh::MshSaver mSaver(State::state().working_dir+State::state().postfix+"_boundary.msh", true);
     Eigen::VectorXd oV;
     Eigen::VectorXi oF;
     oV.resize(V.rows() * 3);
@@ -90,12 +90,7 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
 }
 
 bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp,
-                      GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
-//#ifndef MUTE_COUT
-//    Args::args().write_csv_file = false;
-//    std::streambuf* orig_buf = std::cout.rdbuf();
-//    std::cout.rdbuf(NULL);
-//#endif
+                      GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh, const Args &args) {
 
     logger().debug("{} {}", V_tmp.rows(), F_tmp.rows());
 
@@ -117,29 +112,31 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 
     ////set global parameters
     State::state().bbox_diag = igl::bounding_box_diagonal(V_in);
-    State::state().eps_input = State::state().bbox_diag * Args::args().eps_rel / 100.0;
+    State::state().eps_input = State::state().bbox_diag * args.eps_rel / 100.0;
 
-    if (Args::args().sampling_dist_rel > 0) {//for testing only
-        State::state().sampling_dist = State::state().bbox_diag * Args::args().sampling_dist_rel / 100.0;
-        State::state().eps = State::state().bbox_diag * Args::args().eps_rel / 100.0;
+    if (args.sampling_dist_rel > 0) {//for testing only
+        State::state().sampling_dist = State::state().bbox_diag * args.sampling_dist_rel / 100.0;
+        State::state().eps = State::state().bbox_diag * args.eps_rel / 100.0;
         State::state().eps_2 = State::state().eps * State::state().eps;
-        Args::args().stage = 1;
+        if (args.stage != 1) {
+            throw TetWildError("args.stage should be equal to 1.");
+        }
     } else {
-//        State::state().sampling_dist = State::state().eps_input / Args::args().stage;
+//        State::state().sampling_dist = State::state().eps_input / args.stage;
 //        State::state().sub_stage = 1;
-//        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (Args::args().stage + 1 - State::state().sub_stage);
+//        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (args.stage + 1 - State::state().sub_stage);
 //        State::state().eps_delta = State::state().sampling_dist / std::sqrt(3);
 //        State::state().eps_2 = State::state().eps * State::state().eps;
 
         // d_err = d/sqrt(3)
-        State::state().sampling_dist = State::state().eps_input / Args::args().stage;
+        State::state().sampling_dist = State::state().eps_input / args.stage;
         State::state().sub_stage = 1;
-        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (Args::args().stage + 1 - State::state().sub_stage);
+        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (args.stage + 1 - State::state().sub_stage);
         State::state().eps_delta = State::state().sampling_dist / std::sqrt(3);
         State::state().eps_2 = State::state().eps * State::state().eps;
     }
 
-    State::state().initial_edge_len = State::state().bbox_diag * Args::args().initial_edge_len_rel / 100.0;
+    State::state().initial_edge_len = State::state().bbox_diag * args.initial_edge_len_rel / 100.0;
 
 //    logger().debug("eps = {}", State::state().eps);
 //    logger().debug("ideal_l = {}", State::state().initial_edge_len);
@@ -226,7 +223,7 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
     }
 }
 
-void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces) {
+void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces, const Args &args) {
     double eps_scalar = 0.8;
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
@@ -292,7 +289,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             F_out(cnt, j) = new_v_ids[F_in(i, j)];
         cnt++;
     }
-//    igl::writeSTL(State::state().working_dir+Args::args().postfix+"_simplified.stl", V_out, F_out);
+//    igl::writeSTL(State::state().working_dir+args.postfix+"_simplified.stl", V_out, F_out);
     logger().debug("#v = {}", V_out.rows());
     logger().debug("#f = {}", F_out.rows());
 
@@ -305,8 +302,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             conn_fs[F_in(i, j)].insert(i);
     }
     swap(geo_face_tree);
-    if(Args::args().save_mid_result == 0)
-        igl::writeSTL(State::state().working_dir+Args::args().postfix+"_swapped.stl", V_in, F_in);
+    if(args.save_mid_result == 0)
+        igl::writeSTL(State::state().working_dir+State::state().postfix+"_swapped.stl", V_in, F_in);
 
 //    checkBoundary(V_in, F_in);
 
@@ -1001,7 +998,6 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 
             logger().debug("min_dis = {}", min_dis);
             logger().debug("diag = {}", State::state().bbox_diag);
-//            exit(250);
         }
 
 
@@ -1019,7 +1015,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(State::state().working_dir + Args::args().postfix + "_sf.msh");
+    PyMesh::MshSaver mshSaver(State::state().working_dir + State::state().postfix + "_sf.msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 }

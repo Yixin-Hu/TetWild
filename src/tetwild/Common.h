@@ -27,6 +27,6 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::vector<int>& s);
 void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps);
 
-void addRecord(const MeshRecord& record);
+void addRecord(const MeshRecord& record, const Args &args);
 
 } // namespace tetwild

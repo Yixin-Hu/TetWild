@@ -209,9 +209,8 @@ void MeshConformer::getOrientedVertices(int bsp_f_id){
     bsp_faces[bsp_f_id].vertices=vertices;
 
     if(vertices.size()!=bsp_faces[bsp_f_id].vertices.size()){
-        logger().debug("error!");
-        logger().debug("{}, {}", bsp_faces[bsp_f_id].vertices.size(), bsp_faces[bsp_f_id].edges.size());
-        exit(250);
+        logger().error("{}, {}", bsp_faces[bsp_f_id].vertices.size(), bsp_faces[bsp_f_id].edges.size());
+        throw TetWildError("MeshConformer::getOrientedVertices");
     }
 }
 
@@ -296,7 +295,7 @@ int MeshConformer::triangleIntersection3d(const std::array<Point_3, 3>& tri1, co
                 if (const Point_3 *p = boost::get<Point_3>(&*result))
                     on_vs1.push_back(*p);
                 else
-                    exit(250);
+                    throw TetWildError("MeshConformer::triangleIntersection3d");
             }
         }
     }
@@ -314,7 +313,7 @@ int MeshConformer::triangleIntersection3d(const std::array<Point_3, 3>& tri1, co
                 if (const Point_3 *p = boost::get<Point_3>(&*result))
                     on_vs2.push_back(*p);
                 else
-                    exit(250);
+                    throw TetWildError("MeshConformer::triangleIntersection3d");
             }
         }
     }
@@ -379,8 +378,7 @@ Point_3 MeshConformer::to3d(const Point_2& p, const Plane_3& pln) {
         const Point_3 *p = boost::get<Point_3>(&*result);
         return *p;
     } else {
-        logger().debug("error to3d!");
-        exit(250);
+        log_and_throw("error to3d!");
     }
 }
 

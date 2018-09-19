@@ -548,8 +548,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
             CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 
             if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-                logger().debug("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
-                exit(250);
+                log_and_throw("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
             }
             if (side == CGAL::ON_POSITIVE_SIDE)//outside
                 is_surface_fs[i][j]++;
@@ -588,8 +587,7 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
 //                CGAL::Oriented_side side = pln.oriented_side(tet_vertices[tets[i][j]].pos);
 //
 //                if (side == CGAL::ON_ORIENTED_BOUNDARY) {
-//                    logger().debug("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
-//                    exit(250);
+//                    log_and_throw("ERROR: side == CGAL::ON_ORIENTED_BOUNDARY!!");
 //                }
 //                if (side == CGAL::ON_POSITIVE_SIDE)//outside
 //                    is_surface_fs[i][j]++;

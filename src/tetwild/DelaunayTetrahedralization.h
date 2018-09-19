@@ -38,10 +38,11 @@ public:
                   std::vector<int>& m_f_tags, std::vector<int>& raw_e_tags, std::vector<std::vector<int>>& raw_conn_e4v);
 
     void getVoxelPoints(const Point_3& p_min, const Point_3& p_max, GEO::Mesh& geo_surface_mesh,
-                        std::vector<Point_d>& voxel_points);
+                        std::vector<Point_d>& voxel_points, const Args &args);
     void tetra(const std::vector<Point_3>& m_vertices, GEO::Mesh& geo_surface_mesh,
                std::vector<Point_3>& bsp_vertices, std::vector<BSPEdge>& bsp_edges,
-               std::vector<BSPFace>& bsp_faces, std::vector<BSPtreeNode>& bsp_nodes);
+               std::vector<BSPFace>& bsp_faces, std::vector<BSPtreeNode>& bsp_nodes,
+               const Args &args);
     void outputTetmesh(const std::vector<Point_3>& m_vertices, std::vector<std::array<int, 4>>& cells,
                        const std::string& output_file);
 };

@@ -576,8 +576,7 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
             qs.push_back(tet_qs[(i - 1 + 5) % 5][j]);
         }
         if(qs.size() != 6){
-            logger().debug("ERROR: qs.size() != 6");
-            pausee();
+            log_and_throw("qs.size() != 6");
         }
         getCheckQuality(qs, new_tq);
         if(equal_buget>0) {

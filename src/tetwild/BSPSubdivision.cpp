@@ -206,8 +206,7 @@ void BSPSubdivision::subdivideBSPNodes() {
 
                     v_sides[new_v_id] = V_ON;//fixed
                 } else {
-                    logger().debug("error cal p!");
-                    exit(250);
+                    log_and_throw("error cal p!");
                 }
 
                 ///add edges

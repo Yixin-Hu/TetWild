@@ -12,6 +12,7 @@
 #ifndef NEW_GTET_PREPROCESS_H
 #define NEW_GTET_PREPROCESS_H
 
+#include <tetwild/ForwardDecls.h>
 #include <tetwild/CGALTypes.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -48,10 +49,10 @@ public:
     std::vector<bool> f_is_removed;
     std::vector<std::unordered_set<int>> conn_fs;
 
-    bool init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp, GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh);
+    bool init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp, GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh, const Args &args);
 
     void getBoudnaryMesh(GEO::Mesh& b_mesh);
-    void process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces);
+    void process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces, const Args &args);
 
     void simplify(GEO::MeshFacetsAABB& face_aabb_tree);
     void postProcess(GEO::MeshFacetsAABB& face_aabb_tree);

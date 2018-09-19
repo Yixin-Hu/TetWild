@@ -719,7 +719,7 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
 //                auto jt = std::find(tri.begin(), tri.end(), v1_id);
 //                if(jt==tri.end()){
 //                    std::cout);
-//                    exit(250);
+//                    throw TetWildError("");
 //                }
 //                *jt = v2_id;
 //                Triangle_3f tr(tet_vertices[tri[0]].posf, tet_vertices[tri[1]].posf, tet_vertices[tri[2]].posf);

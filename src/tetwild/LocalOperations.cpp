@@ -9,8 +9,6 @@
 // Created by Yixin Hu on 5/6/17.
 //
 
-//#include <tetwild/tbb/tbb.h>
-
 #include <tetwild/LocalOperations.h>
 #include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
@@ -354,7 +352,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
             calTetQuality_AD(tets[i], tet_qualities[i]);
     }
 
-    if(Args::args().is_quiet)
+    if(args.is_quiet)
         return;
 
     //some tmp checks for experiments
@@ -527,9 +525,10 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
     logger().debug("min_d_angle: <6 {};   <12 {};  <18 {}", cmp_cnt[0] / cnt, cmp_cnt[1] / cnt, cmp_cnt[2] / cnt);
     logger().debug("max_d_angle: >174 {}; >168 {}; >162 {}", cmp_cnt[5] / cnt, cmp_cnt[4] / cnt, cmp_cnt[3] / cnt);
 
-    if(is_log)
+    if(is_log) {
         addRecord(MeshRecord(op_type, time, std::count(v_is_removed.begin(), v_is_removed.end(), false), cnt,
-                             min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt));
+                             min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt), args);
+    }
 }
 
 bool LocalOperations::isTetFlip(const std::array<int, 4>& t) {
@@ -656,12 +655,12 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
     for (unsigned int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
             continue;
-        if (tet_qualities[i].slim_energy > Args::args().filter_energy_thres - 1 + 1e10)
+        if (tet_qualities[i].slim_energy > args.filter_energy_thres - 1 + 1e10)
             buckets[10]++;
         else {
             for (int j = 0; j < 10; j++) {
-                if (tet_qualities[i].slim_energy > Args::args().filter_energy_thres - 1 + pow(10, j)
-                    && tet_qualities[i].slim_energy <= Args::args().filter_energy_thres - 1 + pow(10, j + 1)) {
+                if (tet_qualities[i].slim_energy > args.filter_energy_thres - 1 + pow(10, j)
+                    && tet_qualities[i].slim_energy <= args.filter_energy_thres - 1 + pow(10, j + 1)) {
                     buckets[j]++;
                     break;
                 }
@@ -685,7 +684,7 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
 
     for (int i = 0; i < 8; i++) {
         if (tmps1[i] < tmps2[i] && tmps1[i + 1] > tmps2[i + 1]){
-            return Args::args().filter_energy_thres - 1 + 5 * pow(10, i+1);
+            return args.filter_energy_thres - 1 + 5 * pow(10, i+1);
         }
     }
 
@@ -1533,7 +1532,7 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(State::state().working_dir + Args::args().postfix + "_sf" + std::to_string(mid_id++) + ".msh");
+    PyMesh::MshSaver mshSaver(State::state().working_dir + args.postfix + "_sf" + std::to_string(mid_id++) + ".msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 

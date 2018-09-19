@@ -72,14 +72,6 @@ struct Args {
     int save_mid_result = -1; // save intermediate result
 
     bool is_quiet = false;
-
-    static Args & args() {
-        static Args ag;
-        return ag;
-    }
-
-private:
-    Args() = default;
 };
 
 
@@ -93,7 +85,7 @@ private:
 /// @param[out] A     { #TO x 1 array of min dihedral angle over each tet }
 ///
 void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
-    Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO);
+    Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO, const Args &args = Args());
 
 ///
 /// Extract the boundary facets of a triangle mesh, removing unreferenced vertices

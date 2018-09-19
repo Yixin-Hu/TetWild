@@ -45,7 +45,7 @@ void MeshRefinement::prepareData(bool is_init) {
     getSimpleMesh(simple_mesh);
     GEO::MeshFacetsAABB simple_tree(simple_mesh);
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   State::state().ENERGY_AMIPS, simple_tree, simple_tree);
+                                   State::state().ENERGY_AMIPS, simple_tree, simple_tree, args);
     localOperation.calTetQualities(tets, tet_qualities, true);//cal all measure
     double tmp_time = igl_timer.getElapsedTime();
     logger().debug("{}s", tmp_time);
@@ -193,8 +193,8 @@ int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& coll
 
         double tmp_avg_energy, tmp_max_energy;
         splitter.getAvgMaxEnergy(tmp_avg_energy, tmp_max_energy);
-        if (std::abs(tmp_avg_energy - avg_energy) < Args::args().delta_energy_thres
-            && std::abs(tmp_max_energy - max_energy) < Args::args().delta_energy_thres)
+        if (std::abs(tmp_avg_energy - avg_energy) < args.delta_energy_thres
+            && std::abs(tmp_max_energy - max_energy) < args.delta_energy_thres)
             break;
         avg_energy = tmp_avg_energy;
         max_energy = tmp_max_energy;
@@ -217,7 +217,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         min_adaptive_scale = (State::state().bbox_diag / 1000) / State::state().initial_edge_len; // set min_edge_length to diag / 1000 would be better
 
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   energy_type, geo_sf_tree, geo_b_tree);
+                                   energy_type, geo_sf_tree, geo_b_tree, args);
     EdgeSplitter splitter(localOperation, State::state().initial_edge_len * (4.0 / 3.0) * State::state().initial_edge_len * (4.0 / 3.0));
     EdgeCollapser collapser(localOperation, State::state().initial_edge_len * (4.0 / 5.0) * State::state().initial_edge_len * (4.0 / 5.0));
     EdgeRemover edge_remover(localOperation, State::state().initial_edge_len * (4.0 / 3.0) * State::state().initial_edge_len * (4.0 / 3.0));
@@ -225,7 +225,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
     collapser.is_check_quality = true;
 
-    if (Args::args().save_mid_result == 1)
+    if (args.save_mid_result == 1)
         outputMidResult(false, 1);
 
 //    double old_State::state().eps = State::state().eps;
@@ -254,9 +254,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    State::state().eps *= eps_s;
 //    State::state().eps_2 *= eps_s*eps_s;
     bool is_split = true;
-    for (int pass = old_pass; pass < old_pass + Args::args().max_num_passes; pass++) {
+    for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
         if (is_dealing_unrounded && pass == old_pass) {
-            updateScalarField(false, false, Args::args().filter_energy_thres);
+            updateScalarField(false, false, args.filter_energy_thres);
         }
 
         logger().info("//////////////// Pass {} ////////////////", pass);
@@ -280,17 +280,17 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             }
         }
 
-        if (localOperation.getMaxEnergy() < Args::args().filter_energy_thres)
+        if (localOperation.getMaxEnergy() < args.filter_energy_thres)
             break;
 
         //check and mark is_bad_element
         double avg_energy, max_energy;
         localOperation.getAvgMaxEnergy(avg_energy, max_energy);
-        if (pass > 0 && pass < old_pass + Args::args().max_num_passes - 1
-            && avg_energy0 - avg_energy < Args::args().delta_energy_thres && max_energy0 - max_energy < Args::args().delta_energy_thres) {
+        if (pass > 0 && pass < old_pass + args.max_num_passes - 1
+            && avg_energy0 - avg_energy < args.delta_energy_thres && max_energy0 - max_energy < args.delta_energy_thres) {
 
-//            if (Args::args().target_num_vertices > 0 && getInsideVertexSize() > 1.05 * Args::args().target_num_vertices && isRegionFullyRounded()) {
-//                if (State::state().sub_stage < Args::args().stage) {
+//            if (args.target_num_vertices > 0 && getInsideVertexSize() > 1.05 * args.target_num_vertices && isRegionFullyRounded()) {
+//                if (State::state().sub_stage < args.stage) {
 //                    State::state().eps += State::state().eps_delta;
 //                    State::state().eps_2 = State::state().eps * State::state().eps;
 //                    State::state().sub_stage++;
@@ -312,7 +312,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                     continue;
             }
             if (update_buget == 0) {
-                if (State::state().sub_stage > 1 && State::state().sub_stage < Args::args().stage) {
+                if (State::state().sub_stage > 1 && State::state().sub_stage < args.stage) {
                     State::state().eps += State::state().eps_delta;
                     State::state().eps_2 = State::state().eps * State::state().eps;
                     State::state().sub_stage++;
@@ -331,19 +331,19 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             //get target energy
             double target_energy = localOperation.getMaxEnergy() / 100;
             target_energy = std::min(target_energy, target_energy0 / 10);
-            target_energy = std::max(target_energy, Args::args().filter_energy_thres * 0.8);
+            target_energy = std::max(target_energy, args.filter_energy_thres * 0.8);
             target_energy0 = target_energy;
             updateScalarField(false, false, target_energy);
 
-            if (State::state().sub_stage == 1 && State::state().sub_stage < Args::args().stage
-                && target_energy < Args::args().filter_energy_thres) {
+            if (State::state().sub_stage == 1 && State::state().sub_stage < args.stage
+                && target_energy < args.filter_energy_thres) {
                 State::state().eps += State::state().eps_delta;
                 State::state().eps_2 = State::state().eps * State::state().eps;
                 State::state().sub_stage++;
 //                logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", State::state().eps);
             }
 
-            if (is_output && Args::args().save_mid_result == 1) {
+            if (is_output && args.save_mid_result == 1) {
                 outputMidResult(false, 1.5);
                 is_output = false;
             }
@@ -361,24 +361,24 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         max_energy0 = max_energy;
     }
 
-    old_pass = old_pass + Args::args().max_num_passes;
+    old_pass = old_pass + args.max_num_passes;
 
 //    if (!isRegionFullyRounded()) {
 //        refine_unrounded(splitter, collapser, edge_remover, smoother);
 //    }
 //    if (max_energy0 > 1e3) {
-//        refine_local(splitter, collapser, edge_remover, smoother, Args::args().filter_energy_thres);
+//        refine_local(splitter, collapser, edge_remover, smoother, args.filter_energy_thres);
 //    }
 
 //    if (!isRegionFullyRounded() || max_energy0 > 1e3)
 //        serialization(State::state().working_dir + State::state().postfix_str + ".slz");
 
-    if (!Args::args().is_quiet) {
+    if (!args.is_quiet) {
         double max_e = localOperation.getMaxEnergy();
         if (max_e > 100) {
             bool is_print = false;
             std::ofstream f;
-            f.open(State::state().working_dir + Args::args().postfix + ".tmp");
+            f.open(State::state().working_dir + args.postfix + ".tmp");
             for (int i = 0; i < tet_qualities.size(); i++) {
                 if (t_is_removed[i])
                     continue;
@@ -421,14 +421,14 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     }
 
     if (is_post) {
-        if (Args::args().target_num_vertices > 0) {
+        if (args.target_num_vertices > 0) {
             double n = getInsideVertexSize();
-            if (n > Args::args().target_num_vertices) {
+            if (n > args.target_num_vertices) {
                 collapser.is_limit_length = false;
                 collapser.is_soft = true;
                 collapser.soft_energy = localOperation.getMaxEnergy();
                 collapser.budget =
-                        (n - Args::args().target_num_vertices) * std::count(v_is_removed.begin(), v_is_removed.end(), false) / n *
+                        (n - args.target_num_vertices) * std::count(v_is_removed.begin(), v_is_removed.end(), false) / n *
                         1.5;
             }
         }
@@ -436,18 +436,18 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     }
 
 
-    if (Args::args().target_num_vertices > 0)
+    if (args.target_num_vertices > 0)
         applyTargetedVertexNum(splitter, collapser, edge_remover, smoother);
 
-    if (Args::args().background_mesh != "") {
+    if (args.background_mesh != "") {
         applySizingField(splitter, collapser, edge_remover, smoother);
     }
 
-    if (Args::args().save_mid_result == 2)
+    if (args.save_mid_result == 2)
         outputMidResult(true, 2);//mark in/out
 
 
-//    if (!Args::args().is_quiet) {
+//    if (!args.is_quiet) {
 ////        Eigen::MatrixXd V_tmp;
 ////        Eigen::MatrixXi F_tmp;
 ////        getTrackedSurface(V_tmp, F_tmp);
@@ -458,7 +458,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 ////        localOperation.checkUnrounded();
 //    }
 
-    if (Args::args().smooth_open_boundary)
+    if (args.smooth_open_boundary)
         postProcess(smoother);
 }
 
@@ -491,7 +491,7 @@ void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collaps
     localOperation.getAvgMaxEnergy(avg_energy0, max_energy0);
     if(target_energy<0) {
         target_energy = max_energy0 / 100;
-        target_energy = std::max(target_energy, Args::args().filter_energy_thres);
+        target_energy = std::max(target_energy, args.filter_energy_thres);
     }
     updateScalarField(false, true, target_energy * 0.8, true);
     for (int pass = 0; pass < 20; pass++) {
@@ -505,8 +505,8 @@ void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collaps
         avg_energy0 = avg_energy;
         max_energy0 = max_energy;
 
-        if (pass > 0 && pass < Args::args().max_num_passes - 1
-            && avg_energy0 - avg_energy < Args::args().delta_energy_thres && max_energy - max_energy0 < Args::args().delta_energy_thres) {
+        if (pass > 0 && pass < args.max_num_passes - 1
+            && avg_energy0 - avg_energy < args.delta_energy_thres && max_energy - max_energy0 < args.delta_energy_thres) {
             updateScalarField(false, true, target_energy);
         }
     }
@@ -533,7 +533,7 @@ bool MeshRefinement::refine_unrounded(EdgeSplitter& splitter, EdgeCollapser& col
         if (isRegionFullyRounded())
             break;
 
-        if (scalar_update > 0 && pass % scalar_update == scalar_update - 1 && pass < Args::args().max_num_passes * scalar_update - 1) {
+        if (scalar_update > 0 && pass % scalar_update == scalar_update - 1 && pass < args.max_num_passes * scalar_update - 1) {
             updateScalarField(true, false, -1);
         }
     }
@@ -623,7 +623,7 @@ void MeshRefinement::markInOut(std::vector<bool>& tmp_t_is_removed){
 
 void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                       VertexSmoother& smoother) {
-    PyMesh::MshLoader mshLoader(Args::args().background_mesh);
+    PyMesh::MshLoader mshLoader(args.background_mesh);
     Eigen::VectorXd V_in = mshLoader.get_nodes();
     Eigen::VectorXi T_in = mshLoader.get_elements();
     Eigen::VectorXd values = mshLoader.get_node_field("values");
@@ -691,13 +691,13 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
 
 void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
                                             VertexSmoother& smoother) {
-    if (Args::args().target_num_vertices < 0)
+    if (args.target_num_vertices < 0)
         return;
-    if (Args::args().target_num_vertices == 0)
+    if (args.target_num_vertices == 0)
         for (int i = 0; i < t_is_removed.size(); i++)
             t_is_removed[i] = true;
 
-    double N = Args::args().target_num_vertices; //targeted #v
+    double N = args.target_num_vertices; //targeted #v
 
     //marking in/out
     std::vector<bool> tmp_t_is_removed;
@@ -794,7 +794,7 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
 
     logger().debug("filter_energy_thres = {}", filter_energy);
     std::vector<double> adap_tmp(tet_vertices.size(), 1.5);
-    double dynamic_adaptive_scale = Args::args().adaptive_scalar;
+    double dynamic_adaptive_scale = args.adaptive_scalar;
 
     const int N = -int(std::log2(min_adaptive_scale) - 1);
     std::vector<std::vector<int>> v_ids(N, std::vector<int>());
@@ -898,7 +898,7 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
     logger().debug("marked!");
     tmp_time = igl_timer.getElapsedTime();
     logger().debug("time = {}s", tmp_time);
-    addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1));
+    addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1), args);
 //    outputMidResult(true);
 }
 

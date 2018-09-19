@@ -68,11 +68,12 @@ namespace igl {
 
         template<>
         inline void deserialize(tetwild::Point_3 &p, const std::vector<char> &buffer) {
+            using namespace tetwild;
             std::string s1, s2, s3;
             ::igl::deserialize(s1, std::string("x"), buffer);
             ::igl::deserialize(s2, std::string("y"), buffer);
             ::igl::deserialize(s3, std::string("z"), buffer);
-//            p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
+            p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
         }
 
         template<>

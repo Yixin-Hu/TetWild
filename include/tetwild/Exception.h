@@ -12,16 +12,15 @@
 #pragma once
 
 #include <string>
+#include <stdexcept>
 
 namespace tetwild {
 
-struct Args;
-class BSPFace;
-class MeshConformer;
-class EdgeCollapser;
-class EdgeSplitter;
-class EdgeRemover;
-class VertexSmoother;
-class MeshRecord;
+class TetWildError : public std::runtime_error {
+public:
+	explicit TetWildError(const std::string& what_arg)
+		: std::runtime_error(what_arg)
+	{ }
+};
 
 } // namespace tetwild
