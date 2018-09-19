@@ -12,6 +12,7 @@
 #pragma once
 
 #include <string>
+#include <limits>
 
 namespace tetwild {
 
@@ -24,7 +25,7 @@ struct State {
     const int ENERGY_AMIPS=2;
     const int ENERGY_DIRICHLET=3;
     const double MAX_ENERGY = 1e50;
-    const int NOT_SURFACE = -1;
+    const int NOT_SURFACE = std::numeric_limits<int>::max();
 
     // paths used for i/o
     std::string working_dir;

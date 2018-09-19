@@ -80,6 +80,8 @@ include(TetWildDependencies)
 ################################################################################
 # Build static library for executable
 add_library(libTetWild STATIC
+		include/tetwild/Exception.h
+		include/tetwild/Logger.h
 		include/tetwild/tetwild.h
 		src/tetwild/BSPSubdivision.cpp
 		src/tetwild/BSPSubdivision.h
@@ -100,7 +102,6 @@ add_library(libTetWild STATIC
 		src/tetwild/LocalOperations.cpp
 		src/tetwild/LocalOperations.h
 		src/tetwild/Logger.cpp
-		src/tetwild/Logger.h
 		src/tetwild/MeshConformer.cpp
 		src/tetwild/MeshConformer.h
 		src/tetwild/MeshRefinement.cpp
