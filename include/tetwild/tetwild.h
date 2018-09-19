@@ -14,6 +14,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <Eigen/Dense>
 
 namespace tetwild {
 

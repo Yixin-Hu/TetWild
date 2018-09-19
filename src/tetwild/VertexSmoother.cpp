@@ -27,7 +27,7 @@ void VertexSmoother::smooth() {
         double suc_surface = 0;
         smoothSingle();
         suc_in = suc_counter;
-        if (State::state().g_eps >= 0) {
+        if (State::state().eps >= 0) {
             smoothSurface();
             suc_surface = suc_counter;
         }
@@ -118,7 +118,7 @@ void VertexSmoother::smoothSingle() {
             continue;
         if (tet_vertices[v_id].is_on_bbox)
             continue;
-        if (State::state().g_eps != State::state().EPSILON_INFINITE && tet_vertices[v_id].is_on_surface)
+        if (State::state().eps != State::state().EPSILON_INFINITE && tet_vertices[v_id].is_on_surface)
             continue;
 
         if (tet_vertices[v_id].is_locked)
@@ -326,7 +326,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
 
         Point_3f pf;
         Point_3 p;
-        if (State::state().is_use_project) {//we have to use exact construction here. Or the projecting points may be not exactly on the plane.
+        if (State::state().use_onering_projection) {//we have to use exact construction here. Or the projecting points may be not exactly on the plane.
             std::vector<Triangle_3> tris;
             for (int i = 0; i < tri_ids.size(); i++) {
                 tris.push_back(Triangle_3(tet_vertices[tri_ids[i][0]].pos, tet_vertices[tri_ids[i][1]].pos,
@@ -796,7 +796,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
             //give stop condition
             bool is_stop = true;
             for (int j = 0; j < 3; j++)
-                if (vec[j] * a > State::state().g_eps)
+                if (vec[j] * a > State::state().eps)
                     is_stop = false;
             if (is_stop)
                 break;
@@ -860,7 +860,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 }
 
 void VertexSmoother::outputOneRing(int v_id, std::string s){
-    PyMesh::MshSaver mSaver(State::state().g_working_dir+State::state().g_postfix+"_smooth_"+std::to_string(v_id)+s+".msh", true);
+    PyMesh::MshSaver mSaver(State::state().working_dir+State::state().postfix+"_smooth_"+std::to_string(v_id)+s+".msh", true);
     std::vector<int> v_ids;
     std::vector<int> new_ids(tet_vertices.size(), -1);
     for(int t_id: tet_vertices[v_id].conn_tets){

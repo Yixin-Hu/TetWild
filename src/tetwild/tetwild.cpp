@@ -20,8 +20,6 @@
 
 namespace tetwild {
 
-//    MeshRefinement MR;
-
 void outputFinalQuality(double time, const std::vector<TetVertex>& tet_vertices, const std::vector<std::array<int, 4>>& tets,
                         const std::vector<bool> &t_is_removed, const std::vector<TetQuality>& tet_qualities,
                         const std::vector<int>& v_ids) {
@@ -88,7 +86,7 @@ void outputFinalTetmesh(MeshRefinement& MR,
     std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
-    if (!GArgs::args().is_laplacian) {
+    if (!GArgs::args().smooth_open_boundary) {
         InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
         igl::Timer igl_timer;
         igl_timer.start();
@@ -136,9 +134,9 @@ void outputFinalTetmesh(MeshRefinement& MR,
 void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
               std::vector<std::array<double, 3>>& out_vertices,
               std::vector<std::array<int, 4>>& out_tets) {
-    State::state().is_using_energy_max = true;
-    State::state().is_use_project = false;
-    State::state().is_using_sampling = true;
+    State::state().use_energy_max = true;
+    State::state().use_onering_projection = false;
+    State::state().use_sampling = true;
 
     int energy_type = State::state().ENERGY_AMIPS;
     bool is_sm_single = true;
@@ -160,7 +158,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         if (!pp.init(V_in, F_in, MR.geo_b_mesh, MR.geo_sf_mesh)) {
             logger().debug("Empty!");
             //todo: output a empty tetmesh
-            PyMesh::MshSaver mSaver(State::state().g_working_dir + State::state().g_postfix + ".msh", true);
+            PyMesh::MshSaver mSaver(State::state().working_dir + State::state().postfix + ".msh", true);
             Eigen::VectorXd oV;
             Eigen::VectorXi oT;
             oV.resize(0);
@@ -176,7 +174,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         tmp_time = igl_timer.getElapsedTime();
         addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()));
         sum_time += tmp_time;
-        logger().debug("time = {}s", tmp_time);
+        logger().info("time = {}s", tmp_time);
 
         //delaunay tetrahedralization
         igl_timer.start();
@@ -235,7 +233,7 @@ void gtet_new(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
-        if (!State::state().g_is_close)//if input is an open mesh
+        if (!State::state().is_mesh_closed)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
         logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
         logger().debug("# tets = {}", MR.tets.size());
@@ -269,33 +267,33 @@ void tetrahedralization(const std::vector<std::array<double, 3>>& in_vertices,
     out_vertices.clear();
     out_tets.clear();
 
-    GArgs::args().i_epsilon = parameters.i_epsilon;
-    GArgs::args().bg_mesh = parameters.bg_mesh;
-    GArgs::args().filter_energy = parameters.filter_energy;
-    GArgs::args().i_ideal_edge_length = parameters.i_ideal_edge_length;
-    GArgs::args().is_laplacian = parameters.is_laplacian;
+    GArgs::args().eps_rel = parameters.i_epsilon;
+    GArgs::args().background_mesh = parameters.bg_mesh;
+    GArgs::args().filter_energy_thres = parameters.filter_energy;
+    GArgs::args().initial_edge_len_rel = parameters.i_ideal_edge_length;
+    GArgs::args().smooth_open_boundary = parameters.is_laplacian;
     GArgs::args().is_quiet = parameters.is_quiet;
-    GArgs::args().max_pass = parameters.max_pass;
+    GArgs::args().max_num_passes = parameters.max_pass;
     GArgs::args().stage = parameters.stage;
-    GArgs::args().targeted_num_v = parameters.targeted_num_v;
+    GArgs::args().target_num_vertices = parameters.targeted_num_v;
 
     //initalization
     GEO::initialize();
-    State::state().g_postfix = GArgs::args().postfix;
-    State::state().g_working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
+    State::state().postfix = GArgs::args().postfix;
+    State::state().working_dir = GArgs::args().input.substr(0, GArgs::args().input.size() - 4);
 
     if (GArgs::args().csv_file == "")
-        State::state().g_stat_file = State::state().g_working_dir + State::state().g_postfix + ".csv";
+        State::state().stat_file = State::state().working_dir + State::state().postfix + ".csv";
     else
-        State::state().g_stat_file = GArgs::args().csv_file;
+        State::state().stat_file = GArgs::args().csv_file;
 
     if (GArgs::args().output == "")
-        State::state().g_output_file = State::state().g_working_dir + State::state().g_postfix + ".msh";
+        State::state().output_file = State::state().working_dir + State::state().postfix + ".msh";
     else
-        State::state().g_output_file = GArgs::args().output;
+        State::state().output_file = GArgs::args().output;
 
     if (GArgs::args().is_quiet) {
-        GArgs::args().is_output_csv = false;
+        GArgs::args().write_csv_file = false;
         std::cout.setstate(std::ios_base::failbit);//use std::cout.clear() to get it back
     }
 

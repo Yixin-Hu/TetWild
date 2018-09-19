@@ -385,7 +385,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 //        if (is_edge_too_short)
 //            logger().debug("old {} new {}", old_tq.slim_energy, new_tq.slim_energy);
 //        if (is_soft && old_tq.slim_energy < soft_energy) {
-//            old_tq.slim_energy = GArgs::args().filter_energy;
+//            old_tq.slim_energy = GArgs::args().filter_energy_thres;
 //        }
         if(is_soft)
             old_tq.slim_energy = soft_energy;
@@ -417,7 +417,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 
     //check 3
     bool is_envelop_suc = false;
-    if (State::state().g_eps != State::state().EPSILON_NA && State::state().g_eps != State::state().EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
+    if (State::state().eps != State::state().EPSILON_NA && State::state().eps != State::state().EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
         if (!is_edge_degenerate && !isCollapsable_epsilon(v1_id, v2_id)) {
 //            if (is_edge_too_short)
 //                logger().debug("envelop");
@@ -657,7 +657,7 @@ bool EdgeCollapser::isCollapsable_cd1(int v1_id, int v2_id) {
     }
 
     //check the surface tags //if the vertex is on the surface
-//    if (State::state().g_eps != State::state().EPSILON_NA) {
+//    if (State::state().eps != State::state().EPSILON_NA) {
 //        return true;
 //    }
     return true;

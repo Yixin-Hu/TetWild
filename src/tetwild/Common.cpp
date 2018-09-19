@@ -19,15 +19,15 @@
 namespace tetwild {
 
 void addRecord(const MeshRecord& record) {
-    if (!GArgs::args().is_output_csv)
+    if (!GArgs::args().write_csv_file)
         return;
     static bool first_time = true;
     std::ofstream f;
     if (first_time) {
-        f.open(State::state().g_stat_file);
+        f.open(State::state().stat_file);
         first_time = false;
     } else {
-        f.open(State::state().g_stat_file, std::ios::app);
+        f.open(State::state().stat_file, std::ios::app);
     }
     f << record.op << "," << record.timing << "," << record.n_v << "," << record.n_t << ","
       << record.min_min_d_angle << "," << record.avg_min_d_angle << ","
@@ -45,13 +45,25 @@ void pausee(){
 }
 
 bool isHaveCommonEle(const std::unordered_set<int>& v1, const std::unordered_set<int>& v2) {
+#if 0
     for (auto it = v1.begin(); it != v1.end(); it++)
         if(std::find(v2.begin(), v2.end(), *it)!=v2.end())
             return true;
+#else
+    if (v2.size() < v1.size()) {
+        return isHaveCommonEle(v2, v1);
+    }
+    for (int x : v1) {
+        if (v2.count(x)) {
+            return true;
+        }
+    }
+#endif
     return false;
 }
 
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::unordered_set<int>& s) {
+#if 0
     std::unordered_set<int> s_tmp;
     std::vector<int> v1, v2;
     v1.reserve(s1.size());
@@ -64,6 +76,16 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
     std::sort(v2.begin(), v2.end());
     std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::inserter(s_tmp, s_tmp.end()));
     s = s_tmp;
+#else
+    if (s2.size() < s1.size()) { setIntersection(s2, s1, s); return; }
+    s.clear();
+    s.reserve(std::min(s1.size(), s2.size()));
+    for (int x : s1) {
+        if (s2.count(x)) {
+            s.insert(x);
+        }
+    }
+#endif
 
 //    s.clear();
 //    s.reserve(std::min(s1.size(), s2.size()));
@@ -90,6 +112,7 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
 //        } else
 //            s.push_back(ele);
 //    }
+#if 0
     std::vector<int> v1, v2;
     v1.reserve(s1.size());
     for(auto it=s1.begin();it!=s1.end();it++)
@@ -100,6 +123,17 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
     std::sort(v1.begin(), v1.end());
     std::sort(v2.begin(), v2.end());
     std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(s));
+#else
+    if (s2.size() < s1.size()) { setIntersection(s2, s1, s); return; }
+    s.clear();
+    s.reserve(std::min(s1.size(), s2.size()));
+    for (int x : s1) {
+        if (s2.count(x)) {
+            s.push_back(x);
+        }
+    }
+    std::sort(s.begin(), s.end());
+#endif
 }
 
 
@@ -113,7 +147,7 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
     auto min_max = std::minmax_element(ls.begin(), ls.end());
     int min_i = min_max.first - ls.begin();
     int max_i = min_max.second - ls.begin();
-    double N = sqrt(ls[max_i]) / State::state().g_dd;
+    double N = sqrt(ls[max_i]) / State::state().sampling_dist;
     if (N <= 1) {
         for (int i = 0; i < 3; i++)
             ps.push_back(vs[i]);
@@ -128,12 +162,12 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 
     GEO::vec3 n_v0v1 = GEO::normalize(v1 - v0);
     for (int n = 0; n <= N; n++) {
-        ps.push_back(v0 + n_v0v1 * State::state().g_dd * n);
+        ps.push_back(v0 + n_v0v1 * State::state().sampling_dist * n);
     }
     ps.push_back(v1);
 
     double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
-    int M = h / (sqrt3_2 * State::state().g_dd);
+    int M = h / (sqrt3_2 * State::state().sampling_dist);
     if (M < 1) {
         ps.push_back(v2);
         return;
@@ -153,40 +187,40 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
         if (m % 2 == 0 && n == n1) {
             n += 1;
         }
-        GEO::vec3 v0_m = v0 + m * sqrt3_2 * State::state().g_dd / sin_v0 * n_v0v2;
-        GEO::vec3 v1_m = v1 + m * sqrt3_2 * State::state().g_dd / sin_v1 * n_v1v2;
-        if (GEO::distance(v0_m, v1_m) <= State::state().g_dd)
+        GEO::vec3 v0_m = v0 + m * sqrt3_2 * State::state().sampling_dist / sin_v0 * n_v0v2;
+        GEO::vec3 v1_m = v1 + m * sqrt3_2 * State::state().sampling_dist / sin_v1 * n_v1v2;
+        if (GEO::distance(v0_m, v1_m) <= State::state().sampling_dist)
             break;
 
-        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * State::state().g_dd;
+        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * State::state().sampling_dist;
         GEO::vec3 v = v0_m + delta_d * n_v0v1;
-        int N1 = GEO::distance(v, v1_m) / State::state().g_dd;
+        int N1 = GEO::distance(v, v1_m) / State::state().sampling_dist;
 //        ps.push_back(v0_m);
         for (int i = 0; i <= N1; i++) {
-            ps.push_back(v + i * n_v0v1 * State::state().g_dd);
+            ps.push_back(v + i * n_v0v1 * State::state().sampling_dist);
         }
 //        ps.push_back(v1_m);
     }
     ps.push_back(v2);
 
     //sample edges
-    N = sqrt(ls[(max_i + 1) % 3]) / State::state().g_dd;
+    N = sqrt(ls[(max_i + 1) % 3]) / State::state().sampling_dist;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v1v2 = GEO::normalize(v2 - v1);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v1 + n_v1v2 * State::state().g_dd * n);
+            ps.push_back(v1 + n_v1v2 * State::state().sampling_dist * n);
         }
     }
 
-    N = sqrt(ls[(max_i + 2) % 3]) / State::state().g_dd;
+    N = sqrt(ls[(max_i + 2) % 3]) / State::state().sampling_dist;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v2v0 = GEO::normalize(v0 - v2);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v2 + n_v2v0 * State::state().g_dd * n);
+            ps.push_back(v2 + n_v2v0 * State::state().sampling_dist * n);
         }
     }
 
@@ -213,7 +247,7 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 //                F_tmp(1 + i, k) = (1 + i) * 3 + k;
 //            }
 //        }
-//        igl::writeSTL(State::state().g_working_dir + "_sample.stl", V_tmp, F_tmp);
+//        igl::writeSTL(State::state().working_dir + "_sample.stl", V_tmp, F_tmp);
 //    }
 }
 

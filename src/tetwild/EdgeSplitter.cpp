@@ -239,10 +239,10 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     }
 
     //update surface tags
-    if (State::state().g_eps != State::state().EPSILON_INFINITE) {
+    if (State::state().eps != State::state().EPSILON_INFINITE) {
         if (isEdgeOnSurface(v1_id, v2_id)) {
             tet_vertices[v_id].is_on_surface = true;
-            if (State::state().g_eps == State::state().EPSILON_NA) {
+            if (State::state().eps == State::state().EPSILON_NA) {
                 setIntersection(tet_vertices[v1_id].on_edge, tet_vertices[v2_id].on_edge, tet_vertices[v_id].on_edge);
                 setIntersection(tet_vertices[v1_id].on_face, tet_vertices[v2_id].on_face, tet_vertices[v_id].on_face);
             }
