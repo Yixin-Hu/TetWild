@@ -13,6 +13,7 @@
 #define NEW_GTET_EDGEREMOVER_H
 
 #include <tetwild/LocalOperations.h>
+#include <queue>
 
 namespace tetwild {
 

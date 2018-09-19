@@ -13,6 +13,7 @@
 #define NEW_GTET_EDGECOLLAPSER_H
 
 #include <tetwild/LocalOperations.h>
+#include <queue>
 
 namespace tetwild {
 

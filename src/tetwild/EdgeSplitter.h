@@ -13,7 +13,7 @@
 #define NEW_GTET_EDGESPLITTER_H
 
 #include <tetwild/LocalOperations.h>
-//#include <igl/viewer/Viewer.h>
+#include <queue>
 
 namespace tetwild {
 

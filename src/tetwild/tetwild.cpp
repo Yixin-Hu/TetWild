@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/tetwild.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <tetwild/Preprocess.h>
 #include <tetwild/DelaunayTetrahedralization.h>
 #include <tetwild/BSPSubdivision.h>
@@ -276,7 +278,7 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     //init
     logger().info("Refinement initializing...");
     MR.prepareData();
-    logger().info("Refinement intialization done!");
+    logger().info("Refinement initialization done!");
 
     //improvement
     MR.refine(energy_type);

@@ -8,6 +8,7 @@
 
 #include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <tetwild/MeshRefinement.h>
 #include <igl/read_triangle_mesh.h>
 #include <igl/write_triangle_mesh.h>
@@ -69,12 +70,12 @@ void saveFinalTetmesh(const std::string &output_filename,
     igl::writeOBJ(State::state().working_dir+State::state().postfix+"_sf.obj", V_sf, F_sf);
 }
 
-void gtet_new_slz(const std::string& sf_file, const std::string& slz_file, int max_pass,
-                  const std::array<bool, 4>& ops, Eigen::MatrixXd &VO, Eigen::MatrixXi &TO,
-                  Eigen::VectorXd &AO)
+void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const std::string& slz_file,
+                  int max_pass, const std::array<bool, 4>& ops,
+                  Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO)
 {
     MeshRefinement MR;
-    MR.deserialization(sf_file, slz_file);
+    MR.deserialization(VI, FI, slz_file);
 
 //    MR.is_dealing_unrounded = true;
     MR.refine(State::state().ENERGY_AMIPS, ops, false, true);
@@ -144,16 +145,14 @@ int main(int argc, char *argv[]) {
     }
 
     //do tetrahedralization
-    Eigen::MatrixXd VO;
-    Eigen::MatrixXi TO;
+    Eigen::MatrixXd VI, VO;
+    Eigen::MatrixXi FI, TO;
     Eigen::VectorXd AO;
+    igl::read_triangle_mesh(input_filename, VI, FI);
     if(Args::args().slz_file != "") {
-        gtet_new_slz(input_filename, Args::args().slz_file, Args::args().max_num_passes,
+        gtet_new_slz(VI, FI, Args::args().slz_file, Args::args().max_num_passes,
             {{true, false, true, true}}, VO, TO, AO);
     } else {
-        Eigen::MatrixXd VI;
-        Eigen::MatrixXi FI;
-        igl::read_triangle_mesh(input_filename, VI, FI);
         tetwild::tetrahedralization(VI, FI, VO, TO, AO);
     }
     saveFinalTetmesh(output_filename, VO, TO, AO);

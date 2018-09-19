@@ -10,6 +10,10 @@
 //
 
 #include <tetwild/InoutFiltering.h>
+#include <tetwild/Logger.h>
+#include <tetwild/DisableWarnings.h>
+#include <CGAL/centroid.h>
+#include <tetwild/EnableWarnings.h>
 #include <pymesh/MshSaver.h>
 #include <igl/winding_number.h>
 #include <igl/writeSTL.h>

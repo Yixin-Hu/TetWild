@@ -12,16 +12,18 @@
 #ifndef GTET_DELAUNAYTETRAHEDRALIZATION_H
 #define GTET_DELAUNAYTETRAHEDRALIZATION_H
 
-#include <tetwild/Common.h>
+#include <tetwild/CGALTypes.h>
 #include <tetwild/BSPElements.h>
 #include <geogram/mesh/mesh.h>
 #include <tetwild/DisableWarnings.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 #include <tetwild/EnableWarnings.h>
+#include <Eigen/Dense>
 
 namespace tetwild {
 
+// More CGAL types
 typedef CGAL::Triangulation_vertex_base_with_info_3<unsigned, K> Vb;
 typedef CGAL::Triangulation_data_structure_3<Vb> Tds;
 typedef CGAL::Delaunay_triangulation_3<K, Tds> Delaunay;

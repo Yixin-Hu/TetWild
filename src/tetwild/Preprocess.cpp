@@ -10,11 +10,17 @@
 //
 
 #include <tetwild/Preprocess.h>
+#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/State.h>
+#include <tetwild/Logger.h>
 #include <pymesh/MshSaver.h>
 #include <igl/fit_plane.h>
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/write_triangle_mesh.h>
+#include <igl/unique.h>
+#include <igl/unique_simplices.h>
+#include <igl/bounding_box_diagonal.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>

@@ -10,15 +10,21 @@
 //
 
 #include <tetwild/MeshRefinement.h>
+#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/Logger.h>
+#include <tetwild/Serialization.h>
+#include <tetwild/EdgeCollapser.h>
+#include <tetwild/EdgeSplitter.h>
+#include <tetwild/EdgeRemover.h>
+#include <tetwild/VertexSmoother.h>
+#include <tetwild/DisableWarnings.h>
+#include <CGAL/centroid.h>
+#include <tetwild/EnableWarnings.h>
 #include <pymesh/MshLoader.h>
 #include <pymesh/MshSaver.h>
 #include <geogram/points/kd_tree.h>
 #include <igl/winding_number.h>
-#include <igl/readOFF.h>
-#include <igl/readOBJ.h>
-#include <igl/readSTL.h>
-#include <igl/writeSTL.h>
 
 namespace tetwild {
 
@@ -1222,52 +1228,29 @@ void MeshRefinement::getTrackedSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
     }
 }
 
-bool getSurfaceMesh(const std::string& sf_file, Eigen::MatrixXd& V_in, Eigen::MatrixXi& F_in, GEO::Mesh& geo_sf_mesh){
-    {
-        std::string file_format = sf_file.substr(sf_file.size() - 3, 3);
-        Eigen::MatrixXd V_tmp;
-        Eigen::VectorXi _, IV;
-        if (file_format == "off" || file_format == "OFF") {
-            if (!igl::readOFF(sf_file, V_tmp, F_in))
-                return false;
-        } else if (file_format == "stl" || file_format == "STL") {
-            Eigen::MatrixXd _;
-            if (!igl::readSTL(sf_file, V_tmp, F_in, _))
-                return false;
-        } else if (file_format == "obj" || file_format == "OBJ") {
-            if (!igl::readOBJ(sf_file, V_tmp, F_in))
-                return false;
-        } else
-            return false;
+namespace {
 
-        if (V_tmp.rows() == 0 || F_in.rows() == 0)
-            return false;
-
-        igl::unique_rows(V_tmp, V_in, _, IV);
-        for (int i = 0; i < F_in.rows(); i++) {
-            for (int j = 0; j < 3; j++) {
-                F_in(i, j) = IV(F_in(i, j));
-            }
-        }
-    }
+bool getSurfaceMesh(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in, GEO::Mesh& geo_sf_mesh){
     geo_sf_mesh.vertices.clear();
     geo_sf_mesh.vertices.create_vertices((int) V_in.rows());
     for (int i = 0; i < V_in.rows(); i++) {
         GEO::vec3 &p = geo_sf_mesh.vertices.point(i);
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) {
             p[j] = V_in(i, j);
+        }
     }
     geo_sf_mesh.facets.clear();
     geo_sf_mesh.facets.create_triangles((int) F_in.rows());
     for (int i = 0; i < F_in.rows(); i++) {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) {
             geo_sf_mesh.facets.set_vertex(i, j, F_in(i, j));
+        }
     }
     geo_sf_mesh.facets.compute_borders();
     return true;
 }
 
-void getBoudnaryMesh(const Eigen::MatrixXd& V_sf, const Eigen::MatrixXi& F_sf, GEO::Mesh& b_mesh){
+void getBoundaryMesh(const Eigen::MatrixXd& V_sf, const Eigen::MatrixXi& F_sf, GEO::Mesh& b_mesh){
     std::vector<std::vector<int>> conn_f4v(V_sf.rows(), std::vector<int>());
     for (int i = 0; i < F_sf.rows(); i++) {
         for (int j = 0; j < 3; j++)
@@ -1319,15 +1302,17 @@ void getBoudnaryMesh(const Eigen::MatrixXd& V_sf, const Eigen::MatrixXi& F_sf, G
     }
 }
 
-bool MeshRefinement::deserialization(const std::string& sf_file, const std::string& slz_file) {
+} // anonymous namespace
+
+bool MeshRefinement::deserialization(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in,
+    const std::string& slz_file)
+{
     logger().debug("deserializing ...");
 
     //process sf_file
-    Eigen::MatrixXd V_in;
-    Eigen::MatrixXi F_in;
-    if(!getSurfaceMesh(sf_file, V_in, F_in, geo_sf_mesh))
+    if(!getSurfaceMesh(V_in, F_in, geo_sf_mesh))
         return false;
-    getBoudnaryMesh(V_in, F_in, geo_b_mesh);
+    getBoundaryMesh(V_in, F_in, geo_b_mesh);
     State::state().is_mesh_closed = (geo_b_mesh.vertices.nb() == 0);
 
     //deserialization

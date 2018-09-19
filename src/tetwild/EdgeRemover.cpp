@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/EdgeRemover.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <unordered_map>
 
 namespace tetwild {

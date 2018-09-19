@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/EdgeSplitter.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 
 namespace tetwild {
 

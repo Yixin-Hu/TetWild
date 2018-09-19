@@ -11,14 +11,10 @@
 
 #pragma once
 
-#include <tetwild/tetwild.h>
-#include <tetwild/CGALCommon.h>
-#include <tetwild/State.h>
-#include <tetwild/Logger.h>
+#include <tetwild/ForwardDecls.h>
 #include <geogram/basic/geometry.h>
 #include <unordered_set>
 #include <vector>
-#include <iostream>
 
 #define TIMING_BREAKDOWN true
 

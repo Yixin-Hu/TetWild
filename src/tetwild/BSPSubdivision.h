@@ -12,8 +12,12 @@
 #ifndef NEW_GTET_BSPSUBDIVISION_H
 #define NEW_GTET_BSPSUBDIVISION_H
 
-#include <tetwild/MeshConformer.h>
+#include <tetwild/ForwardDecls.h>
+#include <tetwild/CGALTypes.h>
 #include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <array>
 
 namespace tetwild {
 

@@ -11,14 +11,9 @@
 
 #pragma once
 
+#include <tetwild/CGALTypes.h>
+#include <tetwild/TetmeshElements.h>
 #include <tetwild/DisableWarnings.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/intersections.h>
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/centroid.h>
-#include <CGAL/Side_of_triangle_mesh.h>
-#include <CGAL/bounding_box.h>
 #include <igl/copyleft/cgal/assign_scalar.h>
 #include <igl/serialize.h>
 #include <igl/STR.h>
@@ -119,5 +114,77 @@ namespace igl {
             for(int i=0;i<4;i++)
                 ::igl::deserialize(arr[i], std::to_string(i), buffer);
         }
+        template<>
+        inline void serialize(const tetwild::TetVertex &v, std::vector<char> &buffer) {
+            ::igl::serialize(v.pos, std::string("pos"), buffer);
+            ::igl::serialize(v.posf, std::string("posf"), buffer);
+
+            ::igl::serialize(v.is_rounded, std::string("is_rounded"), buffer);
+            ::igl::serialize(v.is_on_surface, std::string("is_on_surface"), buffer);
+            ::igl::serialize(v.is_on_bbox, std::string("is_on_bbox"), buffer);
+            ::igl::serialize(v.is_on_boundary, std::string("is_on_boundary"), buffer);
+
+            ::igl::serialize(v.adaptive_scale, std::string("adaptive_scale"), buffer);
+
+//            ::igl::serialize(v.on_fixed_vertex, std::string("on_fixed_vertex"), buffer);
+//            std::vector<int> tmp;
+//            for(auto it=v.on_edge.begin();it!=v.on_edge.end();it++)
+//                tmp.push_back(*it);
+//            ::igl::serialize(tmp, std::string("on_edge"), buffer);
+//            tmp.clear();
+//            for(auto it=v.on_face.begin();it!=v.on_face.end();it++)
+//                tmp.push_back(*it);
+//            ::igl::serialize(tmp, std::string("on_face"), buffer);
+//            tmp.clear();
+//            for(auto it=v.conn_tets.begin();it!=v.conn_tets.end();it++)
+//                tmp.push_back(*it);
+//            ::igl::serialize(tmp, std::string("conn_tets"), buffer);
+        }
+
+        template<>
+        inline void deserialize(tetwild::TetVertex &v, const std::vector<char> &buffer) {
+            ::igl::deserialize(v.pos, std::string("pos"), buffer);
+            ::igl::deserialize(v.posf, std::string("posf"), buffer);
+
+            ::igl::deserialize(v.is_rounded, std::string("is_rounded"), buffer);
+            ::igl::deserialize(v.is_on_surface, std::string("is_on_surface"), buffer);
+            ::igl::deserialize(v.is_on_bbox, std::string("is_on_bbox"), buffer);
+            ::igl::deserialize(v.is_on_boundary, std::string("is_on_boundary"), buffer);
+
+            ::igl::deserialize(v.adaptive_scale, std::string("adaptive_scale"), buffer);
+
+//            ::igl::deserialize(v.on_fixed_vertex, std::string("on_fixed_vertex"), buffer);
+//            std::vector<int> tmp;
+//            ::igl::deserialize(tmp, std::string("on_edge"), buffer);
+//            for(int i=0;i<tmp.size();i++)
+//                v.on_edge.insert(tmp[i]);
+//            tmp.clear();
+//            ::igl::deserialize(tmp, std::string("on_face"), buffer);
+//            for(int i=0;i<tmp.size();i++)
+//                v.on_face.insert(tmp[i]);
+//            ::igl::deserialize(tmp, std::string("conn_tets"), buffer);
+//            for(int i=0;i<tmp.size();i++)
+//                v.conn_tets.insert(tmp[i]);
+        }
+
+//        template<>
+//        inline void serialize(const TetQuality &q, std::vector<char> &buffer) {
+//            ::igl::serialize(q.min_d_angle, std::string("min_d_angle"), buffer);
+//            ::igl::serialize(q.max_d_angle, std::string("max_d_angle"), buffer);
+//            ::igl::serialize(q.asp_ratio_2, std::string("asp_ratio_2"), buffer);
+//            ::igl::serialize(q.slim_energy, std::string("slim_energy"), buffer);
+//            ::igl::serialize(q.volume, std::string("volume"), buffer);
+//
+//        }
+//
+//        template<>
+//        inline void deserialize(TetQuality &q, const std::vector<char> &buffer) {
+//            ::igl::deserialize(q.min_d_angle, std::string("min_d_angle"), buffer);
+//            ::igl::deserialize(q.max_d_angle, std::string("max_d_angle"), buffer);
+//            ::igl::deserialize(q.asp_ratio_2, std::string("asp_ratio_2"), buffer);
+//            ::igl::deserialize(q.slim_energy, std::string("slim_energy"), buffer);
+//            ::igl::deserialize(q.volume, std::string("volume"), buffer);
+//
+//        }
     }
 }

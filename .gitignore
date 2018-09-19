@@ -1,9 +1,10 @@
 # Extern
 /extern/.cache
-/extern/spdlog
+/extern/cli11
+/extern/fmt
 /extern/geogram
 /extern/libigl
-/extern/cli11
+/extern/spdlog
 
 # Build
 src/ispc/energy.h

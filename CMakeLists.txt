@@ -80,10 +80,10 @@ include(TetWildDependencies)
 ################################################################################
 # Build static library for executable
 add_library(libTetWild STATIC
+		include/tetwild/tetwild.h
 		src/tetwild/BSPSubdivision.cpp
 		src/tetwild/BSPSubdivision.h
-		src/tetwild/CGALCommon.cpp
-		src/tetwild/CGALCommon.h
+		src/tetwild/CGALTypes.h
 		src/tetwild/Common.cpp
 		src/tetwild/Common.h
 		src/tetwild/DelaunayTetrahedralization.cpp
@@ -94,6 +94,7 @@ add_library(libTetWild STATIC
 		src/tetwild/EdgeRemover.h
 		src/tetwild/EdgeSplitter.cpp
 		src/tetwild/EdgeSplitter.h
+		src/tetwild/ForwardDecls.h
 		src/tetwild/InoutFiltering.cpp
 		src/tetwild/InoutFiltering.h
 		src/tetwild/LocalOperations.cpp
@@ -115,7 +116,6 @@ add_library(libTetWild STATIC
 		src/tetwild/tetwild.cpp
 		src/tetwild/VertexSmoother.cpp
 		src/tetwild/VertexSmoother.h
-		include/tetwild/tetwild.h
 )
 target_include_directories(libTetWild
 	PRIVATE
@@ -164,14 +164,5 @@ install(TARGETS TetWild RUNTIME DESTINATION bin)
 set_target_properties(geogram PROPERTIES FOLDER extern/geogram)
 set_target_properties(geogram_third_party PROPERTIES FOLDER extern/geogram)
 set_target_properties(uninstall PROPERTIES FOLDER extern/geogram)
-# spdlog
-set_target_properties(async_bench PROPERTIES FOLDER extern/spdlog)
-set_target_properties(bench PROPERTIES FOLDER extern/spdlog)
-set_target_properties(example PROPERTIES FOLDER extern/spdlog)
-set_target_properties(latency PROPERTIES FOLDER extern/spdlog)
-set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
-set_target_properties(spdlog_headers_for_ide PROPERTIES FOLDER extern/spdlog)
-set_target_properties(spdlog-utests PROPERTIES FOLDER extern/spdlog)
-set_target_properties(multisink PROPERTIES FOLDER extern/spdlog)
 # pymesh
 set_target_properties(pymesh_tiny PROPERTIES FOLDER extern/pymesh)

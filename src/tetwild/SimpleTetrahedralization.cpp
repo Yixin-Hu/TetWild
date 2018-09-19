@@ -10,9 +10,16 @@
 //
 
 #include <tetwild/SimpleTetrahedralization.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <igl/winding_number.h>
 #include <igl/Timer.h>
 #include <bitset>
+
+//centroid
+#include <tetwild/DisableWarnings.h>
+#include <CGAL/centroid.h>
+#include <tetwild/EnableWarnings.h>
 
 //triangulation
 #include <tetwild/DisableWarnings.h>

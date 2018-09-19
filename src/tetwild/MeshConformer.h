@@ -12,9 +12,8 @@
 #ifndef GTET_MESHCONFORMER_H
 #define GTET_MESHCONFORMER_H
 
-#include <tetwild/Common.h>
+#include <tetwild/CGALTypes.h>
 #include <tetwild/BSPElements.h>
-//#include <tetwild/DelaunayTetrahedralization.h>
 
 namespace tetwild {
 

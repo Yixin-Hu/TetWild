@@ -12,17 +12,11 @@
 #ifndef NEW_GTET_PREPROCESS_H
 #define NEW_GTET_PREPROCESS_H
 
-#include <tetwild/Common.h>
+#include <tetwild/CGALTypes.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
-#include <igl/readOFF.h>
-#include <igl/readSTL.h>
-#include <igl/readOBJ.h>
-#include <igl/readPLY.h>
-#include <igl/writeSTL.h>
-#include <igl/unique.h>
-#include <igl/unique_simplices.h>
-#include <igl/bounding_box_diagonal.h>
+#include <unordered_set>
+#include <queue>
 
 namespace tetwild {
 

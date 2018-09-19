@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/BSPSubdivision.h>
+#include <tetwild/MeshConformer.h>
+#include <tetwild/Logger.h>
 
 namespace tetwild {
 

@@ -12,7 +12,6 @@
 #ifndef NEW_GTET_INOUTFILTERING_H
 #define NEW_GTET_INOUTFILTERING_H
 
-#include <tetwild/Common.h>
 #include <tetwild/TetmeshElements.h>
 
 namespace tetwild {

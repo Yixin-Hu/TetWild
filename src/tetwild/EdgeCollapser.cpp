@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/EdgeCollapser.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <igl/Timer.h>
 
 namespace tetwild {

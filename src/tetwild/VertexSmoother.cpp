@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/VertexSmoother.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <pymesh/MshSaver.h>
 
 namespace tetwild {

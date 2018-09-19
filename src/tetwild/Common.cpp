@@ -9,7 +9,10 @@
 // Created by Jeremie Dumas on 09/04/18.
 //
 
+#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/State.h>
+#include <tetwild/Logger.h>
 #include <geogram/basic/permutation.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh.h>
