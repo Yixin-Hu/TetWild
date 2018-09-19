@@ -31,7 +31,7 @@ void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
                        const std::vector<bool> &t_is_removed,
                        const std::vector<TetQuality>& tet_qualities,
                        const std::vector<int>& v_ids,
-                       const Args &args)
+                       const Args &args, const State &state)
 {
     logger().debug("final quality:");
     double min = 10, max = 0;
@@ -74,7 +74,7 @@ void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     logger().debug("max_d_angle: >174 {}; >168 {}; >162 {}", cmp_cnt[5] / cnt, cmp_cnt[4] / cnt, cmp_cnt[3] / cnt);
 
     addRecord(MeshRecord(MeshRecord::OpType::OP_WN, time, v_ids.size(), cnt,
-                         min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt), args);
+                         min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt), args, state);
 
     // output unrounded vertices:
     cnt = 0;
@@ -84,7 +84,7 @@ void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
         }
     }
     logger().debug("{}/{} vertices are unrounded!!!", cnt, v_ids.size());
-    addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1), args);
+    addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1), args, state);
 }
 
 void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
@@ -97,7 +97,7 @@ void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
 
 void extractFinalTetmesh(MeshRefinement& MR,
     Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out,
-    const Args &args)
+    const Args &args, const State &state)
 {
     std::vector<TetVertex> &tet_vertices = MR.tet_vertices;
     std::vector<std::array<int, 4>> &tets = MR.tets;
@@ -107,7 +107,7 @@ void extractFinalTetmesh(MeshRefinement& MR,
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
     if (!args.smooth_open_boundary) {
-        InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities);
+        InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities, state);
         igl::Timer igl_timer;
         igl_timer.start();
         IOF.filter();
@@ -156,18 +156,22 @@ void extractFinalTetmesh(MeshRefinement& MR,
     if (args.is_quiet) {
         return;
     }
-    printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids, args);
+    printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids, args, state);
 }
 
 void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
                         Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
                         const Args &args)
 {
-    State::state().use_energy_max = true;
-    State::state().use_onering_projection = false;
-    State::state().use_sampling = true;
+    State state;
+    state.working_dir = args.working_dir;
+    state.postfix = args.postfix;
+    state.stat_file = args.csv_file;
+    state.use_energy_max = true;
+    state.use_onering_projection = false;
+    state.use_sampling = true;
 
-    int energy_type = State::state().ENERGY_AMIPS;
+    int energy_type = state.ENERGY_AMIPS;
     bool is_sm_single = true;
     bool is_preprocess = true;
     bool is_check_correctness = false;
@@ -180,17 +184,17 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     igl_timer_total.start();
 
     ////pipeline
-    MeshRefinement MR(args);
+    MeshRefinement MR(args, state);
 
     /// STAGE 1
     {
         //preprocess
         igl_timer.start();
         logger().info("Preprocessing...");
-        Preprocess pp;
+        Preprocess pp(state);
         if (!pp.init(VI, FI, MR.geo_b_mesh, MR.geo_sf_mesh, args)) {
             //todo: output a empty tetmesh
-            PyMesh::MshSaver mSaver(State::state().working_dir + State::state().postfix + ".msh", true);
+            PyMesh::MshSaver mSaver(state.working_dir + state.postfix + ".msh", true);
             Eigen::VectorXd oV;
             Eigen::VectorXi oT;
             oV.resize(0);
@@ -198,13 +202,13 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
             mSaver.save_mesh(oV, oT, 3, mSaver.TET);
             log_and_throw("Empty mesh!");
         }
-        addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()), args, state);
 
         std::vector<Point_3> m_vertices;
         std::vector<std::array<int, 3>> m_faces;
         pp.process(MR.geo_sf_mesh, m_vertices, m_faces, args);
         tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
 
@@ -220,14 +224,14 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
         std::vector<BSPEdge> bsp_edges;
         std::vector<BSPFace> bsp_faces;
         std::vector<BSPtreeNode> bsp_nodes;
-        DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes, args);
+        DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes, args, state);
         logger().debug("# bsp_vertices = {}", bsp_vertices.size());
         logger().debug("# bsp_edges = {}", bsp_edges.size());
         logger().debug("# bsp_faces = {}", bsp_faces.size());
         logger().debug("# bsp_nodes = {}", bsp_nodes.size());
         logger().info("Delaunay tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
 
@@ -238,7 +242,7 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
         MC.match();
         logger().info("Divfaces matching done!");
         tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
         logger().info("time = {}s", tmp_time);
 
         //bsp subdivision
@@ -254,24 +258,24 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
         logger().debug("# vertex = {}", MC.bsp_vertices.size());
         logger().info("BSP subdivision done!");
         tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
 
         //simple tetrahedralization
         igl_timer.start();
         logger().info("Tetrehedralizing ...");
-        SimpleTetrahedralization ST(MC);
+        SimpleTetrahedralization ST(state, MC);
         ST.tetra(MR.tet_vertices, MR.tets);
         ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
         ST.labelBbox(MR.tet_vertices, MR.tets);
-        if (!State::state().is_mesh_closed)//if input is an open mesh
+        if (!state.is_mesh_closed)//if input is an open mesh
             ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
         logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
         logger().debug("# tets = {}", MR.tets.size());
         logger().info("Tetrahedralization done!");
         tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()), args);
+        addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()), args, state);
         sum_time += tmp_time;
         logger().info("time = {}s", tmp_time);
 
@@ -287,7 +291,7 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     //improvement
     MR.refine(energy_type);
 
-    extractFinalTetmesh(MR, VO, TO, AO, args); //do winding number and output the tetmesh
+    extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
 
     double total_time = igl_timer.getElapsedTime();
     logger().info("Total time for all stages = {}s", total_time);

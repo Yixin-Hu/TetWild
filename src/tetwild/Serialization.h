@@ -73,7 +73,7 @@ namespace igl {
             ::igl::deserialize(s1, std::string("x"), buffer);
             ::igl::deserialize(s2, std::string("y"), buffer);
             ::igl::deserialize(s3, std::string("z"), buffer);
-            p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
+            // p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
         }
 
         template<>

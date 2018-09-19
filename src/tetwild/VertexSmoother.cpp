@@ -29,7 +29,7 @@ void VertexSmoother::smooth() {
         double suc_surface = 0;
         smoothSingle();
         suc_in = suc_counter;
-        if (State::state().eps >= 0) {
+        if (state.eps >= 0) {
             smoothSurface();
             suc_surface = suc_counter;
         }
@@ -78,7 +78,7 @@ bool VertexSmoother::smoothSingleVertex(int v_id, bool is_cal_energy){
         return false;
     } else {
         Point_3f pf;
-        if(energy_type == State::state().ENERGY_AMIPS) {
+        if(energy_type == state.ENERGY_AMIPS) {
             if (!NewtonsMethod(t_ids, new_tets, v_id, pf))
                 return false;
         }
@@ -120,7 +120,7 @@ void VertexSmoother::smoothSingle() {
             continue;
         if (tet_vertices[v_id].is_on_bbox)
             continue;
-        if (State::state().eps != State::state().EPSILON_INFINITE && tet_vertices[v_id].is_on_surface)
+        if (state.eps != state.EPSILON_INFINITE && tet_vertices[v_id].is_on_surface)
             continue;
 
         if (tet_vertices[v_id].is_locked)
@@ -178,7 +178,7 @@ void VertexSmoother::smoothSingle() {
             continue;
         } else {
             Point_3f pf;
-            if (energy_type == State::state().ENERGY_AMIPS) {
+            if (energy_type == state.ENERGY_AMIPS) {
                 if (!NewtonsMethod(t_ids, new_tets, v_id, pf))
                     continue;
             }
@@ -302,7 +302,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
         if (!is_valid) {
             continue;
         } else {
-            if (energy_type == State::state().ENERGY_AMIPS) {
+            if (energy_type == state.ENERGY_AMIPS) {
                 if (!NewtonsMethod(old_t_ids, new_tets, v_id, pf_out))
                     continue;
             }
@@ -316,7 +316,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
         std::vector<std::array<int, 3>> tri_ids;
         for (auto it = tet_vertices[v_id].conn_tets.begin(); it != tet_vertices[v_id].conn_tets.end(); it++) {
             for (int j = 0; j < 4; j++) {
-                if (tets[*it][j] != v_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
+                if (tets[*it][j] != v_id && is_surface_fs[*it][j] != state.NOT_SURFACE) {
                     std::array<int, 3> tri = {{tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]}};
                     std::sort(tri.begin(), tri.end());
                     tri_ids.push_back(tri);
@@ -328,7 +328,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
 
         Point_3f pf;
         Point_3 p;
-        if (State::state().use_onering_projection) {//we have to use exact construction here. Or the projecting points may be not exactly on the plane.
+        if (state.use_onering_projection) {//we have to use exact construction here. Or the projecting points may be not exactly on the plane.
             std::vector<Triangle_3> tris;
             for (int i = 0; i < tri_ids.size(); i++) {
                 tris.push_back(Triangle_3(tet_vertices[tri_ids[i][0]].pos, tet_vertices[tri_ids[i][1]].pos,
@@ -381,7 +381,7 @@ void VertexSmoother::smoothSurface() {//smoothing surface using two methods
         getCheckQuality(old_t_ids, old_tq);
         calTetQualities(new_tets, tet_qs);
         getCheckQuality(tet_qs, new_tq);
-        if (!new_tq.isBetterThan(old_tq, energy_type)) {
+        if (!new_tq.isBetterThan(old_tq, energy_type, state)) {
             tet_vertices[v_id].pos = old_p;
             tet_vertices[v_id].posf = old_pf;
             continue;
@@ -641,14 +641,14 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
             for (int k = 0; k < 3; k++)
                 t.push_back(tet_vertices[tets[t_ids[i]][j]].posf[k]);
         }
-        if (energy_type == State::state().ENERGY_AMIPS) {
+        if (energy_type == state.ENERGY_AMIPS) {
             s_energy += comformalAMIPSEnergy_new(t);
         }
     }
 #endif
-    if (std::isinf(s_energy) || std::isnan(s_energy) || s_energy <= 0 || s_energy > State::state().MAX_ENERGY) {
+    if (std::isinf(s_energy) || std::isnan(s_energy) || s_energy <= 0 || s_energy > state.MAX_ENERGY) {
         logger().debug("new E inf");
-        s_energy = State::state().MAX_ENERGY;
+        s_energy = state.MAX_ENERGY;
     }
 
     return s_energy;
@@ -708,7 +708,7 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
 
     if (std::isinf(energy)) {
         logger().debug("{} E inf", v_id);
-        energy = State::state().MAX_ENERGY;
+        energy = state.MAX_ENERGY;
     }
     if (std::isnan(energy)) {
         logger().debug("{} E nan", v_id);
@@ -798,7 +798,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
             //give stop condition
             bool is_stop = true;
             for (int j = 0; j < 3; j++)
-                if (vec[j] * a > State::state().eps)
+                if (vec[j] * a > state.eps)
                     is_stop = false;
             if (is_stop)
                 break;
@@ -862,7 +862,7 @@ int VertexSmoother::laplacianBoundary(const std::vector<int>& b_v_ids, const std
 }
 
 void VertexSmoother::outputOneRing(int v_id, std::string s){
-    PyMesh::MshSaver mSaver(State::state().working_dir+State::state().postfix+"_smooth_"+std::to_string(v_id)+s+".msh", true);
+    PyMesh::MshSaver mSaver(state.working_dir+state.postfix+"_smooth_"+std::to_string(v_id)+s+".msh", true);
     std::vector<int> v_ids;
     std::vector<int> new_ids(tet_vertices.size(), -1);
     for(int t_id: tet_vertices[v_id].conn_tets){

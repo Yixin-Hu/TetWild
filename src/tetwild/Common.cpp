@@ -21,16 +21,16 @@
 
 namespace tetwild {
 
-void addRecord(const MeshRecord& record, const Args &args) {
+void addRecord(const MeshRecord& record, const Args &args, const State &state) {
     if (!args.write_csv_file)
         return;
     static bool first_time = true;
     std::ofstream f;
     if (first_time) {
-        f.open(State::state().stat_file);
+        f.open(state.stat_file);
         first_time = false;
     } else {
-        f.open(State::state().stat_file, std::ios::app);
+        f.open(state.stat_file, std::ios::app);
     }
     f << record.op << "," << record.timing << "," << record.n_v << "," << record.n_t << ","
       << record.min_min_d_angle << "," << record.avg_min_d_angle << ","
@@ -141,7 +141,7 @@ void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set
 }
 
 
-void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps) {
+void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps, const double sampling_dist) {
     double sqrt3_2 = std::sqrt(3) / 2;
 
     std::array<double, 3> ls;
@@ -151,7 +151,7 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
     auto min_max = std::minmax_element(ls.begin(), ls.end());
     int min_i = min_max.first - ls.begin();
     int max_i = min_max.second - ls.begin();
-    double N = sqrt(ls[max_i]) / State::state().sampling_dist;
+    double N = sqrt(ls[max_i]) / sampling_dist;
     if (N <= 1) {
         for (int i = 0; i < 3; i++)
             ps.push_back(vs[i]);
@@ -166,12 +166,12 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 
     GEO::vec3 n_v0v1 = GEO::normalize(v1 - v0);
     for (int n = 0; n <= N; n++) {
-        ps.push_back(v0 + n_v0v1 * State::state().sampling_dist * n);
+        ps.push_back(v0 + n_v0v1 * sampling_dist * n);
     }
     ps.push_back(v1);
 
     double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
-    int M = h / (sqrt3_2 * State::state().sampling_dist);
+    int M = h / (sqrt3_2 * sampling_dist);
     if (M < 1) {
         ps.push_back(v2);
         return;
@@ -191,40 +191,40 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
         if (m % 2 == 0 && n == n1) {
             n += 1;
         }
-        GEO::vec3 v0_m = v0 + m * sqrt3_2 * State::state().sampling_dist / sin_v0 * n_v0v2;
-        GEO::vec3 v1_m = v1 + m * sqrt3_2 * State::state().sampling_dist / sin_v1 * n_v1v2;
-        if (GEO::distance(v0_m, v1_m) <= State::state().sampling_dist)
+        GEO::vec3 v0_m = v0 + m * sqrt3_2 * sampling_dist / sin_v0 * n_v0v2;
+        GEO::vec3 v1_m = v1 + m * sqrt3_2 * sampling_dist / sin_v1 * n_v1v2;
+        if (GEO::distance(v0_m, v1_m) <= sampling_dist)
             break;
 
-        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * State::state().sampling_dist;
+        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * sampling_dist;
         GEO::vec3 v = v0_m + delta_d * n_v0v1;
-        int N1 = GEO::distance(v, v1_m) / State::state().sampling_dist;
+        int N1 = GEO::distance(v, v1_m) / sampling_dist;
 //        ps.push_back(v0_m);
         for (int i = 0; i <= N1; i++) {
-            ps.push_back(v + i * n_v0v1 * State::state().sampling_dist);
+            ps.push_back(v + i * n_v0v1 * sampling_dist);
         }
 //        ps.push_back(v1_m);
     }
     ps.push_back(v2);
 
     //sample edges
-    N = sqrt(ls[(max_i + 1) % 3]) / State::state().sampling_dist;
+    N = sqrt(ls[(max_i + 1) % 3]) / sampling_dist;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v1v2 = GEO::normalize(v2 - v1);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v1 + n_v1v2 * State::state().sampling_dist * n);
+            ps.push_back(v1 + n_v1v2 * sampling_dist * n);
         }
     }
 
-    N = sqrt(ls[(max_i + 2) % 3]) / State::state().sampling_dist;
+    N = sqrt(ls[(max_i + 2) % 3]) / sampling_dist;
     if (N > 1) {
         if (N == int(N))
             N -= 1;
         GEO::vec3 n_v2v0 = GEO::normalize(v0 - v2);
         for (int n = 1; n <= N; n++) {
-            ps.push_back(v2 + n_v2v0 * State::state().sampling_dist * n);
+            ps.push_back(v2 + n_v2v0 * sampling_dist * n);
         }
     }
 
@@ -251,7 +251,7 @@ void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& 
 //                F_tmp(1 + i, k) = (1 + i) * 3 + k;
 //            }
 //        }
-//        igl::writeSTL(State::state().working_dir + "_sample.stl", V_tmp, F_tmp);
+//        igl::writeSTL(state.working_dir + "_sample.stl", V_tmp, F_tmp);
 //    }
 }
 

@@ -16,6 +16,7 @@
 namespace tetwild {
 
 struct Args;
+struct State;
 class BSPFace;
 class MeshConformer;
 class EdgeCollapser;

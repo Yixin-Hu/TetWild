@@ -87,21 +87,22 @@ public:
 //        return false;
 //    }
 
-    bool isBetterThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
+    bool isBetterThan(const TetQuality& tq, int energy_type, const State &state) {
+        if (energy_type == state.ENERGY_AMIPS || energy_type == state.ENERGY_DIRICHLET) {
             return slim_energy < tq.slim_energy;
         }
-        else if (energy_type == State::state().ENERGY_AD) {
+        else if (energy_type == state.ENERGY_AD) {
             return min_d_angle > tq.min_d_angle && max_d_angle < tq.max_d_angle;
         }
         else
             return false;
     }
-    bool isBetterOrEqualThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
+
+    bool isBetterOrEqualThan(const TetQuality& tq, int energy_type, const State &state) {
+        if (energy_type == state.ENERGY_AMIPS || energy_type == state.ENERGY_DIRICHLET) {
             return slim_energy <= tq.slim_energy;
         }
-        else if (energy_type == State::state().ENERGY_AD) {
+        else if (energy_type == state.ENERGY_AD) {
             return min_d_angle >= tq.min_d_angle && max_d_angle <= tq.max_d_angle;
         }
         else

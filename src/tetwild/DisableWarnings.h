@@ -12,9 +12,9 @@
 	#pragma clang diagnostic ignored "-Wswitch-enum"
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wstrict-overflow"
-	#pragma clang diagnostic push
-	// #pragma clang diagnostic ignored "-Wnoexcept"
 	// #pragma clang diagnostic push
+	// #pragma clang diagnostic ignored "-Wnoexcept"
+	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wctor-dtor-privacy"
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wnull-dereference"

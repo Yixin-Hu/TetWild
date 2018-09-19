@@ -18,7 +18,7 @@ namespace tetwild {
 
 class VertexSmoother:public LocalOperations {
 public:
-    VertexSmoother(LocalOperations& lo): LocalOperations(lo){}
+    VertexSmoother(LocalOperations lo): LocalOperations(lo){}
 
     void smooth();
     void smoothSingle();

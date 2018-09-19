@@ -481,9 +481,9 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
     }
 
     ////is face on surface////
-    State::state().NOT_SURFACE = m_faces.size()+1;
+    // state.NOT_SURFACE = m_faces.size()+1;
     is_surface_fs=std::vector<std::array<int, 4>>(tets.size(),
-                                                  std::array<int, 4>({{State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE, State::state().NOT_SURFACE}}));
+                                                  std::array<int, 4>({{state.NOT_SURFACE, state.NOT_SURFACE, state.NOT_SURFACE, state.NOT_SURFACE}}));
 //    std::vector<std::array<bool, 4>> is_visited(tets.size(), std::array<bool, 4>({{false, false, false, false}}));
 
     for(unsigned int i = 0; i < tets.size(); i++) {
@@ -511,26 +511,26 @@ void SimpleTetrahedralization::labelSurface(const std::vector<int>& m_f_tags, co
 
             if (!tet_vertices[tets[i][(j + 1) % 4]].is_on_surface || !tet_vertices[tets[i][(j + 2) % 4]].is_on_surface
                 || !tet_vertices[tets[i][(j + 3) % 4]].is_on_surface) {
-                is_surface_fs[i][j] = State::state().NOT_SURFACE;
+                is_surface_fs[i][j] = state.NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = state.NOT_SURFACE;
                 continue;
             }
             std::unordered_set<int> sf_faces_tmp;
             setIntersection(tet_vertices[tets[i][(j + 1) % 4]].on_face, tet_vertices[tets[i][(j + 2) % 4]].on_face,
                             sf_faces_tmp);
             if (sf_faces_tmp.size() == 0) {
-                is_surface_fs[i][j] = State::state().NOT_SURFACE;
+                is_surface_fs[i][j] = state.NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = state.NOT_SURFACE;
                 continue;
             }
             std::vector<int> sf_faces;
             setIntersection(sf_faces_tmp, tet_vertices[tets[i][(j + 3) % 4]].on_face, sf_faces);
             if (sf_faces.size() == 0) {
-                is_surface_fs[i][j] = State::state().NOT_SURFACE;
+                is_surface_fs[i][j] = state.NOT_SURFACE;
 //                if (opp_i >= 0)
-//                    is_visited[opp_i][opp_j] = State::state().NOT_SURFACE;
+//                    is_visited[opp_i][opp_j] = state.NOT_SURFACE;
                 continue;
             }
 
@@ -701,9 +701,9 @@ void SimpleTetrahedralization::labelBoundary(std::vector<TetVertex>& tet_vertice
                 opp_js.push_back(j);
             }
             if (opp_js.size() == 2) {
-                if (is_surface_fs[t_id][opp_js[0]] != State::state().NOT_SURFACE)
+                if (is_surface_fs[t_id][opp_js[0]] != state.NOT_SURFACE)
                     cnt++;
-                if (is_surface_fs[t_id][opp_js[1]] != State::state().NOT_SURFACE)
+                if (is_surface_fs[t_id][opp_js[1]] != state.NOT_SURFACE)
                     cnt++;
                 if (cnt > 2)
                     break;

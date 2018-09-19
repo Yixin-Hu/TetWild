@@ -24,7 +24,7 @@ struct State {
     const int ENERGY_AMIPS=2;
     const int ENERGY_DIRICHLET=3;
     const double MAX_ENERGY = 1e50;
-    int NOT_SURFACE = 0;
+    const int NOT_SURFACE = -1;
 
     // paths used for i/o
     std::string working_dir;
@@ -58,14 +58,6 @@ struct State {
 
     // [debug]
     bool is_print_tmp = false;
-
-    static State & state() {
-        static State st;
-        return st;
-    }
-
-private:
-    State() = default;
 };
 
 

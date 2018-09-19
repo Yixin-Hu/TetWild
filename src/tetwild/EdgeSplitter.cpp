@@ -103,7 +103,7 @@ void EdgeSplitter::split() {
         const ElementInQueue_es &ele = es_queue.top();
 
         std::array<int, 2> v_ids = ele.v_ids;
-//        if (State::state().is_print_tmp)
+//        if (state.is_print_tmp)
 //            logger().debug("{}{}{} {} {} {} {}", v_ids[0], ' ', v_ids[1]
 //, std::sqrt(calEdgeLength(v_ids))
 //, std::sqrt(ideal_weight) *
@@ -241,10 +241,10 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     }
 
     //update surface tags
-    if (State::state().eps != State::state().EPSILON_INFINITE) {
+    if (state.eps != state.EPSILON_INFINITE) {
         if (isEdgeOnSurface(v1_id, v2_id)) {
             tet_vertices[v_id].is_on_surface = true;
-            if (State::state().eps == State::state().EPSILON_NA) {
+            if (state.eps == state.EPSILON_NA) {
                 setIntersection(tet_vertices[v1_id].on_edge, tet_vertices[v2_id].on_edge, tet_vertices[v_id].on_edge);
                 setIntersection(tet_vertices[v1_id].on_face, tet_vertices[v2_id].on_face, tet_vertices[v_id].on_face);
             }
@@ -269,7 +269,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     for (int i = 0; i < new_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {//v1->v
             if (tets[new_t_ids[i]][j] == v2_id)
-                is_surface_fs[new_t_ids[i]][j] = State::state().NOT_SURFACE;
+                is_surface_fs[new_t_ids[i]][j] = state.NOT_SURFACE;
 //                else if(tets[new_t_ids[i]][j]==v_id)//no need to change
 //                    is_surface_fs[new_t_ids[i]][j]=is_surface_fs[old_t_ids[i]][j];
         }
@@ -277,7 +277,7 @@ bool EdgeSplitter::splitAnEdge(const std::array<int, 2>& edge) {
     for (int i = 0; i < old_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {//v2->v
             if (tets[old_t_ids[i]][j] == v1_id)
-                is_surface_fs[old_t_ids[i]][j] = State::state().NOT_SURFACE;
+                is_surface_fs[old_t_ids[i]][j] = state.NOT_SURFACE;
         }
     }
 
@@ -345,7 +345,7 @@ int EdgeSplitter::getOverRefineScale(int v1_id, int v2_id){
         std::vector<int> n12_t_ids;
         setIntersection(tet_vertices[v1_id].conn_tets, tet_vertices[v2_id].conn_tets, n12_t_ids);
         for(int i=0;i<n12_t_ids.size();i++) {
-            if (energy_type == State::state().ENERGY_AMIPS &&
+            if (energy_type == state.ENERGY_AMIPS &&
                 tet_qualities[n12_t_ids[i]].slim_energy > 500) {//todo: add || for other types of energy
                 int scale = 1;
                 scale = (tet_qualities[n12_t_ids[i]].slim_energy - 500) / 500.0;

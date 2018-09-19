@@ -43,11 +43,15 @@ class Preprocess {
     std::priority_queue<ElementInQueue_sm, std::vector<ElementInQueue_sm>, cmp_sm> sm_queue;
     int c=0;
 public:
+    State &state;
+
     Eigen::MatrixXd V_in;
     Eigen::MatrixXi F_in;
     std::vector<bool> v_is_removed;
     std::vector<bool> f_is_removed;
     std::vector<std::unordered_set<int>> conn_fs;
+
+    Preprocess(State &st) : state(st) { }
 
     bool init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp, GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh, const Args &args);
 

@@ -45,7 +45,7 @@ void MeshRefinement::prepareData(bool is_init) {
     getSimpleMesh(simple_mesh);
     GEO::MeshFacetsAABB simple_tree(simple_mesh);
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   State::state().ENERGY_AMIPS, simple_tree, simple_tree, args);
+                                   state.ENERGY_AMIPS, simple_tree, simple_tree, args, state);
     localOperation.calTetQualities(tets, tet_qualities, true);//cal all measure
     double tmp_time = igl_timer.getElapsedTime();
     logger().debug("{}s", tmp_time);
@@ -211,16 +211,16 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     GEO::MeshFacetsAABB geo_b_tree(geo_b_mesh);
 
     if (is_dealing_unrounded)
-        min_adaptive_scale = State::state().eps / State::state().initial_edge_len * 0.5; //min to eps/2
+        min_adaptive_scale = state.eps / state.initial_edge_len * 0.5; //min to eps/2
     else
-//        min_adaptive_scale = State::state().eps_input / State::state().initial_edge_len; // State::state().eps_input / State::state().initial_edge_len * 0.5 is too small
-        min_adaptive_scale = (State::state().bbox_diag / 1000) / State::state().initial_edge_len; // set min_edge_length to diag / 1000 would be better
+//        min_adaptive_scale = state.eps_input / state.initial_edge_len; // state.eps_input / state.initial_edge_len * 0.5 is too small
+        min_adaptive_scale = (state.bbox_diag / 1000) / state.initial_edge_len; // set min_edge_length to diag / 1000 would be better
 
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   energy_type, geo_sf_tree, geo_b_tree, args);
-    EdgeSplitter splitter(localOperation, State::state().initial_edge_len * (4.0 / 3.0) * State::state().initial_edge_len * (4.0 / 3.0));
-    EdgeCollapser collapser(localOperation, State::state().initial_edge_len * (4.0 / 5.0) * State::state().initial_edge_len * (4.0 / 5.0));
-    EdgeRemover edge_remover(localOperation, State::state().initial_edge_len * (4.0 / 3.0) * State::state().initial_edge_len * (4.0 / 3.0));
+                                   energy_type, geo_sf_tree, geo_b_tree, args, state);
+    EdgeSplitter splitter(localOperation, state.initial_edge_len * (4.0 / 3.0) * state.initial_edge_len * (4.0 / 3.0));
+    EdgeCollapser collapser(localOperation, state.initial_edge_len * (4.0 / 5.0) * state.initial_edge_len * (4.0 / 5.0));
+    EdgeRemover edge_remover(localOperation, state.initial_edge_len * (4.0 / 3.0) * state.initial_edge_len * (4.0 / 3.0));
     VertexSmoother smoother(localOperation);
 
     collapser.is_check_quality = true;
@@ -228,9 +228,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     if (args.save_mid_result == 1)
         outputMidResult(false, 1);
 
-//    double old_State::state().eps = State::state().eps;
-//    State::state().eps = 0.5 * old_State::state().eps;
-//    State::state().eps_2 = State::state().eps * State::state().eps;
+//    double old_state.eps = state.eps;
+//    state.eps = 0.5 * old_state.eps;
+//    state.eps_2 = state.eps * state.eps;
 
     if (is_pre)
         refine_pre(splitter, collapser, edge_remover, smoother);
@@ -251,8 +251,8 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     int update_cnt = 0;
     int is_output = true;
 //    const double eps_s = 0.8;
-//    State::state().eps *= eps_s;
-//    State::state().eps_2 *= eps_s*eps_s;
+//    state.eps *= eps_s;
+//    state.eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
         if (is_dealing_unrounded && pass == old_pass) {
@@ -290,10 +290,10 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             && avg_energy0 - avg_energy < args.delta_energy_thres && max_energy0 - max_energy < args.delta_energy_thres) {
 
 //            if (args.target_num_vertices > 0 && getInsideVertexSize() > 1.05 * args.target_num_vertices && isRegionFullyRounded()) {
-//                if (State::state().sub_stage < args.stage) {
-//                    State::state().eps += State::state().eps_delta;
-//                    State::state().eps_2 = State::state().eps * State::state().eps;
-//                    State::state().sub_stage++;
+//                if (state.sub_stage < args.stage) {
+//                    state.eps += state.eps_delta;
+//                    state.eps_2 = state.eps * state.eps;
+//                    state.sub_stage++;
 //                    avg_energy0 = avg_energy;
 //                    max_energy0 = max_energy;
 //                    continue;
@@ -312,12 +312,12 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                     continue;
             }
             if (update_buget == 0) {
-                if (State::state().sub_stage > 1 && State::state().sub_stage < args.stage) {
-                    State::state().eps += State::state().eps_delta;
-                    State::state().eps_2 = State::state().eps * State::state().eps;
-                    State::state().sub_stage++;
+                if (state.sub_stage > 1 && state.sub_stage < args.stage) {
+                    state.eps += state.eps_delta;
+                    state.eps_2 = state.eps * state.eps;
+                    state.sub_stage++;
                     update_buget = 2;
-//                    logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", State::state().eps);
+//                    logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", state.eps);
                 } else
                     break;
             }
@@ -335,12 +335,12 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
             target_energy0 = target_energy;
             updateScalarField(false, false, target_energy);
 
-            if (State::state().sub_stage == 1 && State::state().sub_stage < args.stage
+            if (state.sub_stage == 1 && state.sub_stage < args.stage
                 && target_energy < args.filter_energy_thres) {
-                State::state().eps += State::state().eps_delta;
-                State::state().eps_2 = State::state().eps * State::state().eps;
-                State::state().sub_stage++;
-//                logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", State::state().eps);
+                state.eps += state.eps_delta;
+                state.eps_2 = state.eps * state.eps;
+                state.sub_stage++;
+//                logger().debug("[[[[[[[[[[[[[[UPDATE EPSILON {}]]]]]]]]]]]]]]]]", state.eps);
             }
 
             if (is_output && args.save_mid_result == 1) {
@@ -354,7 +354,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //                Eigen::MatrixXd V_tmp;
 //                Eigen::MatrixXi F_tmp;
 //                getSurface(V_tmp, F_tmp);
-//                localOperation.outputSurfaceColormap(V_tmp, F_tmp, old_State::state().eps);
+//                localOperation.outputSurfaceColormap(V_tmp, F_tmp, old_state.eps);
 //            }
         }
         avg_energy0 = avg_energy;
@@ -371,14 +371,14 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    }
 
 //    if (!isRegionFullyRounded() || max_energy0 > 1e3)
-//        serialization(State::state().working_dir + State::state().postfix_str + ".slz");
+//        serialization(state.working_dir + state.postfix_str + ".slz");
 
     if (!args.is_quiet) {
         double max_e = localOperation.getMaxEnergy();
         if (max_e > 100) {
             bool is_print = false;
             std::ofstream f;
-            f.open(State::state().working_dir + args.postfix + ".tmp");
+            f.open(state.working_dir + args.postfix + ".tmp");
             for (int i = 0; i < tet_qualities.size(); i++) {
                 if (t_is_removed[i])
                     continue;
@@ -415,7 +415,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                 }
             }
             if (is_print)
-                f << State::state().eps << std::endl;
+                f << state.eps << std::endl;
             f.close();
         }
     }
@@ -451,10 +451,10 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 ////        Eigen::MatrixXd V_tmp;
 ////        Eigen::MatrixXi F_tmp;
 ////        getTrackedSurface(V_tmp, F_tmp);
-////        igl::writeOBJ(State::state().g_working_dir + State::state().postfix + "_tracked_sf1.obj", V_tmp, F_tmp);
+////        igl::writeOBJ(state.g_working_dir + state.postfix + "_tracked_sf1.obj", V_tmp, F_tmp);
 ////        getSurface(V_tmp, F_tmp);
-////        igl::writeOBJ(State::state().g_working_dir + State::state().postfix + "_tracked_sf2.obj", V_tmp, F_tmp);
-//////        localOperation.outputSurfaceColormap(V_tmp, F_tmp, State::state().g_eps_input);//compared with user input eps
+////        igl::writeOBJ(state.g_working_dir + state.postfix + "_tracked_sf2.obj", V_tmp, F_tmp);
+//////        localOperation.outputSurfaceColormap(V_tmp, F_tmp, state.g_eps_input);//compared with user input eps
 ////        localOperation.checkUnrounded();
 //    }
 
@@ -485,7 +485,7 @@ void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collaps
                                   VertexSmoother& smoother, double target_energy) {
     EdgeSplitter &localOperation = splitter;
     double old_min_adaptive_scale = min_adaptive_scale;
-    min_adaptive_scale = State::state().eps / State::state().initial_edge_len * 0.5;
+    min_adaptive_scale = state.eps / state.initial_edge_len * 0.5;
 
     double avg_energy0, max_energy0;
     localOperation.getAvgMaxEnergy(avg_energy0, max_energy0);
@@ -522,7 +522,7 @@ bool MeshRefinement::refine_unrounded(EdgeSplitter& splitter, EdgeCollapser& col
     EdgeSplitter &localOperation = splitter;
     int scalar_update = 3;
     double old_min_adaptive_scale = min_adaptive_scale;
-    min_adaptive_scale = State::state().eps / State::state().initial_edge_len * 0.5;
+    min_adaptive_scale = state.eps / state.initial_edge_len * 0.5;
 
     collapser.is_limit_length = false;
     updateScalarField(true, false, -1, true);
@@ -675,7 +675,7 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
             value += weight * values(T_in(bg_t_id * 4 + (j + 3) % 4));
         }
 
-        tet_vertices[i].adaptive_scale = value / State::state().initial_edge_len; //we allow .adaptive_scale > 1
+        tet_vertices[i].adaptive_scale = value / state.initial_edge_len; //we allow .adaptive_scale > 1
     }
 
 //     for debugging
@@ -685,7 +685,7 @@ void MeshRefinement::applySizingField(EdgeSplitter& splitter, EdgeCollapser& col
     collapser.is_limit_length = true;
     collapser.is_soft = true;
     collapser.soft_energy = splitter.getMaxEnergy();
-//    State::state().is_print_tmp = true;//debugging splitting
+//    state.is_print_tmp = true;//debugging splitting
     doOperationLoops(splitter, collapser, edge_remover, smoother, 20);
 }
 
@@ -731,8 +731,8 @@ void MeshRefinement::applyTargetedVertexNum(EdgeSplitter& splitter, EdgeCollapse
 
         collapser.is_soft = true;
         collapser.soft_energy = max_energy;
-//        State::state().eps *= 1.5;
-//        State::state().eps_2 *= 1.5 * 1.5;
+//        state.eps *= 1.5;
+//        state.eps_2 *= 1.5 * 1.5;
 //        for (int i = 0; i < tet_vertices.size(); i++)
 //            tet_vertices[i].is_locked = false;
 
@@ -784,11 +784,11 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
     logger().debug("marking adaptive scales...");
     double tmp_time = 0;
 
-    double radius0 = State::state().initial_edge_len * 1.8;//increasing the radius would increase the #v in output
+    double radius0 = state.initial_edge_len * 1.8;//increasing the radius would increase the #v in output
     if(is_hit_min)
         radius0 *= 2;
     if (is_clean_up_local)
-        radius0 = State::state().initial_edge_len;
+        radius0 = state.initial_edge_len;
     if (is_clean_up_unrounded)
         radius0 *= 2;
 
@@ -898,7 +898,7 @@ void MeshRefinement::updateScalarField(bool is_clean_up_unrounded, bool is_clean
     logger().debug("marked!");
     tmp_time = igl_timer.getElapsedTime();
     logger().debug("time = {}s", tmp_time);
-    addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1), args);
+    addRecord(MeshRecord(MeshRecord::OpType::OP_ADAP_UPDATE, tmp_time, -1, -1), args, state);
 //    outputMidResult(true);
 }
 
@@ -1081,7 +1081,7 @@ void MeshRefinement::outputMidResult(bool is_with_bbox, double id) {
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    PyMesh::MshSaver mSaver(State::state().working_dir + State::state().postfix + "_mid" + std::to_string(id) + ".msh", true);
+    PyMesh::MshSaver mSaver(state.working_dir + state.postfix + "_mid" + std::to_string(id) + ".msh", true);
     Eigen::VectorXd oV(v_ids.size() * 3);
     Eigen::VectorXi oT(t_cnt * 4);
     for (int i = 0; i < v_ids.size(); i++) {
@@ -1133,7 +1133,7 @@ void MeshRefinement::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            if (is_surface_fs[i][j] != State::state().NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
+            if (is_surface_fs[i][j] != state.NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
                 std::array<int, 3> v_ids = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
                 if (CGAL::orientation(tet_vertices[v_ids[0]].pos, tet_vertices[v_ids[1]].pos,
                                       tet_vertices[v_ids[2]].pos, tet_vertices[tets[i][j]].pos) != CGAL::POSITIVE) {
@@ -1173,7 +1173,7 @@ void MeshRefinement::getTrackedSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            if (is_surface_fs[i][j] != State::state().NOT_SURFACE && is_surface_fs[i][j] >= 0) {//outside
+            if (is_surface_fs[i][j] != state.NOT_SURFACE && is_surface_fs[i][j] >= 0) {//outside
                 std::array<int, 3> v_ids = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
                 if (CGAL::orientation(tet_vertices[v_ids[0]].pos, tet_vertices[v_ids[1]].pos,
                                       tet_vertices[v_ids[2]].pos, tet_vertices[tets[i][j]].pos) != CGAL::POSITIVE) {
@@ -1313,15 +1313,15 @@ bool MeshRefinement::deserialization(const Eigen::MatrixXd& V_in, const Eigen::M
     if(!getSurfaceMesh(V_in, F_in, geo_sf_mesh))
         return false;
     getBoundaryMesh(V_in, F_in, geo_b_mesh);
-    State::state().is_mesh_closed = (geo_b_mesh.vertices.nb() == 0);
+    state.is_mesh_closed = (geo_b_mesh.vertices.nb() == 0);
 
     //deserialization
-    igl::deserialize(State::state().bbox_diag, "bbox_diag", slz_file);
-    igl::deserialize(State::state().eps, "eps", slz_file);
-    igl::deserialize(State::state().eps_2, "eps_2", slz_file);
-    igl::deserialize(State::state().sampling_dist, "sampling_dist", slz_file);
-    igl::deserialize(State::state().initial_edge_len, "initial_edge_len", slz_file);
-    igl::deserialize(State::state().NOT_SURFACE, "NOT_SURFACE", slz_file);
+    igl::deserialize(state.bbox_diag, "bbox_diag", slz_file);
+    igl::deserialize(state.eps, "eps", slz_file);
+    igl::deserialize(state.eps_2, "eps_2", slz_file);
+    igl::deserialize(state.sampling_dist, "sampling_dist", slz_file);
+    igl::deserialize(state.initial_edge_len, "initial_edge_len", slz_file);
+    // igl::deserialize(state.NOT_SURFACE, "NOT_SURFACE", slz_file);
     igl::deserialize(old_pass, "old_pass", slz_file);
 
     igl::deserialize(tet_vertices, "tet_vertices", slz_file);
@@ -1349,12 +1349,12 @@ bool MeshRefinement::deserialization(const Eigen::MatrixXd& V_in, const Eigen::M
 
 void MeshRefinement::serialization(const std::string& slz_file) {
     logger().debug("serializing ...");
-    igl::serialize(State::state().bbox_diag, "bbox_diag", slz_file, true);
-    igl::serialize(State::state().eps, "eps", slz_file);
-    igl::serialize(State::state().eps_2, "eps_2", slz_file);
-    igl::serialize(State::state().sampling_dist, "sampling_dist", slz_file);
-    igl::serialize(State::state().initial_edge_len, "initial_edge_len", slz_file);
-    igl::serialize(State::state().NOT_SURFACE, "NOT_SURFACE", slz_file);
+    igl::serialize(state.bbox_diag, "bbox_diag", slz_file, true);
+    igl::serialize(state.eps, "eps", slz_file);
+    igl::serialize(state.eps_2, "eps_2", slz_file);
+    igl::serialize(state.sampling_dist, "sampling_dist", slz_file);
+    igl::serialize(state.initial_edge_len, "initial_edge_len", slz_file);
+    // igl::serialize(state.NOT_SURFACE, "NOT_SURFACE", slz_file);
     igl::serialize(old_pass, "old_pass", slz_file);
 
     //relabel

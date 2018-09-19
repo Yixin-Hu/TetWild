@@ -56,15 +56,15 @@ void DelaunayTetrahedralization::init(const std::vector<Point_3>& m_vertices, co
 }
 
 void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Point_3& p_max, GEO::Mesh& geo_surface_mesh,
-                                                std::vector<Point_d>& voxel_points, const Args &args)
+                                                std::vector<Point_d>& voxel_points, const Args &args, const State &state)
 {
     GEO::MeshFacetsAABB geo_face_tree(geo_surface_mesh);
 
     double voxel_resolution;
     if(args.initial_edge_len_rel < 5.0) {
-        voxel_resolution = State::state().bbox_diag / 20.0;
+        voxel_resolution = state.bbox_diag / 20.0;
     } else {
-        voxel_resolution = State::state().bbox_diag * args.initial_edge_len_rel / 100.0;
+        voxel_resolution = state.bbox_diag * args.initial_edge_len_rel / 100.0;
     }
     std::array<double, 3> d;
     std::array<int, 3> N;
@@ -83,7 +83,7 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     }
 
     double min_dis = voxel_resolution * voxel_resolution / 4;
-//    double min_dis = State::state().target_edge_len * State::state().target_edge_len;//epsilon*2
+//    double min_dis = state.target_edge_len * state.target_edge_len;//epsilon*2
     for (int i = 0; i < ds[0].size(); i++) {
         for (int j = 0; j < ds[1].size(); j++) {
             for (int k = 0; k < ds[2].size(); k++) {
@@ -102,7 +102,7 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
 void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, GEO::Mesh& geo_surface_mesh,
                                        std::vector<Point_3>& bsp_vertices, std::vector<BSPEdge>& bsp_edges,
                                        std::vector<BSPFace>& bsp_faces, std::vector<BSPtreeNode>& bsp_nodes,
-                                       const Args &args)
+                                       const Args &args, const State &state)
 {
     std::vector<std::pair<Point_d, int>> points;
     const int m_vertices_size = m_vertices.size();
@@ -116,11 +116,11 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     Point_3 p_min = bbox.min();
     Point_3 p_max = bbox.max();
 
-    double dis = State::state().eps * 2;//todo: use epsilon to determine the size of bbx
-    if (dis < State::state().bbox_diag / 20)
-        dis = State::state().bbox_diag / 20;
+    double dis = state.eps * 2;//todo: use epsilon to determine the size of bbx
+    if (dis < state.bbox_diag / 20)
+        dis = state.bbox_diag / 20;
     else
-        dis = State::state().eps * 1.1;
+        dis = state.eps * 1.1;
     p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
     p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
 
@@ -141,7 +141,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     ///add voxel points
     std::vector<Point_d> voxel_points;
     if(args.use_voxel_stuffing) {
-        getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points, args);
+        getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points, args, state);
     }
     for(int i=0;i<voxel_points.size();i++) {
         points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));

@@ -46,7 +46,7 @@ public:
     double max_weight=0;
     double ideal_weight=0;
 
-    EdgeSplitter(LocalOperations& lo, double ideal_w): LocalOperations(lo), ideal_weight(ideal_w){}
+    EdgeSplitter(LocalOperations lo, double ideal_w): LocalOperations(lo), ideal_weight(ideal_w){}
 
     void init();
     void split();

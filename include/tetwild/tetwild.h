@@ -65,10 +65,10 @@ struct Args {
     std::string background_mesh = "";
 
     // [debug] logging
-    int write_csv_file = true;
+    bool write_csv_file = true;
+    std::string working_dir = "";
     std::string postfix = "_";
     std::string csv_file = "";
-    std::string slz_file = "";
     int save_mid_result = -1; // save intermediate result
 
     bool is_quiet = false;

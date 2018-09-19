@@ -23,6 +23,7 @@ namespace tetwild {
 class MeshRefinement {
 public:
     const Args &args;
+    State &state;
     //init
     std::vector<TetVertex> tet_vertices;
     std::vector<std::array<int, 4>> tets;
@@ -39,7 +40,7 @@ public:
 
     int old_pass = 0;
 
-    MeshRefinement(const Args &args_) : args(args_) { }
+    MeshRefinement(const Args &ar, State &st) : args(ar), state(st) { }
 
     void prepareData(bool is_init=true);
     void round();
