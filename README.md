@@ -101,25 +101,33 @@ Users can provide a background tetmesh in .msh format with vertex scalar field `
 Our method can fill gaps and holes but the tetmesh faces on those parts could be bumpy. We provide users an option to do Lapacian smoothing on those faces to get a smoother surface.
 
 ### Command Line Switches
-Our software only supports usage in commnad line. Here is an overview of all command line switches.
+Our software supports usage via command line or via a C++ function wrapper. Here is an overview of all command line switches:
 
 ```
-Usage:
-./TetWild [options]
+RobustTetMeshing
+Usage: ./TetWild [OPTIONS] input [output]
+
+Positionals:
+  input TEXT REQUIRED         Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
+  output TEXT                 Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
 
 Options:
---input <INPUT>                   Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
---postfix <POSTFIX>               Postfix for output files. (string, optinal, default: '_')
---output <OUTPUT>                 Output tetmesh OUTPUT in .mesh/.msh format. (string, optional, default: INPUT+POSTFIX+'.msh')
---ideal-edge-length <L>           ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
---epsilon <EPS>                   epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
---stage <STAGE>                   Run pipeline in stage STAGE. (integer, optional, default: 1)
---filter-energy <ENERGY>          Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
---max-pass <PASS>                 Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)
---is-quiet <Q>                    Mute log info and only output tetmesh if Q = 1. Otherwise, Q = 0. (integer, optional, default: 0)
---targeted-num-v <TV>             Output tetmesh that contains TV vertices. (integer, optinal, tolerance: 5%)
---bg-mesh <BGMESH>                Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
---is-laplacian <ISLAP>            Do Laplacian smoothing for the surface of output on the holes of input, if ISLAP = 1. Otherwise, ISLAP = 0. (integer, optinal, default: 0)
+  -h,--help                   Print this help message and exit
+  --input TEXT REQUIRED       Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
+  --output TEXT               Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
+  --postfix TEXT              Postfix P for output files. (string, optional, default: '_')
+  -l,--ideal-edge-length FLOAT
+                              ideal_edge_length = diag_of_bbox / L. (double, optional, default: 20)
+  -e,--epsilon FLOAT          epsilon = diag_of_bbox / EPS. (double, optional, default: 1000)
+  --stage INT                 Run pipeline in stage STAGE. (integer, optional, default: 1)
+  --filter-energy FLOAT       Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
+  --max-pass INT              Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)
+  --is-laplacian              Do Laplacian smoothing for the surface of output on the holes of input (optional)
+  --targeted-num-v INT        Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)
+  --bg-mesh TEXT              Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
+  -q,--is-quiet               Mute console output. (optional)
+  --log TEXT                  Log info to given file.
+  --level INT                 Log level (0 = most verbose, 6 = off).
 ```
 
 <!--### Tips
@@ -127,36 +135,29 @@ TODO :)-->
 
 ### Function Wrapper
 
-💡 The input surface mesh reader we are using is open-sourced so it could fail or read in something wrong. If you encounter this problem, please use our function wrapper and pass the raw data directly to TetWild.
+💡 We use [libigl](https://github.com/libigl/libigl) to read the input triangle mesh. If you encounter any issue loading your mesh with libigl, please open a ticket there. Alternatively, you could load the mesh yourself and use our function wrapper to pass the raw data directly to TetWild.
 
 We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetrahedaliztion without read/write data from/to files. One can use it in the following way:
 
-1. Include the header file `tetwild.h`.
-2. Set parameters through a struct variable `tetwild::parameters`. The following table provides the correspondence between parameters and command line switches.
+1. Include the header file `#include <tetwild/tetwild.h>`.
+2. Set parameters through a struct variable `tetwild::Args::args()`. The following table provides the correspondence between parameters and command line switches.
 
 	|Switch|Parameter|
 	|:---------|:-------|
 	|--input|N/A|
 	|--postfix|N/A|
 	|--output|N/A|
-	|--ideal-edge-length|`parameters.i_ideal_edge_length`|
-	|--epsilon|`parameters.i_epsilon`|
-	|--stage|`parameters.stage`|
-	|--filter-energy|`parameters.filter_energy`|
-	|--max-pass|`parameters.max_pass`|
-	|--is-quiet|`parameters.is_quiet`|
-	|--targeted-num-v|`parameters.targeted_num_v`|
-	|--bg-mesh|`parameters.bg_mesh`|
-	|--is-laplacian|`parameters.is_laplacian`|
+	|--ideal-edge-length|`initial_edge_len_rel`|
+	|--epsilon|`eps_rel`|
+	|--stage|`stage`|
+	|--filter-energy|`filter_energy_thres`|
+	|--max-pass|`max_num_passes`|
+	|--is-quiet|`is_quiet`|
+	|--targeted-num-v|`target_num_vertices`|
+	|--bg-mesh|`background_mesh`|
+	|--is-laplacian|`smooth_open_boundary`|
 
-3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out)` by providing the input vertices `v_in`, input triangle faces `f_in`, output vertices `v_out`, and output tetrahedra `t_out` in the following data type:
-
-	|Variable|Type|
-	|:---------|:-------|
-	|`v_in`|`const std::vector<std::array<double, 3>>&`|
-	|`f_in`|`const std::vector<std::array<int, 3>>&`|
-	|`v_out`|`std::vector<std::array<double, 3>>&`|
-	|`t_out`|`std::vector<std::array<int, 4>>&`|
+3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out, a_out)`. The input/output arguments are described in the function docstring, and use libigl-style matrices for representing a mesh.
 
 ## License
 TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
