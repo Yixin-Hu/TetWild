@@ -29,6 +29,14 @@ function(tetwild_download_geogram)
     )
 endfunction()
 
+## fmt
+function(tetwild_download_fmt)
+    tetwild_download_project(fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG        5.2.0
+    )
+endfunction()
+
 ## spdlog
 function(tetwild_download_spdlog)
     tetwild_download_project(spdlog

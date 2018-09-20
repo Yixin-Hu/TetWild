@@ -11,13 +11,10 @@
 
 #pragma once
 
-#include <tetwild/CGALCommon.h>
-#include <tetwild/State.h>
-#include <tetwild/Logger.h>
+#include <tetwild/ForwardDecls.h>
 #include <geogram/basic/geometry.h>
 #include <unordered_set>
 #include <vector>
-#include <iostream>
 
 #define TIMING_BREAKDOWN true
 
@@ -28,8 +25,8 @@ void pausee();
 bool isHaveCommonEle(const std::unordered_set<int>& v1, const std::unordered_set<int>& v2);
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::unordered_set<int>& s);
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::vector<int>& s);
-void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps);
+void sampleTriangle(const std::array<GEO::vec3, 3>& vs, std::vector<GEO::vec3>& ps, double sampling_dist);
 
-void addRecord(const MeshRecord& record);
+void addRecord(const MeshRecord& record, const Args &args, const State &state);
 
 } // namespace tetwild

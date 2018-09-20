@@ -13,6 +13,7 @@
 #define NEW_GTET_EDGEREMOVER_H
 
 #include <tetwild/LocalOperations.h>
+#include <queue>
 
 namespace tetwild {
 
@@ -51,7 +52,7 @@ public:
 
     int equal_buget = 100;
 
-    EdgeRemover(LocalOperations& lo, double i_weight): LocalOperations(lo), ideal_weight(i_weight){}
+    EdgeRemover(LocalOperations lo, double i_weight): LocalOperations(lo), ideal_weight(i_weight){}
 
     void init();
     void swap();

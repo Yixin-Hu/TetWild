@@ -10,11 +10,17 @@
 //
 
 #include <tetwild/Preprocess.h>
+#include <tetwild/Args.h>
 #include <tetwild/Common.h>
+#include <tetwild/State.h>
+#include <tetwild/Logger.h>
 #include <pymesh/MshSaver.h>
 #include <igl/fit_plane.h>
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/write_triangle_mesh.h>
+#include <igl/unique.h>
+#include <igl/unique_simplices.h>
+#include <igl/bounding_box_diagonal.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -25,8 +31,10 @@
 
 namespace tetwild {
 
-void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-    PyMesh::MshSaver mSaver(State::state().working_dir+GArgs::args().postfix+"_boundary.msh", true);
+namespace {
+
+void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const State &state) {
+    PyMesh::MshSaver mSaver(state.working_dir+state.postfix+"_boundary.msh", true);
     Eigen::VectorXd oV;
     Eigen::VectorXi oF;
     oV.resize(V.rows() * 3);
@@ -83,52 +91,10 @@ void checkBoundary(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
     logger().debug("boundary checked!");
 }
 
-bool Preprocess::init(GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
-    std::string file_format = GArgs::args().input.substr(GArgs::args().input.size() - 3, 3);
-//    logger().debug("{}", GArgs::args().input);
-//    pausee();
-
-    ////read the input file
-    Eigen::MatrixXd V_tmp;
-    Eigen::MatrixXi F_tmp;
-    if (file_format == "off" || file_format == "OFF") {
-        if (!igl::readOFF(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .off fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "stl" || file_format == "STL") {
-        Eigen::MatrixXd _;
-        if (!igl::readSTL(GArgs::args().input, V_tmp, F_tmp, _)) {
-            logger().debug("Libigl read .stl fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "obj" || file_format == "OBJ") {
-        if (!igl::readOBJ(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .obj fail. Please check your mesh!");
-            return false;
-        }
-    } else if (file_format == "ply" || file_format == "PLY") {
-        if (!igl::readPLY(GArgs::args().input, V_tmp, F_tmp)) {
-            logger().debug("Libigl read .ply fail. Please check your mesh!");
-            return false;
-        }
-    } else {
-        logger().debug("Only support .off/.stl/.obj/.ply formats!");
-        return false;
-    }
-
-    logger().debug("Mesh read in!");
-
-    return init(V_tmp, F_tmp, geo_b_mesh, geo_sf_mesh);
-}
+} // anonymous namespace
 
 bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp,
-                      GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh) {
-//#ifndef MUTE_COUT
-//    GArgs::args().write_csv_file = false;
-//    std::streambuf* orig_buf = std::cout.rdbuf();
-//    std::cout.rdbuf(NULL);
-//#endif
+                      GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh, const Args &args) {
 
     logger().debug("{} {}", V_tmp.rows(), F_tmp.rows());
 
@@ -146,36 +112,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
 //        }
     logger().debug("#v = {} -> {}", V_tmp.rows(), V_in.rows());
     logger().debug("#f = {} -> {}", F_tmp.rows(), F_in.rows());
-//    checkBoundary(V_in, F_in);
-
-    ////set global parameters
-    State::state().bbox_diag = igl::bounding_box_diagonal(V_in);
-    State::state().eps_input = State::state().bbox_diag / GArgs::args().eps_rel;
-
-    if (GArgs::args().sampling_dist_rel > 0) {//for testing only
-        State::state().sampling_dist = State::state().bbox_diag / GArgs::args().sampling_dist_rel;
-        State::state().eps = State::state().bbox_diag / GArgs::args().eps_rel;
-        State::state().eps_2 = State::state().eps * State::state().eps;
-        GArgs::args().stage = 1;
-    } else {
-//        State::state().sampling_dist = State::state().eps_input / GArgs::args().stage;
-//        State::state().sub_stage = 1;
-//        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().sub_stage);
-//        State::state().eps_delta = State::state().sampling_dist / std::sqrt(3);
-//        State::state().eps_2 = State::state().eps * State::state().eps;
-
-        // d_err = d/sqrt(3)
-        State::state().sampling_dist = State::state().eps_input / GArgs::args().stage;
-        State::state().sub_stage = 1;
-        State::state().eps = State::state().eps_input - State::state().sampling_dist / std::sqrt(3) * (GArgs::args().stage + 1 - State::state().sub_stage);
-        State::state().eps_delta = State::state().sampling_dist / std::sqrt(3);
-        State::state().eps_2 = State::state().eps * State::state().eps;
-    }
-
-    State::state().initial_edge_len = State::state().bbox_diag / GArgs::args().initial_edge_len_rel;
-
-//    logger().debug("eps = {}", State::state().eps);
-//    logger().debug("ideal_l = {}", State::state().initial_edge_len);
+//    checkBoundary(V_in, F_in, state);
 
     ////get GEO meshes
     geo_sf_mesh.vertices.clear();
@@ -194,7 +131,7 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     geo_sf_mesh.facets.compute_borders();
 
     getBoudnaryMesh(geo_b_mesh);
-    State::state().is_mesh_closed = (geo_b_mesh.vertices.nb() == 0);
+    state.is_mesh_closed = (geo_b_mesh.vertices.nb() == 0);
 
     return true;
 }
@@ -259,13 +196,13 @@ void Preprocess::getBoudnaryMesh(GEO::Mesh& b_mesh) {
     }
 }
 
-void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces) {
+void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces, const Args &args) {
     double eps_scalar = 0.8;
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
-    State::state().eps *= eps_scalar;
-    State::state().eps_2 *= eps_scalar_2;
-//    State::state().sampling_dist *= eps_scalar*2;
+   state.eps *= eps_scalar;
+    state.eps_2 *= eps_scalar_2;
+//    state.sampling_dist *= eps_scalar*2;
 
     conn_fs.resize(V_in.size());
     for (int i = 0; i < F_in.rows(); i++) {
@@ -325,7 +262,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             F_out(cnt, j) = new_v_ids[F_in(i, j)];
         cnt++;
     }
-//    igl::writeSTL(State::state().working_dir+GArgs::args().postfix+"_simplified.stl", V_out, F_out);
+//    igl::writeSTL(state.working_dir+args.postfix+"_simplified.stl", V_out, F_out);
     logger().debug("#v = {}", V_out.rows());
     logger().debug("#f = {}", F_out.rows());
 
@@ -338,8 +275,8 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
             conn_fs[F_in(i, j)].insert(i);
     }
     swap(geo_face_tree);
-    if(GArgs::args().save_mid_result == 0)
-        igl::writeSTL(State::state().working_dir+GArgs::args().postfix+"_swapped.stl", V_in, F_in);
+    if(args.save_mid_result == 0)
+        igl::writeSTL(state.working_dir+state.postfix+"_swapped.stl", V_in, F_in);
 
 //    checkBoundary(V_in, F_in);
 
@@ -357,9 +294,9 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     logger().debug("#v = {}", m_vertices.size());
     logger().debug("#f = {}->{}", F_in.rows(), m_faces.size());
 
-    State::state().eps /= eps_scalar;
-    State::state().eps_2 /= eps_scalar_2;
-//    State::state().sampling_dist /= eps_scalar*2;
+    state.eps /= eps_scalar;
+    state.eps_2 /= eps_scalar_2;
+//    state.sampling_dist /= eps_scalar*2;
 
     // igl::write_triangle_mesh("tmp.obj", V_in, F_in);
 
@@ -713,7 +650,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
                 GEO::vec3(V_in(F_in(f_id, 1), 0), V_in(F_in(f_id, 1), 1), V_in(F_in(f_id, 1), 2)),
                 GEO::vec3(V_in(F_in(f_id, 2), 0), V_in(F_in(f_id, 2), 1), V_in(F_in(f_id, 2), 2))}};
         ps.clear();
-        sampleTriangle(vs, ps);
+        sampleTriangle(vs, ps, state.sampling_dist);
 
 //        logger().debug("ps.size = {}", ps.size());
 //        logger().debug("is output samples?");
@@ -736,7 +673,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //                    F_tmp(1 + i, k) = (1 + i) * 3 + k;
 //                }
 //            }
-//            igl::writeSTL(State::state().working_dir + "_sample.stl", V_tmp, F_tmp);
+//            igl::writeSTL(state.working_dir + "_sample.stl", V_tmp, F_tmp);
 //        }
 
 
@@ -748,7 +685,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = ls[max_i] / State::state().sampling_dist;
+//        double n = ls[max_i] / state.sampling_dist;
 //        if (n <= 1) {
 //            for (int i = 0; i < 3; i++)
 //                ps.push_back(vs[i]);
@@ -761,10 +698,10 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 //                    break;
 //                ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //            }
-//            if (ls[min_i] > State::state().sampling_dist) {
+//            if (ls[min_i] > state.sampling_dist) {
 //                const int ps_size = ps.size();
 //                for (int i = 0; i < ps_size - 1; i += 2) {
-//                    double m = GEO::length(ps[i] - ps[i + 1]) / State::state().sampling_dist;
+//                    double m = GEO::length(ps[i] - ps[i + 1]) / state.sampling_dist;
 //                    if (m < 1)
 //                        break;
 //                    m = int(m) + 1;
@@ -781,11 +718,11 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
         GEO::index_t prev_facet = GEO::NO_FACET;
 
         for (const GEO::vec3 &current_point:ps) {
-            sq_dist = State::state().eps_2;
+            sq_dist = state.eps_2;
             geo_face_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
             // ++num_querried;
             double dis = current_point.distance2(nearest_point);
-            if (dis > State::state().eps_2) {
+            if (dis > state.eps_2) {
                 // logger().trace("num_queries {} true", num_querried);
                 return true;
             }
@@ -797,7 +734,7 @@ bool Preprocess::isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::Mes
 }
 
 bool Preprocess::isPointOutEnvelop(int v_id, GEO::MeshFacetsAABB& geo_face_tree){
-    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > State::state().eps_2)
+    if (geo_face_tree.squared_distance(GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2))) > state.eps_2)
         return true;
     return false;
 }
@@ -896,7 +833,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
         for (int i = 0; i < 1; i++) {
             ls[i] = GEO::length(vs[i] - vs[(i + 1) % 3]);
             //
-            double n = int(ls[i] / State::state().sampling_dist + 1);
+            double n = int(ls[i] / state.sampling_dist + 1);
             for (int j = 1; j < n; j++) {
                 ps.push_back(double(j) / n * vs[i] + (n - double(j)) / n * vs[(i + 1) % 3]);
             }
@@ -906,17 +843,17 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = int(ls[max_i] / State::state().sampling_dist + 1);
+//        double n = int(ls[max_i] / state.sampling_dist + 1);
 //        ps.reserve(2*n);
 //        for (int j = 0; j <= n; j++) {
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[min_i]);
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //        }
 
-//        if(ls[min_i] > State::state().sampling_dist) {
+//        if(ls[min_i] > state.sampling_dist) {
 //            int ps_size = ps.size();
 //            for (int i = 0; i < ps_size; i += 2) {
-//                double m = int(GEO::length(ps[i] - ps[i + 1]) / State::state().sampling_dist + 1);
+//                double m = int(GEO::length(ps[i] - ps[i + 1]) / state.sampling_dist + 1);
 //                if(m==0)
 //                    break;
 //                for (int j = 1; j < m; j++)
@@ -962,12 +899,12 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             }
         }
 
-        eps_dis(f_id) = sqrt(max_dis / State::state().eps_2);
+        eps_dis(f_id) = sqrt(max_dis / state.eps_2);
         if(eps_dis(f_id)>1) {
             logger().debug("ERROR: simplified input goes outside of the envelop");
             logger().debug("{}", f_id);
             logger().debug("{}", eps_dis(f_id));
-            logger().debug("{} {}", max_dis, State::state().eps_2);
+            logger().debug("{} {}", max_dis, state.eps_2);
             cnt = 0;
             for (const GEO::vec3 &p:ps) {
                 logger().debug("{}: {}, {}, {}; {}; {}", cnt, p[0], p[1], p[2], fs[cnt], geo_face_tree.squared_distance(p));
@@ -1033,8 +970,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
                                                                                    nearest_p, _1, _2, _3));
 
             logger().debug("min_dis = {}", min_dis);
-            logger().debug("diag = {}", State::state().bbox_diag);
-//            exit(250);
+            logger().debug("diag = {}", state.bbox_diag);
         }
 
 
@@ -1052,7 +988,7 @@ void Preprocess::outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(State::state().working_dir + GArgs::args().postfix + "_sf.msh");
+    PyMesh::MshSaver mshSaver(state.working_dir + state.postfix + "_sf.msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 }

@@ -12,7 +12,8 @@
 #ifndef NEW_GTET_TETMESHELEMENTS_H
 #define NEW_GTET_TETMESHELEMENTS_H
 
-#include <tetwild/Common.h>
+#include <tetwild/State.h>
+#include <tetwild/CGALTypes.h>
 #include <unordered_set>
 
 namespace tetwild {
@@ -56,11 +57,7 @@ public:
         pos = p;
     }
 
-    void printInfo() const {
-        logger().debug("is_on_surface = {}", is_on_surface);
-        logger().debug("is_on_bbox = {}", is_on_bbox);
-        logger().debug("conn_tets = {}", conn_tets);
-    }
+    void printInfo() const;
 
     bool is_locked = false;
     bool is_inside = false;
@@ -90,21 +87,22 @@ public:
 //        return false;
 //    }
 
-    bool isBetterThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
+    bool isBetterThan(const TetQuality& tq, int energy_type, const State &state) {
+        if (energy_type == state.ENERGY_AMIPS || energy_type == state.ENERGY_DIRICHLET) {
             return slim_energy < tq.slim_energy;
         }
-        else if (energy_type == State::state().ENERGY_AD) {
+        else if (energy_type == state.ENERGY_AD) {
             return min_d_angle > tq.min_d_angle && max_d_angle < tq.max_d_angle;
         }
         else
             return false;
     }
-    bool isBetterOrEqualThan(const TetQuality& tq, int energy_type) {
-        if (energy_type == State::state().ENERGY_AMIPS || energy_type == State::state().ENERGY_DIRICHLET) {
+
+    bool isBetterOrEqualThan(const TetQuality& tq, int energy_type, const State &state) {
+        if (energy_type == state.ENERGY_AMIPS || energy_type == state.ENERGY_DIRICHLET) {
             return slim_energy <= tq.slim_energy;
         }
-        else if (energy_type == State::state().ENERGY_AD) {
+        else if (energy_type == state.ENERGY_AD) {
             return min_d_angle >= tq.min_d_angle && max_d_angle <= tq.max_d_angle;
         }
         else
@@ -133,108 +131,10 @@ public:
         , v_is_removed(v_is_rd), t_is_removed(t_is_rd), tet_qualities(tet_qs)
     { }
 
-    void serialize(std::string serialize_file){
-        igl::serialize(tet_vertices, "tet_vertices", serialize_file, true);
-        igl::serialize(tets, "tets", serialize_file);
-        igl::serialize(is_surface_fs, "tets", serialize_file);
-        igl::serialize(v_is_removed, "v_is_removed", serialize_file);
-        igl::serialize(t_is_removed, "t_is_removed", serialize_file);
-        igl::serialize(tet_qualities, "tet_qualities", serialize_file);
-
-        igl::serialize(is_shown, "is_shown", serialize_file);
-        igl::serialize(resolution, "resolution", serialize_file);
-    }
-
-    void deserialize(std::string serialize_file){
-        igl::deserialize(tet_vertices, "tet_vertices", serialize_file);
-        igl::deserialize(tets, "tets", serialize_file);
-        igl::deserialize(is_surface_fs, "tets", serialize_file);
-        igl::deserialize(v_is_removed, "v_is_removed", serialize_file);
-        igl::deserialize(t_is_removed, "t_is_removed", serialize_file);
-        igl::deserialize(tet_qualities, "tet_qualities", serialize_file);
-
-        igl::deserialize(is_shown, "is_shown", serialize_file);
-        igl::deserialize(resolution, "resolution", serialize_file);
-    }
+    void serialize(std::string serialize_file);
+    void deserialize(std::string serialize_file);
 };
 
 } // namespace tetwild
-
-namespace igl {
-    namespace serialization {
-        template<>
-        inline void serialize(const tetwild::TetVertex &v, std::vector<char> &buffer) {
-            ::igl::serialize(v.pos, std::string("pos"), buffer);
-            ::igl::serialize(v.posf, std::string("posf"), buffer);
-
-            ::igl::serialize(v.is_rounded, std::string("is_rounded"), buffer);
-            ::igl::serialize(v.is_on_surface, std::string("is_on_surface"), buffer);
-            ::igl::serialize(v.is_on_bbox, std::string("is_on_bbox"), buffer);
-            ::igl::serialize(v.is_on_boundary, std::string("is_on_boundary"), buffer);
-
-            ::igl::serialize(v.adaptive_scale, std::string("adaptive_scale"), buffer);
-
-//            ::igl::serialize(v.on_fixed_vertex, std::string("on_fixed_vertex"), buffer);
-//            std::vector<int> tmp;
-//            for(auto it=v.on_edge.begin();it!=v.on_edge.end();it++)
-//                tmp.push_back(*it);
-//            ::igl::serialize(tmp, std::string("on_edge"), buffer);
-//            tmp.clear();
-//            for(auto it=v.on_face.begin();it!=v.on_face.end();it++)
-//                tmp.push_back(*it);
-//            ::igl::serialize(tmp, std::string("on_face"), buffer);
-//            tmp.clear();
-//            for(auto it=v.conn_tets.begin();it!=v.conn_tets.end();it++)
-//                tmp.push_back(*it);
-//            ::igl::serialize(tmp, std::string("conn_tets"), buffer);
-        }
-
-        template<>
-        inline void deserialize(tetwild::TetVertex &v, const std::vector<char> &buffer) {
-            ::igl::deserialize(v.pos, std::string("pos"), buffer);
-            ::igl::deserialize(v.posf, std::string("posf"), buffer);
-
-            ::igl::deserialize(v.is_rounded, std::string("is_rounded"), buffer);
-            ::igl::deserialize(v.is_on_surface, std::string("is_on_surface"), buffer);
-            ::igl::deserialize(v.is_on_bbox, std::string("is_on_bbox"), buffer);
-            ::igl::deserialize(v.is_on_boundary, std::string("is_on_boundary"), buffer);
-
-            ::igl::deserialize(v.adaptive_scale, std::string("adaptive_scale"), buffer);
-
-//            ::igl::deserialize(v.on_fixed_vertex, std::string("on_fixed_vertex"), buffer);
-//            std::vector<int> tmp;
-//            ::igl::deserialize(tmp, std::string("on_edge"), buffer);
-//            for(int i=0;i<tmp.size();i++)
-//                v.on_edge.insert(tmp[i]);
-//            tmp.clear();
-//            ::igl::deserialize(tmp, std::string("on_face"), buffer);
-//            for(int i=0;i<tmp.size();i++)
-//                v.on_face.insert(tmp[i]);
-//            ::igl::deserialize(tmp, std::string("conn_tets"), buffer);
-//            for(int i=0;i<tmp.size();i++)
-//                v.conn_tets.insert(tmp[i]);
-        }
-
-//        template<>
-//        inline void serialize(const TetQuality &q, std::vector<char> &buffer) {
-//            ::igl::serialize(q.min_d_angle, std::string("min_d_angle"), buffer);
-//            ::igl::serialize(q.max_d_angle, std::string("max_d_angle"), buffer);
-//            ::igl::serialize(q.asp_ratio_2, std::string("asp_ratio_2"), buffer);
-//            ::igl::serialize(q.slim_energy, std::string("slim_energy"), buffer);
-//            ::igl::serialize(q.volume, std::string("volume"), buffer);
-//
-//        }
-//
-//        template<>
-//        inline void deserialize(TetQuality &q, const std::vector<char> &buffer) {
-//            ::igl::deserialize(q.min_d_angle, std::string("min_d_angle"), buffer);
-//            ::igl::deserialize(q.max_d_angle, std::string("max_d_angle"), buffer);
-//            ::igl::deserialize(q.asp_ratio_2, std::string("asp_ratio_2"), buffer);
-//            ::igl::deserialize(q.slim_energy, std::string("slim_energy"), buffer);
-//            ::igl::deserialize(q.volume, std::string("volume"), buffer);
-//
-//        }
-    }
-}
 
 #endif //NEW_GTET_TETMESHELEMENTS_H

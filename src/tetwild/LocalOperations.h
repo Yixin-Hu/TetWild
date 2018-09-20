@@ -12,6 +12,7 @@
 #ifndef NEW_GTET_LOCALOPERATIONS_H
 #define NEW_GTET_LOCALOPERATIONS_H
 
+#include <tetwild/ForwardDecls.h>
 #include <tetwild/TetmeshElements.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <igl/grad.h>
@@ -31,6 +32,9 @@ enum class EnvelopSide{
 
 class LocalOperations {
 public:
+    const Args & args;
+    State & state;
+
     std::vector<TetVertex>& tet_vertices;
     std::vector<std::array<int, 4>>& tets;
     std::vector<std::array<int, 4>>& is_surface_fs;
@@ -50,9 +54,11 @@ public:
 
     LocalOperations(std::vector<TetVertex>& t_vs, std::vector<std::array<int, 4>>& ts, std::vector<std::array<int, 4>>& is_sf_fs,
                     std::vector<bool>& v_is_rm, std::vector<bool>& t_is_rm, std::vector<TetQuality>& tet_qs,
-                    int e_type, GEO::MeshFacetsAABB& geo_tree, GEO::MeshFacetsAABB& b_t):
-            tet_vertices(t_vs), tets(ts), is_surface_fs(is_sf_fs), v_is_removed(v_is_rm), t_is_removed(t_is_rm),
-            tet_qualities(tet_qs), energy_type(e_type), geo_sf_tree(geo_tree), geo_b_tree(b_t){}
+                    int e_type, GEO::MeshFacetsAABB& geo_tree, GEO::MeshFacetsAABB& b_t,
+                    const Args &ar, State &st) :
+        tet_vertices(t_vs), tets(ts), is_surface_fs(is_sf_fs), v_is_removed(v_is_rm), t_is_removed(t_is_rm),
+        tet_qualities(tet_qs), energy_type(e_type), geo_sf_tree(geo_tree), geo_b_tree(b_t), args(ar), state(st)
+    { }
 
     void check();
     void outputInfo(int op_type, double time, bool is_log = true);

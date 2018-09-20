@@ -10,6 +10,10 @@
 //
 
 #include <tetwild/InoutFiltering.h>
+#include <tetwild/Logger.h>
+#include <tetwild/DisableWarnings.h>
+#include <CGAL/centroid.h>
+#include <tetwild/EnableWarnings.h>
 #include <pymesh/MshSaver.h>
 #include <igl/winding_number.h>
 #include <igl/writeSTL.h>
@@ -58,7 +62,7 @@ void InoutFiltering::filter() {
 //            F(i, 0) = F(i, 2);
 //            F(i, 2) = F(i, 0);
 //        }
-//        igl::writeSTL(State::state().working_dir+State::state().postfix_str+"_debug.stl", V, F);
+//        igl::writeSTL(state.working_dir+state.postfix_str+"_debug.stl", V, F);
 //
 //        tmp_t_is_removed = t_is_removed;
 //        cnt = 0;
@@ -83,7 +87,7 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
         if (t_is_removed[i])
             continue;
         for (int j = 0; j < 4; j++) {
-            if (is_surface_fs[i][j] != State::state().NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
+            if (is_surface_fs[i][j] != state.NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
                 std::array<int, 3> v_ids = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
                 if (CGAL::orientation(tet_vertices[v_ids[0]].pos, tet_vertices[v_ids[1]].pos,
                                       tet_vertices[v_ids[2]].pos, tet_vertices[tets[i][j]].pos) != CGAL::POSITIVE) {
@@ -115,7 +119,7 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
             F(i, j)=map_ids[fs[i][j]];
     }
 
-//    igl::writeSTL(State::state().working_dir+State::state().postfix+"_debug.stl", V, F);
+//    igl::writeSTL(state.working_dir+state.postfix+"_debug.stl", V, F);
 }
 
 void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
@@ -134,7 +138,7 @@ void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
     for (int i = 0; i < v_ids.size(); i++)
         map_ids[v_ids[i]] = i;
 
-    PyMesh::MshSaver mSaver(State::state().working_dir+State::state().postfix+"_wn.msh", true);
+    PyMesh::MshSaver mSaver(state.working_dir+state.postfix+"_wn.msh", true);
     Eigen::VectorXd oV(v_ids.size() * 3);
     Eigen::VectorXi oT(t_cnt * 4);
     for (int i = 0; i < v_ids.size(); i++) {

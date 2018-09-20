@@ -12,17 +12,18 @@
 #ifndef NEW_GTET_MESHREFINEMENT_H
 #define NEW_GTET_MESHREFINEMENT_H
 
-#include <tetwild/EdgeCollapser.h>
-#include <tetwild/EdgeSplitter.h>
-#include <tetwild/EdgeRemover.h>
-#include <tetwild/VertexSmoother.h>
+#include <tetwild/ForwardDecls.h>
+#include <tetwild/TetmeshElements.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh.h>
+#include <igl/Timer.h>
 
 namespace tetwild {
 
 class MeshRefinement {
 public:
+    const Args &args;
+    State &state;
     //init
     std::vector<TetVertex> tet_vertices;
     std::vector<std::array<int, 4>> tets;
@@ -38,6 +39,8 @@ public:
     igl::Timer igl_timer;
 
     int old_pass = 0;
+
+    MeshRefinement(const Args &ar, State &st) : args(ar), state(st) { }
 
     void prepareData(bool is_init=true);
     void round();
@@ -86,7 +89,7 @@ public:
     void getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F);
     void getTrackedSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F);
 
-    bool deserialization(const std::string& sf_file, const std::string& slz_file);
+    bool deserialization(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const std::string& slz_file);
     void serialization(const std::string& slz_file);
 };
 

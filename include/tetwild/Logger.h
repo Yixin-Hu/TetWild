@@ -11,10 +11,11 @@
 
 #pragma once
 
+#include <tetwild/Exception.h>
 #include <tetwild/DisableWarnings.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
-#include <spdlog/fmt/bundled/ranges.h>
+#include <fmt/ranges.h>
 #include <tetwild/EnableWarnings.h>
 
 namespace tetwild {
@@ -32,6 +33,12 @@ inline spdlog::async_logger & logger() {
 		Logger::init();
 	}
 	return *Logger::logger_;
+}
+
+template<typename T>
+[[noreturn]] void log_and_throw(T x) {
+	logger().error(x);
+	throw TetWildError(x);
 }
 
 } // namespace tetwild

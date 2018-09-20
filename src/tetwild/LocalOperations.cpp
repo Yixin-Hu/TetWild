@@ -9,9 +9,10 @@
 // Created by Yixin Hu on 5/6/17.
 //
 
-//#include <tetwild/tbb/tbb.h>
-
 #include <tetwild/LocalOperations.h>
+#include <tetwild/Common.h>
+#include <tetwild/Args.h>
+#include <tetwild/Logger.h>
 #include <pymesh/MshSaver.h>
 #include <igl/svd3x3.h>
 #include <igl/Timer.h>
@@ -351,7 +352,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
             calTetQuality_AD(tets[i], tet_qualities[i]);
     }
 
-    if(GArgs::args().is_quiet)
+    if(args.is_quiet)
         return;
 
     //some tmp checks for experiments
@@ -404,7 +405,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //        if (t_is_removed[i])
 //            continue;
 //        for (int j = 0; j < 4; j++) {
-//            if (is_surface_fs[i][j] != State::state().NOT_SURFACE) {
+//            if (is_surface_fs[i][j] != state.NOT_SURFACE) {
 //                std::array<int, 3> f = {tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]};
 //                std::sort(f.begin(), f.end());
 //                fs.push_back(std::array<int, 4>({{f[0], f[1], f[2], is_surface_fs[i][j]}}));
@@ -436,7 +437,7 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
 //            if (!v_is_removed[i] && tet_vertices[i].is_on_surface) {
 //                double dis = geo_sf_tree.squared_distance(
 //                        GEO::vec3(tet_vertices[i].posf[0], tet_vertices[i].posf[1], tet_vertices[i].posf[2]));
-//                if (dis > State::state().eps_2)
+//                if (dis > state.eps_2)
 //                    cnt++;
 //            }
 //        }
@@ -524,9 +525,10 @@ void LocalOperations::outputInfo(int op_type, double time, bool is_log) {
     logger().debug("min_d_angle: <6 {};   <12 {};  <18 {}", cmp_cnt[0] / cnt, cmp_cnt[1] / cnt, cmp_cnt[2] / cnt);
     logger().debug("max_d_angle: >174 {}; >168 {}; >162 {}", cmp_cnt[5] / cnt, cmp_cnt[4] / cnt, cmp_cnt[3] / cnt);
 
-    if(is_log)
+    if(is_log) {
         addRecord(MeshRecord(op_type, time, std::count(v_is_removed.begin(), v_is_removed.end(), false), cnt,
-                             min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt));
+                             min, min_avg / cnt, max, max_avg / cnt, max_slim_energy, avg_slim_energy / cnt), args, state);
+    }
 }
 
 bool LocalOperations::isTetFlip(const std::array<int, 4>& t) {
@@ -572,13 +574,13 @@ bool LocalOperations::isFlip(const std::vector<std::array<int, 4>>& new_tets) {
 void LocalOperations::getCheckQuality(const std::vector<TetQuality>& tet_qs, TetQuality& tq) {
     double slim_sum = 0, slim_max = 0;
     for (int i = 0; i < tet_qs.size(); i++) {
-        if (State::state().use_energy_max) {
+        if (state.use_energy_max) {
             if (tet_qs[i].slim_energy > slim_max)
                 slim_max = tet_qs[i].slim_energy;
         } else
             slim_sum += tet_qs[i].slim_energy * tet_qs[i].volume;
     }
-    if (State::state().use_energy_max)
+    if (state.use_energy_max)
         tq.slim_energy = slim_max;
     else
         tq.slim_energy = slim_sum;
@@ -587,13 +589,13 @@ void LocalOperations::getCheckQuality(const std::vector<TetQuality>& tet_qs, Tet
 void LocalOperations::getCheckQuality(const std::vector<int>& t_ids, TetQuality& tq){
     double slim_sum = 0, slim_max = 0;
     for (int i = 0; i < t_ids.size(); i++) {
-        if (State::state().use_energy_max) {
+        if (state.use_energy_max) {
             if (tet_qualities[t_ids[i]].slim_energy > slim_max)
                 slim_max = tet_qualities[t_ids[i]].slim_energy;
         } else
             slim_sum += tet_qualities[t_ids[i]].slim_energy * tet_qualities[t_ids[i]].volume;
     }
-    if (State::state().use_energy_max)
+    if (state.use_energy_max)
         tq.slim_energy = slim_max;
     else
         tq.slim_energy = slim_sum;
@@ -615,7 +617,7 @@ void LocalOperations::getAvgMaxEnergy(double& avg_tq, double& max_tq) {
     }
     avg_tq /= cnt;
     if(std::isinf(avg_tq))
-        avg_tq = State::state().MAX_ENERGY;
+        avg_tq = state.MAX_ENERGY;
 }
 
 double LocalOperations::getMaxEnergy(){
@@ -636,7 +638,7 @@ double LocalOperations::getSecondMaxEnergy(double max_energy){
     for (unsigned int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
             continue;
-        if(tet_qualities[i].slim_energy == State::state().MAX_ENERGY)
+        if(tet_qualities[i].slim_energy == state.MAX_ENERGY)
             continue;
         if(isTetLocked_ui(i))
             continue;
@@ -653,12 +655,12 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
     for (unsigned int i = 0; i < tet_qualities.size(); i++) {
         if (t_is_removed[i])
             continue;
-        if (tet_qualities[i].slim_energy > GArgs::args().filter_energy_thres - 1 + 1e10)
+        if (tet_qualities[i].slim_energy > args.filter_energy_thres - 1 + 1e10)
             buckets[10]++;
         else {
             for (int j = 0; j < 10; j++) {
-                if (tet_qualities[i].slim_energy > GArgs::args().filter_energy_thres - 1 + pow(10, j)
-                    && tet_qualities[i].slim_energy <= GArgs::args().filter_energy_thres - 1 + pow(10, j + 1)) {
+                if (tet_qualities[i].slim_energy > args.filter_energy_thres - 1 + pow(10, j)
+                    && tet_qualities[i].slim_energy <= args.filter_energy_thres - 1 + pow(10, j + 1)) {
                     buckets[j]++;
                     break;
                 }
@@ -682,7 +684,7 @@ double LocalOperations::getFilterEnergy(bool& is_clean_up) {
 
     for (int i = 0; i < 8; i++) {
         if (tmps1[i] < tmps2[i] && tmps1[i + 1] > tmps2[i + 1]){
-            return GArgs::args().filter_energy_thres - 1 + 5 * pow(10, i+1);
+            return args.filter_energy_thres - 1 + 5 * pow(10, i+1);
         }
     }
 
@@ -784,13 +786,13 @@ void LocalOperations::calTetQualities(const std::vector<std::array<int, 4>>& new
                                                   tet_vertices[new_tets[i][2]].posf,
                                                   tet_vertices[new_tets[i][3]].posf);
         if (ori != CGAL::POSITIVE) {
-            tet_qs[i].slim_energy = State::state().MAX_ENERGY;
+            tet_qs[i].slim_energy = state.MAX_ENERGY;
             continue;
         } else
             tet_qs[i].slim_energy = energy[i];
 
         if (std::isinf(energy[i]) || std::isnan(energy[i]))
-            tet_qs[i].slim_energy = State::state().MAX_ENERGY;
+            tet_qs[i].slim_energy = state.MAX_ENERGY;
     }
 #else
     for (int i = 0; i < new_tets.size(); i++) {
@@ -848,7 +850,7 @@ void LocalOperations::calTetQuality_AD(const std::array<int, 4>& tet, TetQuality
         if(*tmp == 0 || heights[i] == 0){
             t_quality.min_d_angle = 0;
             t_quality.max_d_angle = M_PI;
-//            t_quality.asp_ratio_2 = State::state().MAX_ENERGY;
+//            t_quality.asp_ratio_2 = state.MAX_ENERGY;
             return;
         } else if (*tmp < 1e-5) {
             nv[i] = Vector_3f(nv[i][0] / *tmp, nv[i][1] / *tmp, nv[i][2] / *tmp);
@@ -887,13 +889,13 @@ void LocalOperations::calTetQuality_AD(const std::array<int, 4>& tet, TetQuality
 }
 
 void LocalOperations::calTetQuality_AMIPS(const std::array<int, 4>& tet, TetQuality& t_quality) {
-    if (energy_type == State::state().ENERGY_AMIPS) {
+    if (energy_type == state.ENERGY_AMIPS) {
         CGAL::Orientation ori = CGAL::orientation(tet_vertices[tet[0]].posf,
                                                   tet_vertices[tet[1]].posf,
                                                   tet_vertices[tet[2]].posf,
                                                   tet_vertices[tet[3]].posf);
         if (ori != CGAL::POSITIVE) {//degenerate in floats
-            t_quality.slim_energy = State::state().MAX_ENERGY;
+            t_quality.slim_energy = state.MAX_ENERGY;
         } else {
             std::vector<double> T;
             T.reserve(12);
@@ -903,11 +905,11 @@ void LocalOperations::calTetQuality_AMIPS(const std::array<int, 4>& tet, TetQual
             }
             t_quality.slim_energy = comformalAMIPSEnergy_new(T);
             if (std::isinf(t_quality.slim_energy) || std::isnan(t_quality.slim_energy))
-                t_quality.slim_energy = State::state().MAX_ENERGY;
+                t_quality.slim_energy = state.MAX_ENERGY;
         }
     }
     if(std::isinf(t_quality.slim_energy) || std::isnan(t_quality.slim_energy) || t_quality.slim_energy <= 0)
-        t_quality.slim_energy = State::state().MAX_ENERGY;
+        t_quality.slim_energy = state.MAX_ENERGY;
 }
 
 bool LocalOperations::isEdgeOnSurface(int v1_id, int v2_id) {
@@ -933,7 +935,7 @@ bool LocalOperations::isEdgeOnSurface(int v1_id, int v2_id, const std::vector<in
     for (int i = 0; i < t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {
             if (tets[t_ids[i]][j] != v1_id && tets[t_ids[i]][j] != v2_id) {
-                if (is_surface_fs[t_ids[i]][j]!=State::state().NOT_SURFACE)
+                if (is_surface_fs[t_ids[i]][j]!=state.NOT_SURFACE)
                     return true;
             }
         }
@@ -959,7 +961,7 @@ bool LocalOperations::isEdgeOnBoundary(int v1_id, int v2_id) {
 //    if (boundary_points.size() == 0)//if it's a closed mesh, then there cannot be any boundary edges.
 //        return false;
 
-    if(State::state().is_mesh_closed)
+    if(state.is_mesh_closed)
         return false;
 
     if (!tet_vertices[v1_id].is_on_boundary || !tet_vertices[v2_id].is_on_boundary)
@@ -977,9 +979,9 @@ bool LocalOperations::isEdgeOnBoundary(int v1_id, int v2_id) {
             opp_js[ii++] = j;
         }
         if (ii == 2) {
-            if (is_surface_fs[t_id][opp_js[0]] != State::state().NOT_SURFACE)
+            if (is_surface_fs[t_id][opp_js[0]] != state.NOT_SURFACE)
                 cnt++;
-            if (is_surface_fs[t_id][opp_js[1]] != State::state().NOT_SURFACE)
+            if (is_surface_fs[t_id][opp_js[1]] != state.NOT_SURFACE)
                 cnt++;
             if (cnt > 2)
                 return false;
@@ -993,7 +995,7 @@ bool LocalOperations::isEdgeOnBoundary(int v1_id, int v2_id) {
 
 bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 #if CHECK_ENVELOP
-    if(State::state().use_sampling){
+    if(state.use_sampling){
         return isFaceOutEnvelop_sampling(tri);
     }
     return true;
@@ -1061,7 +1063,7 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_sf_tree.squared_distance(geo_p) > State::state().eps_2)
+    if (geo_sf_tree.squared_distance(geo_p) > state.eps_2)
         return true;
 
     return false;
@@ -1083,7 +1085,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
                                     GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
     static thread_local std::vector<GEO::vec3> ps;
     ps.clear();
-    sampleTriangle(vs, ps);
+    sampleTriangle(vs, ps, state.sampling_dist);
 #if TIMING_BREAKDOWN
     breakdown_timing0[id_sampling] += igl_timer0.getElapsedTime();
 #endif
@@ -1104,7 +1106,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
         sq_dist = current_point.distance2(nearest_point);
         geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
         double dis = current_point.distance2(nearest_point);
-        if (dis > State::state().eps_2) {
+        if (dis > state.eps_2) {
 #if TIMING_BREAKDOWN
             breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif
@@ -1128,7 +1130,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutBoundaryEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_b_tree.squared_distance(geo_p) > State::state().eps_2) {
+    if (geo_b_tree.squared_distance(geo_p) > state.eps_2) {
         return true;
     }
     return false;
@@ -1141,7 +1143,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
     return false;
 
 #if CHECK_ENVELOP
-    if(State::state().is_mesh_closed)
+    if(state.is_mesh_closed)
         return false;
 
     std::unordered_set<int> n_v_ids;
@@ -1167,7 +1169,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
         GEO::vec3 p2(tet_vertices[v_id].posf[0], tet_vertices[v_id].posf[1], tet_vertices[v_id].posf[2]);
         b_points.push_back(p1);
         b_points.push_back(p2);
-        int n = GEO::distance(p1, p2) / State::state().sampling_dist + 1;
+        int n = GEO::distance(p1, p2) / state.sampling_dist + 1;
         if (n == 1)
             continue;
         b_points.reserve(b_points.size() + n + 1);
@@ -1195,7 +1197,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
             if (!is_12_on_boundary) {
                 GEO::vec3 p1(tet_vertices[v1_id].posf[0], tet_vertices[v1_id].posf[1], tet_vertices[v1_id].posf[2]);
                 GEO::vec3 p2(old_pf[0], old_pf[1], old_pf[2]);
-                int n = GEO::distance(p1, p2) / State::state().sampling_dist + 1;
+                int n = GEO::distance(p1, p2) / state.sampling_dist + 1;
                 b_points.reserve(b_points.size() + n + 1);
                 b_points.push_back(p1);
                 for (int k = 1; k <= n - 1; k++)
@@ -1207,7 +1209,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
                                                 GEO::vec3(tri[1][0], tri[1][1], tri[1][2]),
                                                 GEO::vec3(tri[2][0], tri[2][1], tri[2][2])}};
                 ps.clear();
-                sampleTriangle(vs, ps);
+                sampleTriangle(vs, ps, state.sampling_dist);
 
 //                sampleTriangle(tri, ps);//CANNOT directly push the sampling points into b_points
 
@@ -1236,7 +1238,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
         sq_dist = current_point.distance2(nearest_point);
         geo_b_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
         double dis = current_point.distance2(nearest_point);
-        if (dis > State::state().eps_2) {
+        if (dis > state.eps_2) {
 #if TIMING_BREAKDOWN
             breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif
@@ -1258,7 +1260,7 @@ bool LocalOperations::isBoundarySlide(int v1_id, int v2_id, Point_3f& old_pf){
 
 bool LocalOperations::isTetOnSurface(int t_id){
     for(int i=0;i<4;i++){
-        if(is_surface_fs[t_id][i]!=State::state().NOT_SURFACE)
+        if(is_surface_fs[t_id][i]!=state.NOT_SURFACE)
             return false;
     }
     return true;
@@ -1295,7 +1297,7 @@ void LocalOperations::getFaceConnTets(int v1_id, int v2_id, int v3_id, std::vect
 bool LocalOperations::isIsolated(int v_id) {
     for (auto it = tet_vertices[v_id].conn_tets.begin(); it != tet_vertices[v_id].conn_tets.end(); it++) {
         for (int j = 0; j < 4; j++) {
-            if (tets[*it][j] != v_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE)
+            if (tets[*it][j] != v_id && is_surface_fs[*it][j] != state.NOT_SURFACE)
                 return false;
         }
     }
@@ -1331,7 +1333,7 @@ void LocalOperations::checkUnrounded() {
         return;
 
     std::ofstream of;
-    of.open(State::state().working_dir + "unrounded_check.txt");
+    of.open(state.working_dir + "unrounded_check.txt");
     int cnt_sf = 0;
     int cnt_b = 0;
     int cnt_all = 0;
@@ -1356,7 +1358,7 @@ void LocalOperations::checkUnrounded() {
         for (int t_id:tet_vertices[i].conn_tets) {
             for (int j = 0; j < 4; j++) {
                 if (tets[t_id][j] == i) {
-                    if (is_surface_fs[t_id][j] != State::state().NOT_SURFACE) {
+                    if (is_surface_fs[t_id][j] != state.NOT_SURFACE) {
                         cnt_sf1++;
                         is_found = true;
                     }
@@ -1399,7 +1401,7 @@ bool LocalOperations::isTetLocked_ui(int tid){
 }
 
 void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in, double old_eps) {
-    State::state().sampling_dist /= 2;
+    state.sampling_dist /= 2;
 
     Eigen::VectorXd eps_dis(F_in.rows());
     for (int f_id = 0; f_id < F_in.rows(); f_id++) {
@@ -1419,7 +1421,7 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
         auto min_max = std::minmax_element(ls.begin(), ls.end());
         int min_i = min_max.first - ls.begin();
         int max_i = min_max.second - ls.begin();
-        double N = sqrt(ls[max_i]) / State::state().sampling_dist;
+        double N = sqrt(ls[max_i]) / state.sampling_dist;
         if (N <= 1) {
             for (int i = 0; i < 3; i++)
                 ps.push_back(vs[i]);
@@ -1434,12 +1436,12 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 
         GEO::vec3 n_v0v1 = GEO::normalize(v1 - v0);
         for (int n = 0; n <= N; n++) {
-            ps.push_back(v0 + n_v0v1 * State::state().sampling_dist * n);
+            ps.push_back(v0 + n_v0v1 * state.sampling_dist * n);
         }
         ps.push_back(v1);
 
         double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
-        int M = h / (sqrt3_2 * State::state().sampling_dist);
+        int M = h / (sqrt3_2 * state.sampling_dist);
         if (M < 1) {
             ps.push_back(v2);
             return;
@@ -1459,15 +1461,15 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             if (m % 2 == 0 && n == n1) {
                 n += 1;
             }
-            GEO::vec3 v0_m = v0 + m * sqrt3_2 * State::state().sampling_dist / sin_v0 * n_v0v2;
-            GEO::vec3 v1_m = v1 + m * sqrt3_2 * State::state().sampling_dist / sin_v1 * n_v1v2;
+            GEO::vec3 v0_m = v0 + m * sqrt3_2 * state.sampling_dist / sin_v0 * n_v0v2;
+            GEO::vec3 v1_m = v1 + m * sqrt3_2 * state.sampling_dist / sin_v1 * n_v1v2;
 
-            double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * State::state().sampling_dist;
+            double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * state.sampling_dist;
             GEO::vec3 v = v0_m + delta_d * n_v0v1;
-            int N1 = GEO::distance(v, v1_m) / State::state().sampling_dist;
+            int N1 = GEO::distance(v, v1_m) / state.sampling_dist;
             ps.push_back(v0_m);
             for (int i = 0; i <= N1; i++) {
-                ps.push_back(v + i * n_v0v1 * State::state().sampling_dist);
+                ps.push_back(v + i * n_v0v1 * state.sampling_dist);
             }
             ps.push_back(v1_m);
         }
@@ -1482,16 +1484,16 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = int(ls[max_i] / State::state().sampling_dist + 1);
+//        double n = int(ls[max_i] / state.sampling_dist + 1);
 //        ps.reserve(2 * n);
 //        for (int j = 1; j < n; j++) {
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[min_i]);
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //        }
-//        if (ls[min_i] > State::state().sampling_dist) {
+//        if (ls[min_i] > state.sampling_dist) {
 //            int ps_size = ps.size();
 //            for (int i = 0; i < ps_size; i += 2) {
-//                double m = int(GEO::length(ps[i] - ps[i + 1]) / State::state().sampling_dist + 1);
+//                double m = int(GEO::length(ps[i] - ps[i + 1]) / state.sampling_dist + 1);
 //                if (m == 0)
 //                    break;
 //                for (int j = 1; j < m; j++)
@@ -1530,11 +1532,11 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(State::state().working_dir + GArgs::args().postfix + "_sf" + std::to_string(mid_id++) + ".msh");
+    PyMesh::MshSaver mshSaver(state.working_dir + args.postfix + "_sf" + std::to_string(mid_id++) + ".msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 
-    State::state().sampling_dist *= 2;
+    state.sampling_dist *= 2;
 }
 
 } // namespace tetwild

@@ -12,6 +12,10 @@
 #pragma clang diagnostic pop // -Wcast-qual
 #pragma clang diagnostic pop // -Wmissing-noreturn
 #pragma clang diagnostic pop // -Woverloaded-virtual
+#pragma clang diagnostic pop // "-Wsign-promo"
+#pragma clang diagnostic pop // "-Wcast-align"
+#pragma clang diagnostic pop // "-Wnull-pointer-arithmetic"
+#pragma clang diagnostic pop // "-Wc++17-extensions"
 #elif (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
 #pragma GCC diagnostic pop // -Wshadow
 #pragma GCC diagnostic pop // -Wsign-compare
@@ -25,4 +29,5 @@
 #pragma GCC diagnostic pop // -Wcast-qual
 #pragma GCC diagnostic pop // -Wmissing-noreturn
 #pragma GCC diagnostic pop // -Woverloaded-virtual
+#pragma GCC diagnostic pop // "-Wsign-promo"
 #endif

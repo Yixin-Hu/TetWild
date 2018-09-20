@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/EdgeCollapser.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <igl/Timer.h>
 
 namespace tetwild {
@@ -378,20 +380,20 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
     calTetQualities(new_tets, tet_qs);
     energy_time+=tmp_timer.getElapsedTime();
 
-    if (energy_type != State::state().ENERGY_NA && is_check_quality) {
+    if (energy_type != state.ENERGY_NA && is_check_quality) {
         TetQuality old_tq, new_tq;
         getCheckQuality(old_t_ids, old_tq);
         getCheckQuality(tet_qs, new_tq);
 //        if (is_edge_too_short)
 //            logger().debug("old {} new {}", old_tq.slim_energy, new_tq.slim_energy);
 //        if (is_soft && old_tq.slim_energy < soft_energy) {
-//            old_tq.slim_energy = GArgs::args().filter_energy_thres;
+//            old_tq.slim_energy = Args::args().filter_energy_thres;
 //        }
         if(is_soft)
             old_tq.slim_energy = soft_energy;
         if (!tet_vertices[v1_id].is_rounded) //remove an unroundable vertex anyway
             new_tq.slim_energy = 0;
-        if (!is_edge_degenerate && !new_tq.isBetterOrEqualThan(old_tq, energy_type)) {
+        if (!is_edge_degenerate && !new_tq.isBetterOrEqualThan(old_tq, energy_type, state)) {
 //            if (is_edge_too_short)
 //                logger().debug("quality");
             return QUALITY;
@@ -417,7 +419,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 
     //check 3
     bool is_envelop_suc = false;
-    if (State::state().eps != State::state().EPSILON_NA && State::state().eps != State::state().EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
+    if (state.eps != state.EPSILON_NA && state.eps != state.EPSILON_INFINITE && tet_vertices[v1_id].is_on_surface) {
         if (!is_edge_degenerate && !isCollapsable_epsilon(v1_id, v2_id)) {
 //            if (is_edge_too_short)
 //                logger().debug("envelop");
@@ -523,11 +525,11 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
 //            else
 //                is_sf_fs[0] = is_sf_fs[1] == ON_SURFACE_TRUE_INSIDE ? ON_SURFACE_TRUE_OUTSIDE : ON_SURFACE_TRUE_INSIDE;
 
-            if (is_sf_fs[0] == is_sf_fs[1] && is_sf_fs[0] == State::state().NOT_SURFACE)
+            if (is_sf_fs[0] == is_sf_fs[1] && is_sf_fs[0] == state.NOT_SURFACE)
                 continue;
-            if(is_sf_fs[0] == State::state().NOT_SURFACE)
+            if(is_sf_fs[0] == state.NOT_SURFACE)
                 is_sf_fs[0] = 0;
-            if(is_sf_fs[1] == State::state().NOT_SURFACE)
+            if(is_sf_fs[1] == state.NOT_SURFACE)
                 is_sf_fs[1] = 0;
 
             int tmp0 = is_sf_fs[0];
@@ -657,7 +659,7 @@ bool EdgeCollapser::isCollapsable_cd1(int v1_id, int v2_id) {
     }
 
     //check the surface tags //if the vertex is on the surface
-//    if (State::state().eps != State::state().EPSILON_NA) {
+//    if (state.eps != state.EPSILON_NA) {
 //        return true;
 //    }
     return true;
@@ -712,12 +714,12 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
 //    std::vector<Triangle_3f> tris;
 //    for (auto it = tet_vertices[v1_id].conn_tets.begin(); it != tet_vertices[v1_id].conn_tets.end(); it++) {
 //        for (int j = 0; j < 4; j++) {
-//            if (tets[*it][j] == v2_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
+//            if (tets[*it][j] == v2_id && is_surface_fs[*it][j] != state.NOT_SURFACE) {
 //                std::array<int, 3> tri = {tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]};
 //                auto jt = std::find(tri.begin(), tri.end(), v1_id);
 //                if(jt==tri.end()){
 //                    std::cout);
-//                    exit(250);
+//                    throw TetWildError("");
 //                }
 //                *jt = v2_id;
 //                Triangle_3f tr(tet_vertices[tri[0]].posf, tet_vertices[tri[1]].posf, tet_vertices[tri[2]].posf);
@@ -729,7 +731,7 @@ bool EdgeCollapser::isCollapsable_epsilon(int v1_id, int v2_id) {
     std::vector<std::array<int, 3>> tri_ids;
     for (auto it = tet_vertices[v1_id].conn_tets.begin(); it != tet_vertices[v1_id].conn_tets.end(); it++) {
         for (int j = 0; j < 4; j++) {
-            if (tets[*it][j] != v1_id && is_surface_fs[*it][j] != State::state().NOT_SURFACE) {
+            if (tets[*it][j] != v1_id && is_surface_fs[*it][j] != state.NOT_SURFACE) {
                 std::array<int, 3> tri = {{tets[*it][(j + 1) % 4], tets[*it][(j + 2) % 4], tets[*it][(j + 3) % 4]}};
                 std::sort(tri.begin(), tri.end());
                 tri_ids.push_back(tri);

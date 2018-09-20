@@ -10,6 +10,8 @@
 //
 
 #include <tetwild/EdgeRemover.h>
+#include <tetwild/Common.h>
+#include <tetwild/Logger.h>
 #include <unordered_map>
 
 namespace tetwild {
@@ -166,10 +168,10 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
     getCheckQuality(tet_qs, new_tq);
     if(equal_buget>0) {
         equal_buget--;
-        if (!new_tq.isBetterOrEqualThan(old_tq, energy_type))
+        if (!new_tq.isBetterOrEqualThan(old_tq, energy_type, state))
             return false;
     } else {
-        if (!new_tq.isBetterThan(old_tq, energy_type))
+        if (!new_tq.isBetterThan(old_tq, energy_type, state))
             return false;
     }
 
@@ -200,7 +202,7 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[0]][i] = is_sf_fs[it - fs.begin()];
         } else
-            is_surface_fs[t_ids[0]][i] = State::state().NOT_SURFACE;
+            is_surface_fs[t_ids[0]][i] = state.NOT_SURFACE;
 
         if (tets[t_ids[1]][i] != v1_id) {
             std::array<int, 3> tmp = {{tets[t_ids[1]][(i + 1) % 4], tets[t_ids[1]][(i + 2) % 4],
@@ -209,7 +211,7 @@ bool EdgeRemover::removeAnEdge_32(int v1_id, int v2_id, const std::vector<int>& 
             auto it = std::find(fs.begin(), fs.end(), tmp);
             is_surface_fs[t_ids[1]][i] = is_sf_fs[it - fs.begin()];
         } else
-            is_surface_fs[t_ids[1]][i] = State::state().NOT_SURFACE;
+            is_surface_fs[t_ids[1]][i] = state.NOT_SURFACE;
     }
 
     tet_vertices[v_ids[0]].conn_tets.erase(std::find(tet_vertices[v_ids[0]].conn_tets.begin(),
@@ -353,10 +355,10 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
         getCheckQuality(tmp_tet_qs, new_tq);
         if(equal_buget>0) {
             equal_buget--;
-            if (!new_tq.isBetterOrEqualThan(old_tq, energy_type))
+            if (!new_tq.isBetterOrEqualThan(old_tq, energy_type, state))
                 return false;
         } else {
-            if (!new_tq.isBetterThan(old_tq, energy_type))
+            if (!new_tq.isBetterThan(old_tq, energy_type, state))
                 return false;
         }
 
@@ -403,7 +405,7 @@ bool EdgeRemover::removeAnEdge_44(int v1_id, int v2_id, const std::vector<int>& 
 
     for (int i = 0; i < old_t_ids.size(); i++) {//old_t_ids contains new tets
         for (int j = 0; j < 4; j++) {
-            is_surface_fs[old_t_ids[i]][j] = State::state().NOT_SURFACE;
+            is_surface_fs[old_t_ids[i]][j] = state.NOT_SURFACE;
             if (tets[old_t_ids[i]][j] == v_ids[0] || tets[old_t_ids[i]][j] == v_ids[1]) {
                 std::array<int, 3> tmp = {{tets[old_t_ids[i]][(j + 1) % 4], tets[old_t_ids[i]][(j + 2) % 4],
                                            tets[old_t_ids[i]][(j + 3) % 4]}};
@@ -574,16 +576,15 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
             qs.push_back(tet_qs[(i - 1 + 5) % 5][j]);
         }
         if(qs.size() != 6){
-            logger().debug("ERROR: qs.size() != 6");
-            pausee();
+            log_and_throw("qs.size() != 6");
         }
         getCheckQuality(qs, new_tq);
         if(equal_buget>0) {
             equal_buget--;
-            if (!new_tq.isBetterOrEqualThan(old_tq, energy_type))
+            if (!new_tq.isBetterOrEqualThan(old_tq, energy_type, state))
                 continue;
         } else {
-            if (!new_tq.isBetterThan(old_tq, energy_type))
+            if (!new_tq.isBetterThan(old_tq, energy_type, state))
                 continue;
         }
 
@@ -627,7 +628,7 @@ bool EdgeRemover::removeAnEdge_56(int v1_id, int v2_id, const std::vector<int>& 
     //update on_surface -- 2
     for (int i = 0; i < new_t_ids.size(); i++) {
         for (int j = 0; j < 4; j++) {
-            is_surface_fs[new_t_ids[i]][j] = State::state().NOT_SURFACE;
+            is_surface_fs[new_t_ids[i]][j] = state.NOT_SURFACE;
             if (tets[new_t_ids[i]][j] != v1_id && tets[new_t_ids[i]][j] != v2_id
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id + 1) % 5]
                 && tets[new_t_ids[i]][j] != n12_v_ids[(selected_id - 1 + 5) % 5]) {
