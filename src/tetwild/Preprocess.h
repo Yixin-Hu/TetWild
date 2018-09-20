@@ -16,6 +16,7 @@
 #include <tetwild/CGALTypes.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <Eigen/Dense>
 #include <unordered_set>
 #include <queue>
 
