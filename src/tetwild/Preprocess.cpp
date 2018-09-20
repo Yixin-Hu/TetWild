@@ -114,37 +114,6 @@ bool Preprocess::init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp
     logger().debug("#f = {} -> {}", F_tmp.rows(), F_in.rows());
 //    checkBoundary(V_in, F_in, state);
 
-    ////set global parameters
-    state.bbox_diag = igl::bounding_box_diagonal(V_in);
-    state.eps_input = state.bbox_diag * args.eps_rel / 100.0;
-
-    if (args.sampling_dist_rel > 0) {//for testing only
-        state.sampling_dist = state.bbox_diag * args.sampling_dist_rel / 100.0;
-        state.eps = state.bbox_diag * args.eps_rel / 100.0;
-        state.eps_2 = state.eps * state.eps;
-        if (args.stage != 1) {
-            throw TetWildError("args.stage should be equal to 1.");
-        }
-    } else {
-//        state.sampling_dist = state.eps_input / args.stage;
-//        state.sub_stage = 1;
-//        state.eps = state.eps_input - state.sampling_dist / std::sqrt(3) * (args.stage + 1 - state.sub_stage);
-//        state.eps_delta = state.sampling_dist / std::sqrt(3);
-//        state.eps_2 = state.eps * state.eps;
-
-        // d_err = d/sqrt(3)
-        state.sampling_dist = state.eps_input / args.stage;
-        state.sub_stage = 1;
-        state.eps = state.eps_input - state.sampling_dist / std::sqrt(3) * (args.stage + 1 - state.sub_stage);
-        state.eps_delta = state.sampling_dist / std::sqrt(3);
-        state.eps_2 = state.eps * state.eps;
-    }
-
-    state.initial_edge_len = state.bbox_diag * args.initial_edge_len_rel / 100.0;
-
-//    logger().debug("eps = {}", state.eps);
-//    logger().debug("ideal_l = {}", state.initial_edge_len);
-
     ////get GEO meshes
     geo_sf_mesh.vertices.clear();
     geo_sf_mesh.vertices.create_vertices((int) V_in.rows());
@@ -231,7 +200,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     double eps_scalar = 0.8;
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
-    state.eps *= eps_scalar;
+   state.eps *= eps_scalar;
     state.eps_2 *= eps_scalar_2;
 //    state.sampling_dist *= eps_scalar*2;
 

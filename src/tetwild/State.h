@@ -13,6 +13,8 @@
 
 #include <string>
 #include <limits>
+#include <tetwild/ForwardDecls.h>
+#include <Eigen/Dense>
 
 namespace tetwild {
 
@@ -28,19 +30,19 @@ struct State {
     const int NOT_SURFACE = std::numeric_limits<int>::max();
 
     // paths used for i/o
-    std::string working_dir;
-    std::string stat_file;
-    std::string postfix;
+    const std::string working_dir;
+    const std::string stat_file;
+    const std::string postfix;
 
+    double bbox_diag = 0; // bbox diagonal
     double eps = 0; // effective epsilon at the current stage (see \hat{\epsilon} in the paper)
     double eps_2 = 0;
     double sampling_dist = 0; // sampling distance for triangles at the current stage (see d_k p.8 of the paper)
     double initial_edge_len = 0; // initial target edge-length defined by the user (the final lengths can be lower, depending on mesh quality and feature size)
-    double bbox_diag = 0; // bbox diagonal
     bool is_mesh_closed = 0; // open mesh or closed mesh?
 
-    double eps_input = 0; // target epsilon entered by the user
-    double eps_delta = 0; // increment for the envelope at each sub-stage of the mesh optimization (see (3) p.8 of the paper)
+    const double eps_input = 0; // target epsilon entered by the user
+    const double eps_delta = 0; // increment for the envelope at each sub-stage of the mesh optimization (see (3) p.8 of the paper)
     int sub_stage = 1; // sub-stage within the stage that tetwild was called with
 
     ///////////////
@@ -48,17 +50,20 @@ struct State {
     ///////////////
 
     // Whether to use the max or the total energy when checking improvements in local operations
-    bool use_energy_max = true;
+    const bool use_energy_max = true;
 
     // Use sampling to determine whether a face lies outside the envelope during mesh optimization
     // (if false, then only its vertices are tested)
-    bool use_sampling = true;
+    const bool use_sampling = true;
 
     // Project vertices to the plane of their one-ring instead of the original surface during vertex smoothing
-    bool use_onering_projection = false;
+    const bool use_onering_projection = false;
 
     // [debug]
-    bool is_print_tmp = false;
+    const bool is_print_tmp = false;
+
+    // Set program constants given user parameters and input mesh
+    State(const Args &args, const Eigen::MatrixXd &V);
 };
 
 

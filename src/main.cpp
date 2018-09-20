@@ -73,10 +73,7 @@ void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const st
                   Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
                   const Args &args = Args())
 {
-    State state;
-    state.working_dir = args.working_dir;
-    state.postfix = args.postfix;
-    state.stat_file = args.csv_file;
+    State state(args, VI);
     MeshRefinement MR(args, state);
     MR.deserialization(VI, FI, slz_file);
 

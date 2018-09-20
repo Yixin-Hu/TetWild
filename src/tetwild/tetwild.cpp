@@ -163,13 +163,7 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
                         Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
                         const Args &args)
 {
-    State state;
-    state.working_dir = args.working_dir;
-    state.postfix = args.postfix;
-    state.stat_file = args.csv_file;
-    state.use_energy_max = true;
-    state.use_onering_projection = false;
-    state.use_sampling = true;
+    State state(args, VI);
 
     int energy_type = state.ENERGY_AMIPS;
     bool is_sm_single = true;

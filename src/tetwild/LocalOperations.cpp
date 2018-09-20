@@ -1401,8 +1401,7 @@ bool LocalOperations::isTetLocked_ui(int tid){
 }
 
 void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const Eigen::MatrixXi& F_in, double old_eps) {
-    State state_tmp;
-    state_tmp.sampling_dist /= 2;
+    state.sampling_dist /= 2;
 
     Eigen::VectorXd eps_dis(F_in.rows());
     for (int f_id = 0; f_id < F_in.rows(); f_id++) {
@@ -1422,7 +1421,7 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
         auto min_max = std::minmax_element(ls.begin(), ls.end());
         int min_i = min_max.first - ls.begin();
         int max_i = min_max.second - ls.begin();
-        double N = sqrt(ls[max_i]) / state_tmp.sampling_dist;
+        double N = sqrt(ls[max_i]) / state.sampling_dist;
         if (N <= 1) {
             for (int i = 0; i < 3; i++)
                 ps.push_back(vs[i]);
@@ -1437,12 +1436,12 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 
         GEO::vec3 n_v0v1 = GEO::normalize(v1 - v0);
         for (int n = 0; n <= N; n++) {
-            ps.push_back(v0 + n_v0v1 * state_tmp.sampling_dist * n);
+            ps.push_back(v0 + n_v0v1 * state.sampling_dist * n);
         }
         ps.push_back(v1);
 
         double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
-        int M = h / (sqrt3_2 * state_tmp.sampling_dist);
+        int M = h / (sqrt3_2 * state.sampling_dist);
         if (M < 1) {
             ps.push_back(v2);
             return;
@@ -1462,15 +1461,15 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             if (m % 2 == 0 && n == n1) {
                 n += 1;
             }
-            GEO::vec3 v0_m = v0 + m * sqrt3_2 * state_tmp.sampling_dist / sin_v0 * n_v0v2;
-            GEO::vec3 v1_m = v1 + m * sqrt3_2 * state_tmp.sampling_dist / sin_v1 * n_v1v2;
+            GEO::vec3 v0_m = v0 + m * sqrt3_2 * state.sampling_dist / sin_v0 * n_v0v2;
+            GEO::vec3 v1_m = v1 + m * sqrt3_2 * state.sampling_dist / sin_v1 * n_v1v2;
 
-            double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * state_tmp.sampling_dist;
+            double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * state.sampling_dist;
             GEO::vec3 v = v0_m + delta_d * n_v0v1;
-            int N1 = GEO::distance(v, v1_m) / state_tmp.sampling_dist;
+            int N1 = GEO::distance(v, v1_m) / state.sampling_dist;
             ps.push_back(v0_m);
             for (int i = 0; i <= N1; i++) {
-                ps.push_back(v + i * n_v0v1 * state_tmp.sampling_dist);
+                ps.push_back(v + i * n_v0v1 * state.sampling_dist);
             }
             ps.push_back(v1_m);
         }
@@ -1485,16 +1484,16 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
 //        int min_i = min_max.first - ls.begin();
 //        int max_i = min_max.second - ls.begin();
 //
-//        double n = int(ls[max_i] / state_tmp.sampling_dist + 1);
+//        double n = int(ls[max_i] / state.sampling_dist + 1);
 //        ps.reserve(2 * n);
 //        for (int j = 1; j < n; j++) {
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[min_i]);
 //            ps.push_back(j / n * vs[(min_i + 2) % 3] + (n - j) / n * vs[(min_i + 1) % 3]);
 //        }
-//        if (ls[min_i] > state_tmp.sampling_dist) {
+//        if (ls[min_i] > state.sampling_dist) {
 //            int ps_size = ps.size();
 //            for (int i = 0; i < ps_size; i += 2) {
-//                double m = int(GEO::length(ps[i] - ps[i + 1]) / state_tmp.sampling_dist + 1);
+//                double m = int(GEO::length(ps[i] - ps[i + 1]) / state.sampling_dist + 1);
 //                if (m == 0)
 //                    break;
 //                for (int j = 1; j < m; j++)
@@ -1533,11 +1532,11 @@ void LocalOperations::outputSurfaceColormap(const Eigen::MatrixXd& V_in, const E
             F_vec(i * 3 + j) = F_in(i, j);
     }
 
-    PyMesh::MshSaver mshSaver(state_tmp.working_dir + args.postfix + "_sf" + std::to_string(mid_id++) + ".msh");
+    PyMesh::MshSaver mshSaver(state.working_dir + args.postfix + "_sf" + std::to_string(mid_id++) + ".msh");
     mshSaver.save_mesh(V_vec, F_vec, 3, mshSaver.TRI);
     mshSaver.save_elem_scalar_field("distance to surface", eps_dis);
 
-    state_tmp.sampling_dist *= 2;
+    state.sampling_dist *= 2;
 }
 
 } // namespace tetwild
