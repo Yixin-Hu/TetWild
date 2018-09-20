@@ -80,6 +80,7 @@ include(TetWildDependencies)
 ################################################################################
 # Build static library for executable
 add_library(libTetWild STATIC
+		include/tetwild/Args.h
 		include/tetwild/Exception.h
 		include/tetwild/Logger.h
 		include/tetwild/tetwild.h

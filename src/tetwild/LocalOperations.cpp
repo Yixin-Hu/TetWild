@@ -10,8 +10,8 @@
 //
 
 #include <tetwild/LocalOperations.h>
-#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/Args.h>
 #include <tetwild/Logger.h>
 #include <pymesh/MshSaver.h>
 #include <igl/svd3x3.h>

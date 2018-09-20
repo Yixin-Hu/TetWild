@@ -9,8 +9,8 @@
 // Created by Yixin Hu on 3/29/17.
 //
 
-#include <tetwild/tetwild.h>
 #include <tetwild/DelaunayTetrahedralization.h>
+#include <tetwild/Args.h>
 #include <tetwild/State.h>
 #include <tetwild/Logger.h>
 #include <CGAL/bounding_box.h>

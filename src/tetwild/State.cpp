@@ -10,7 +10,7 @@
 //
 
 #include <tetwild/State.h>
-#include <tetwild/tetwild.h>
+#include <tetwild/Args.h>
 #include <tetwild/Exception.h>
 #include <igl/bounding_box_diagonal.h>
 

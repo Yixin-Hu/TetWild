@@ -9,8 +9,8 @@
 // Created by Jeremie Dumas on 09/04/18.
 //
 
-#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/Args.h>
 #include <tetwild/State.h>
 #include <tetwild/Logger.h>
 #include <geogram/basic/permutation.h>

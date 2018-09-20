@@ -10,7 +10,7 @@
 //
 
 #include <tetwild/Preprocess.h>
-#include <tetwild/tetwild.h>
+#include <tetwild/Args.h>
 #include <tetwild/Common.h>
 #include <tetwild/State.h>
 #include <tetwild/Logger.h>

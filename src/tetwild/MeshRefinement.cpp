@@ -10,8 +10,8 @@
 //
 
 #include <tetwild/MeshRefinement.h>
-#include <tetwild/tetwild.h>
 #include <tetwild/Common.h>
+#include <tetwild/Args.h>
 #include <tetwild/Logger.h>
 #include <tetwild/Serialization.h>
 #include <tetwild/EdgeCollapser.h>

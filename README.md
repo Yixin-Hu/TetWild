@@ -140,24 +140,24 @@ TODO :)-->
 We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetrahedaliztion without read/write data from/to files. One can use it in the following way:
 
 1. Include the header file `#include <tetwild/tetwild.h>`.
-2. Set parameters through a struct variable `tetwild::Args::args()`. The following table provides the correspondence between parameters and command line switches.
+2. Set parameters through a struct variable `tetwild::Args args`. The following table provides the correspondence between parameters and command line switches.
 
-	|Switch|Parameter|
-	|:---------|:-------|
-	|--input|N/A|
-	|--postfix|N/A|
-	|--output|N/A|
-	|--ideal-edge-length|`initial_edge_len_rel`|
-	|--epsilon|`eps_rel`|
-	|--stage|`stage`|
-	|--filter-energy|`filter_energy_thres`|
-	|--max-pass|`max_num_passes`|
-	|--is-quiet|`is_quiet`|
-	|--targeted-num-v|`target_num_vertices`|
-	|--bg-mesh|`background_mesh`|
-	|--is-laplacian|`smooth_open_boundary`|
+	| Switch              | Parameter                   |
+	|:--------------------|:----------------------------|
+	| --input             | N/A                         |
+	| --postfix           | `args.postfix`              |
+	| --output            | N/A                         |
+	| --ideal-edge-length | `args.initial_edge_len_rel` |
+	| --epsilon           | `args.eps_rel`              |
+	| --stage             | `args.stage`                |
+	| --filter-energy     | `args.filter_energy_thres`  |
+	| --max-pass          | `args.max_num_passes`       |
+	| --is-quiet          | `args.is_quiet`             |
+	| --targeted-num-v    | `args.target_num_vertices`  |
+	| --bg-mesh           | `args.background_mesh`      |
+	| --is-laplacian      | `args.smooth_open_boundary` |
 
-3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out, a_out)`. The input/output arguments are described in the function docstring, and use libigl-style matrices for representing a mesh.
+3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out, a_out, args)`. The input/output arguments are described in the function docstring, and use libigl-style matrices for representing a mesh.
 
 ## License
 TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
