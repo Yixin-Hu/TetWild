@@ -17,12 +17,12 @@ namespace tetwild {
 
 struct Args;
 struct State;
+struct MeshRecord;
 class BSPFace;
 class MeshConformer;
 class EdgeCollapser;
 class EdgeSplitter;
 class EdgeRemover;
 class VertexSmoother;
-class MeshRecord;
 
 } // namespace tetwild
