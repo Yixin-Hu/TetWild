@@ -19,43 +19,6 @@
 #include <igl/STR.h>
 #include <tetwild/EnableWarnings.h>
 
-namespace tetwild {
-
-typedef CGAL::Exact_predicates_exact_constructions_kernel K;
-typedef K::Point_2 Point_2;
-typedef K::Segment_2 Segment_2;
-typedef K::Line_2 Line_2;
-typedef K::Iso_rectangle_2 Iso_rectangle_2;
-typedef K::Triangle_2 Triangle_2;
-typedef K::Intersect_2 Intersect_2;
-//typedef CGAL::Polygon_2<K> Polygon_2;
-
-typedef K::Point_3 Point_3;
-typedef K::Vector_3 Vector_3;
-typedef K::Segment_3 Segment_3;
-typedef K::Line_3 Line_3;
-typedef K::Plane_3 Plane_3;
-typedef K::Triangle_3 Triangle_3;
-typedef K::Intersect_3 Intersect_3;
-typedef K::Tetrahedron_3 Tetrahedron_3;
-typedef K::Direction_3 Direction_3;
-
-typedef CGAL::Exact_predicates_inexact_constructions_kernel Kf;
-typedef Kf::Point_3 Point_3f;
-typedef Kf::Vector_3 Vector_3f;
-typedef Kf::Plane_3 Plane_3f;
-typedef Kf::Triangle_3 Triangle_3f;
-typedef Kf::Segment_3 Segment_3f;
-typedef Kf::Line_3 Line_3f;
-
-typedef CGAL::Epeck::FT CGAL_FT;
-//#include <CGAL/Simple_cartesian.h>
-//typedef CGAL::Simple_cartesian<CGAL::Gmpq>::FT CGAL_FT;
-
-typedef K::Iso_cuboid_3 Bbox_3;
-
-} // namespace tetwild
-
 //for serialization
 namespace igl {
     namespace serialization {
@@ -73,7 +36,7 @@ namespace igl {
             ::igl::deserialize(s1, std::string("x"), buffer);
             ::igl::deserialize(s2, std::string("y"), buffer);
             ::igl::deserialize(s3, std::string("z"), buffer);
-            // p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
+            p=Point_3(CGAL_FT(s1), CGAL_FT(s2), CGAL_FT(s3));
         }
 
         template<>
