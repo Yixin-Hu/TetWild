@@ -19,10 +19,12 @@
 #include <tetwild/EdgeRemover.h>
 #include <tetwild/VertexSmoother.h>
 #include <tetwild/DisableWarnings.h>
+#include <tetwild/geogram/mesh_AABB.h>
 #include <CGAL/centroid.h>
 #include <tetwild/EnableWarnings.h>
 #include <pymesh/MshLoader.h>
 #include <pymesh/MshSaver.h>
+#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/points/kd_tree.h>
 #include <igl/winding_number.h>
 
@@ -43,9 +45,9 @@ void MeshRefinement::prepareData(bool is_init) {
 
     GEO::Mesh simple_mesh;
     getSimpleMesh(simple_mesh);
-    GEO::MeshFacetsAABB simple_tree(simple_mesh);
+    GEO::MeshFacetsAABBWithEps simple_tree(simple_mesh);
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   state.ENERGY_AMIPS, simple_tree, simple_tree, args, state);
+                                   state.ENERGY_AMIPS, simple_mesh, simple_tree, simple_tree, args, state);
     localOperation.calTetQualities(tets, tet_qualities, true);//cal all measure
     double tmp_time = igl_timer.getElapsedTime();
     logger().debug("{}s", tmp_time);
@@ -204,11 +206,11 @@ int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& coll
 }
 
 void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update) {
-    GEO::MeshFacetsAABB geo_sf_tree(geo_sf_mesh);
+    GEO::MeshFacetsAABBWithEps geo_sf_tree(geo_sf_mesh);
     if (geo_b_mesh.vertices.nb() == 0) {
         getSimpleMesh(geo_b_mesh);//for constructing aabb tree, the mesh cannot be empty
     }
-    GEO::MeshFacetsAABB geo_b_tree(geo_b_mesh);
+    GEO::MeshFacetsAABBWithEps geo_b_tree(geo_b_mesh);
 
     if (is_dealing_unrounded)
         min_adaptive_scale = state.eps / state.initial_edge_len * 0.5; //min to eps/2
@@ -217,7 +219,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         min_adaptive_scale = (state.bbox_diag / 1000) / state.initial_edge_len; // set min_edge_length to diag / 1000 would be better
 
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
-                                   energy_type, geo_sf_tree, geo_b_tree, args, state);
+                                   energy_type, geo_sf_mesh, geo_sf_tree, geo_b_tree, args, state);
     EdgeSplitter splitter(localOperation, state.initial_edge_len * (4.0 / 3.0) * state.initial_edge_len * (4.0 / 3.0));
     EdgeCollapser collapser(localOperation, state.initial_edge_len * (4.0 / 5.0) * state.initial_edge_len * (4.0 / 5.0));
     EdgeRemover edge_remover(localOperation, state.initial_edge_len * (4.0 / 3.0) * state.initial_edge_len * (4.0 / 3.0));

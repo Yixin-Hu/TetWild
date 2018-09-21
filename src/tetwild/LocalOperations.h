@@ -14,7 +14,7 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/TetmeshElements.h>
-#include <geogram/mesh/mesh_AABB.h>
+#include <tetwild/geogram/mesh_AABB.h>
 #include <igl/grad.h>
 #include <igl/Timer.h>
 
@@ -44,8 +44,9 @@ public:
 
     int energy_type;
 
-    GEO::MeshFacetsAABB& geo_sf_tree;
-    GEO::MeshFacetsAABB& geo_b_tree;
+    const GEO::Mesh &geo_sf_mesh;
+    const GEO::MeshFacetsAABBWithEps& geo_sf_tree;
+    const GEO::MeshFacetsAABBWithEps& geo_b_tree;
 
     int counter=0;
     int suc_counter=0;
@@ -54,10 +55,12 @@ public:
 
     LocalOperations(std::vector<TetVertex>& t_vs, std::vector<std::array<int, 4>>& ts, std::vector<std::array<int, 4>>& is_sf_fs,
                     std::vector<bool>& v_is_rm, std::vector<bool>& t_is_rm, std::vector<TetQuality>& tet_qs,
-                    int e_type, GEO::MeshFacetsAABB& geo_tree, GEO::MeshFacetsAABB& b_t,
+                    int e_type, const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& geo_tree, const GEO::MeshFacetsAABBWithEps& b_t,
                     const Args &ar, State &st) :
         tet_vertices(t_vs), tets(ts), is_surface_fs(is_sf_fs), v_is_removed(v_is_rm), t_is_removed(t_is_rm),
-        tet_qualities(tet_qs), energy_type(e_type), geo_sf_tree(geo_tree), geo_b_tree(b_t), args(ar), state(st)
+        tet_qualities(tet_qs), energy_type(e_type),
+        geo_sf_mesh(geo_mesh), geo_sf_tree(geo_tree), geo_b_tree(b_t),
+        args(ar), state(st)
     { }
 
     void check();
@@ -103,9 +106,9 @@ public:
     bool isIsolated(int v_id);
     bool isBoundaryPoint(int v_id);
 
-    double comformalAMIPSEnergy_new(const std::vector<double>& T);
-    void comformalAMIPSJacobian_new(const std::vector<double>& T, double *result_0);
-    void comformalAMIPSHessian_new(const std::vector<double>& T, double *result_0);
+    static double comformalAMIPSEnergy_new(const double * T);
+    static void comformalAMIPSJacobian_new(const double * T, double *result_0);
+    static void comformalAMIPSHessian_new(const double * T, double *result_0);
 
     igl::Timer igl_timer0;
     int id_sampling=0;
