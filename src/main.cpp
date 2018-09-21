@@ -74,7 +74,8 @@ void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const st
                   const Args &args = Args())
 {
     State state(args, VI);
-    MeshRefinement MR(args, state);
+    GEO::Mesh sf, b;
+    MeshRefinement MR(sf, b, args, state);
     MR.deserialization(VI, FI, slz_file);
 
 //    MR.is_dealing_unrounded = true;
