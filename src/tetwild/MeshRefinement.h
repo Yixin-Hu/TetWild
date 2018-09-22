@@ -14,7 +14,6 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/TetmeshElements.h>
-#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh.h>
 #include <igl/Timer.h>
 
@@ -24,6 +23,10 @@ class MeshRefinement {
 public:
     const Args &args;
     State &state;
+
+    GEO::Mesh &geo_sf_mesh;
+    GEO::Mesh &geo_b_mesh;
+
     //init
     std::vector<TetVertex> tet_vertices;
     std::vector<std::array<int, 4>> tets;
@@ -33,14 +36,13 @@ public:
     std::vector<TetQuality> tet_qualities;
     std::vector<std::array<int, 4>> is_surface_fs;
 
-    GEO::Mesh geo_sf_mesh;
-    GEO::Mesh geo_b_mesh;
-
     igl::Timer igl_timer;
 
     int old_pass = 0;
 
-    MeshRefinement(const Args &ar, State &st) : args(ar), state(st) { }
+    MeshRefinement(GEO::Mesh & sf_mesh, GEO::Mesh & b_mesh, const Args &ar, State &st)
+        : geo_sf_mesh(sf_mesh), geo_b_mesh(b_mesh), args(ar), state(st)
+    { }
 
     void prepareData(bool is_init=true);
     void round();

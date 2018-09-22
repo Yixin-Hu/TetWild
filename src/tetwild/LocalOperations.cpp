@@ -13,6 +13,7 @@
 #include <tetwild/Common.h>
 #include <tetwild/Args.h>
 #include <tetwild/Logger.h>
+#include <tetwild/DistanceQuery.h>
 #include <pymesh/MshSaver.h>
 #include <igl/svd3x3.h>
 #include <igl/Timer.h>
@@ -24,7 +25,7 @@
 
 namespace tetwild {
 
-double LocalOperations::comformalAMIPSEnergy_new(const std::vector<double>& T) {
+double LocalOperations::comformalAMIPSEnergy_new(const double * T) {
     double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
@@ -79,7 +80,7 @@ double LocalOperations::comformalAMIPSEnergy_new(const std::vector<double>& T) {
                    (helper_3 - helper_5) * (-helper_11 * helper_18 + helper_12 * helper_17), 2), -0.333333333333333);
 }
 
-void LocalOperations::comformalAMIPSJacobian_new(const std::vector<double>& T, double *result_0) {
+void LocalOperations::comformalAMIPSJacobian_new(const double * T, double *result_0) {
     double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
@@ -145,7 +146,7 @@ void LocalOperations::comformalAMIPSJacobian_new(const std::vector<double>& T, d
     result_0[2] = helper_40*(-1.0*helper_10 - 1.0*helper_12 - 1.0*helper_14 + helper_46*(-helper_3*helper_47 - helper_32 + helper_37 + helper_38*helper_42) + 3.0*helper_8);
 }
 
-void LocalOperations::comformalAMIPSHessian_new(const std::vector<double>& T, double *result_0){
+void LocalOperations::comformalAMIPSHessian_new(const double * T, double *result_0){
     double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
@@ -697,71 +698,39 @@ void LocalOperations::calTetQualities(const std::vector<std::array<int, 4>>& new
 #ifdef TETWILD_WITH_ISPC
     int n = new_tets.size();
 
-    static int current_max_size = 0;
+    static thread_local std::vector<double> T0;
+    static thread_local std::vector<double> T1;
+    static thread_local std::vector<double> T2;
+    static thread_local std::vector<double> T3;
+    static thread_local std::vector<double> T4;
+    static thread_local std::vector<double> T5;
+    static thread_local std::vector<double> T6;
+    static thread_local std::vector<double> T7;
+    static thread_local std::vector<double> T8;
+    static thread_local std::vector<double> T9;
+    static thread_local std::vector<double> T10;
+    static thread_local std::vector<double> T11;
+    static thread_local std::vector<double> energy;
 
-    static double* T0 = 0;
-    static double* T1 = 0;
-    static double* T2 = 0;
-    static double* T3 = 0;
-    static double* T4 = 0;
-    static double* T5 = 0;
-    static double* T6 = 0;
-    static double* T7 = 0;
-    static double* T8 = 0;
-    static double* T9 = 0;
-    static double* T10 = 0;
-    static double* T11 = 0;
-    static double* energy = 0;
-
-    if (T0 == 0) {
-        logger().warn("Initial ISPC allocation: n = {}", n);
-        current_max_size = n;
-        T0 = new double[n];
-        T1 = new double[n];
-        T2 = new double[n];
-        T3 = new double[n];
-        T4 = new double[n];
-        T5 = new double[n];
-        T6 = new double[n];
-        T7 = new double[n];
-        T8 = new double[n];
-        T9 = new double[n];
-        T10 = new double[n];
-        T11 = new double[n];
-        energy = new double[n];
+    if (T0.empty()) {
+        // logger().trace("Initial ISPC allocation: n = {}", n);
+    } else if (T0.size() != n) {
+        // logger().trace("ISPC reallocation: n = {}", n);
     }
 
-    if (current_max_size < n) {
-        logger.warn("ISPC reallocation: n = {}", n);
-        free(T0);
-        free(T1);
-        free(T2);
-        free(T3);
-        free(T4);
-        free(T5);
-        free(T6);
-        free(T7);
-        free(T8);
-        free(T9);
-        free(T10);
-        free(T11);
-        free(energy);
-
-        current_max_size = n;
-        T0 = new double[n];
-        T1 = new double[n];
-        T2 = new double[n];
-        T3 = new double[n];
-        T4 = new double[n];
-        T5 = new double[n];
-        T6 = new double[n];
-        T7 = new double[n];
-        T8 = new double[n];
-        T9 = new double[n];
-        T10 = new double[n];
-        T11 = new double[n];
-        energy = new double[n];
-    }
+    T0.resize(n);
+    T1.resize(n);
+    T2.resize(n);
+    T3.resize(n);
+    T4.resize(n);
+    T5.resize(n);
+    T6.resize(n);
+    T7.resize(n);
+    T8.resize(n);
+    T9.resize(n);
+    T10.resize(n);
+    T11.resize(n);
+    energy.resize(n);
 
     for (int i = 0; i < n; i++) {
         T0[i] = tet_vertices[new_tets[i][0]].posf[0];
@@ -778,7 +747,9 @@ void LocalOperations::calTetQualities(const std::vector<std::array<int, 4>>& new
         T11[i] = tet_vertices[new_tets[i][3]].posf[2];
     }
 
-    ispc::energy_ispc(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, energy, n);
+    ispc::energy_ispc(T0.data(), T1.data(), T2.data(), T3.data(), T4.data(),
+        T5.data(), T6.data(), T7.data(), T8.data(),
+        T9.data(), T10.data(), T11.data(), energy.data(), n);
 
     for (int i = 0; i < new_tets.size(); i++) {
         CGAL::Orientation ori = CGAL::orientation(tet_vertices[new_tets[i][0]].posf,
@@ -897,13 +868,13 @@ void LocalOperations::calTetQuality_AMIPS(const std::array<int, 4>& tet, TetQual
         if (ori != CGAL::POSITIVE) {//degenerate in floats
             t_quality.slim_energy = state.MAX_ENERGY;
         } else {
-            std::vector<double> T;
-            T.reserve(12);
+            std::array<double, 12> T;
             for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 3; j++)
-                    T.push_back(tet_vertices[tet[i]].posf[j]);
+                for (int j = 0; j < 3; j++) {
+                    T[i*3+j] = tet_vertices[tet[i]].posf[j];
+                }
             }
-            t_quality.slim_energy = comformalAMIPSEnergy_new(T);
+            t_quality.slim_energy = comformalAMIPSEnergy_new(T.data());
             if (std::isinf(t_quality.slim_energy) || std::isnan(t_quality.slim_energy))
                 t_quality.slim_energy = state.MAX_ENERGY;
         }
@@ -1090,6 +1061,9 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
     breakdown_timing0[id_sampling] += igl_timer0.getElapsedTime();
 #endif
 
+    size_t num_queries = 0;
+    size_t num_samples = ps.size();
+
     //decide in/out
 #if TIMING_BREAKDOWN
     igl_timer0.start();
@@ -1097,19 +1071,25 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
 
     GEO::vec3 current_point = ps[0];
     GEO::vec3 nearest_point;
-    double sq_dist;
-    GEO::index_t prev_facet = geo_sf_tree.nearest_facet(current_point, nearest_point, sq_dist);
+    double sq_dist = std::numeric_limits<double>::max();
+    GEO::index_t prev_facet = GEO::NO_FACET;
     int cnt = 0;
     const unsigned int ps_size = ps.size();
     for (unsigned int i = ps_size / 2; i < ps.size(); i = (i + 1) % ps_size) {//check from the middle
         GEO::vec3 &current_point = ps[i];
-        sq_dist = current_point.distance2(nearest_point);
-        geo_sf_tree.nearest_facet_with_hint(current_point, prev_facet, nearest_point, sq_dist);
-        double dis = current_point.distance2(nearest_point);
-        if (dis > state.eps_2) {
+        if (prev_facet != GEO::NO_FACET) {
+            get_point_facet_nearest_point(geo_sf_mesh, current_point, prev_facet, nearest_point, sq_dist);
+        }
+        if (sq_dist > state.eps_2) {
+            geo_sf_tree.facet_in_envelope_with_hint(
+                current_point, state.eps_2, prev_facet, nearest_point, sq_dist);
+        }
+        ++num_queries;
+        if (sq_dist > state.eps_2) {
 #if TIMING_BREAKDOWN
             breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif
+            logger().trace("num_queries {} / {}", num_queries, num_samples);
             return true;
         }
         cnt++;
@@ -1121,6 +1101,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
     breakdown_timing0[id_aabb] += igl_timer0.getElapsedTime();
 #endif
 
+    logger().trace("num_queries {} / {}", num_queries, num_samples);
     return false;
 #else
     return false;
@@ -1306,6 +1287,8 @@ bool LocalOperations::isIsolated(int v_id) {
 }
 
 bool LocalOperations::isBoundaryPoint(int v_id) {
+    if(state.is_mesh_closed)
+        return false;
     std::unordered_set<int> n_v_ids;
     for (int t_id:tet_vertices[v_id].conn_tets) {
         for (int j = 0; j < 4; j++)

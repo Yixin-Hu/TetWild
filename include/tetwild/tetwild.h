@@ -17,7 +17,7 @@
 namespace tetwild {
 
 ///
-/// Robust tetrahedralization of an input triangle soup, with an envelop constraint.
+/// Robust tetrahedralization of an input triangle soup, with an envelope constraint.
 ///
 /// @param[in]  VI    { #VI x 3 input mesh vertices }
 /// @param[in]  FI    { #FI x 3 input mesh triangles }

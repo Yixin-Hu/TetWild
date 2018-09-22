@@ -14,8 +14,8 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/CGALTypes.h>
+#include <tetwild/geogram/mesh_AABB.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_AABB.h>
 #include <Eigen/Dense>
 #include <unordered_set>
 #include <queue>
@@ -56,14 +56,14 @@ public:
 
     bool init(const Eigen::MatrixXd& V_tmp, const Eigen::MatrixXi& F_tmp, GEO::Mesh& geo_b_mesh, GEO::Mesh& geo_sf_mesh, const Args &args);
 
-    void getBoudnaryMesh(GEO::Mesh& b_mesh);
+    void getBoundaryMesh(GEO::Mesh& b_mesh);
     void process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces, const Args &args);
 
-    void simplify(GEO::MeshFacetsAABB& face_aabb_tree);
-    void postProcess(GEO::MeshFacetsAABB& face_aabb_tree);
-    bool removeAnEdge(int v1_id, int v2_id, GEO::MeshFacetsAABB& face_aabb_tree);
+    void simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
+    void postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
+    bool removeAnEdge(int v1_id, int v2_id, const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
 
-    void swap(GEO::MeshFacetsAABB& face_aabb_tree);
+    void swap(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
     double getCosAngle(int v_id, int v1_id, int v2_id);
 
     double getEdgeLength(const std::array<int, 2>& v_ids);
@@ -72,8 +72,8 @@ public:
     bool isEdgeValid(const std::array<int, 2>& v_ids, double old_weight);
     bool isEdgeValid(const std::array<int, 2>& v_ids);
     bool isOneRingClean(int v_id);
-    bool isOutEnvelop(const std::unordered_set<int>& new_f_ids, GEO::MeshFacetsAABB& face_aabb_tree);
-    bool isPointOutEnvelop(int v_id, GEO::MeshFacetsAABB& face_aabb_tree);
+    bool isOutEnvelop(const std::unordered_set<int>& new_f_ids, const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
+    bool isPointOutEnvelop(int v_id, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
     bool isEuclideanValid(int v1_id, int v2_id);
     //when call this function, the coordinate of v1 has already been changed
 
@@ -82,7 +82,7 @@ public:
     std::vector<int> inf_e_tss;
     std::vector<int> f_tss;
 
-    void outputSurfaceColormap(GEO::MeshFacetsAABB& geo_face_tree, GEO::Mesh& geo_sf_mesh);
+    void outputSurfaceColormap(const GEO::MeshFacetsAABBWithEps& geo_face_tree, const GEO::Mesh& geo_sf_mesh);
 };
 
 } // namespace tetwild

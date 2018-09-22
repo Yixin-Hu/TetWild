@@ -91,6 +91,8 @@ add_library(libTetWild STATIC
 		src/tetwild/Common.h
 		src/tetwild/DelaunayTetrahedralization.cpp
 		src/tetwild/DelaunayTetrahedralization.h
+		src/tetwild/DistanceQuery.cpp
+		src/tetwild/DistanceQuery.h
 		src/tetwild/EdgeCollapser.cpp
 		src/tetwild/EdgeCollapser.h
 		src/tetwild/EdgeRemover.cpp
@@ -118,6 +120,8 @@ add_library(libTetWild STATIC
 		src/tetwild/tetwild.cpp
 		src/tetwild/VertexSmoother.cpp
 		src/tetwild/VertexSmoother.h
+		src/tetwild/geogram/mesh_AABB.cpp
+		src/tetwild/geogram/mesh_AABB.h
 )
 target_include_directories(libTetWild
 	PRIVATE

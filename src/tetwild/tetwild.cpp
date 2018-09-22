@@ -21,10 +21,12 @@
 #include <igl/boundary_facets.h>
 #include <igl/remove_unreferenced.h>
 #include <pymesh/MshSaver.h>
+#include <geogram/mesh/mesh.h>
 
 
 namespace tetwild {
 
+////////////////////////////////////////////////////////////////////////////////
 
 void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
                        const std::vector<std::array<int, 4>>& tets,
@@ -159,133 +161,263 @@ void extractFinalTetmesh(MeshRefinement& MR,
     printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids, args, state);
 }
 
-void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
-                        Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
-                        const Args &args)
+////////////////////////////////////////////////////////////////////////////////
+
+// Simplify the input surface by swapping and removing edges, while staying within the envelope
+double tetwild_stage_one_preprocess(
+    const Eigen::MatrixXd &VI,
+    const Eigen::MatrixXi &FI,
+    const Args &args,
+    State &state,
+    GEO::Mesh &geo_sf_mesh,
+    GEO::Mesh &geo_b_mesh,
+    std::vector<Point_3> &m_vertices,
+    std::vector<std::array<int, 3>> &m_faces)
 {
-    State state(args, VI);
-
-    int energy_type = state.ENERGY_AMIPS;
-    bool is_sm_single = true;
-    bool is_preprocess = true;
-    bool is_check_correctness = false;
-    bool is_ec_check_quality = true;
-
     igl::Timer igl_timer;
-    igl::Timer igl_timer_total;
+    igl_timer.start();
+    logger().info("Preprocessing...");
+    Preprocess pp(state);
+    if (!pp.init(VI, FI, geo_b_mesh, geo_sf_mesh, args)) {
+        //todo: output a empty tetmesh
+        PyMesh::MshSaver mSaver(state.working_dir + state.postfix + ".msh", true);
+        Eigen::VectorXd oV;
+        Eigen::VectorXi oT;
+        oV.resize(0);
+        oT.resize(0);
+        mSaver.save_mesh(oV, oT, 3, mSaver.TET);
+        log_and_throw("Empty mesh!");
+    }
+    addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, geo_sf_mesh.vertices.nb(), geo_sf_mesh.facets.nb()), args, state);
+
+    m_vertices.clear();
+    m_faces.clear();
+    pp.process(geo_sf_mesh, m_vertices, m_faces, args);
+    double tmp_time = igl_timer.getElapsedTime();
+    addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
+    logger().info("time = {}s", tmp_time);
+    return tmp_time;
+}
+
+// -----------------------------------------------------------------------------
+
+// Compute an initial Delaunay triangulation of the input triangle soup
+double tetwild_stage_one_delaunay(
+    const Args &args,
+    const State &state,
+    GEO::Mesh &geo_sf_mesh,
+    const std::vector<Point_3> &m_vertices,
+    const std::vector<std::array<int, 3>> &m_faces,
+    std::vector<Point_3> &bsp_vertices,
+    std::vector<BSPEdge> &bsp_edges,
+    std::vector<BSPFace> &bsp_faces,
+    std::vector<BSPtreeNode> &bsp_nodes,
+    std::vector<int> &m_f_tags,
+    std::vector<int> &raw_e_tags,
+    std::vector<std::vector<int>> &raw_conn_e4v)
+{
+    igl::Timer igl_timer;
+    igl_timer.start();
+    logger().info("Delaunay tetrahedralizing...");
+    DelaunayTetrahedralization DT;
+    m_f_tags.clear();
+    raw_e_tags.clear();
+    raw_conn_e4v.clear();
+    DT.init(m_vertices, m_faces, m_f_tags, raw_e_tags, raw_conn_e4v);
+    bsp_vertices.clear();
+    bsp_edges.clear();
+    bsp_faces.clear();
+    bsp_nodes.clear();
+    DT.tetra(m_vertices, geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes, args, state);
+    logger().debug("# bsp_vertices = {}", bsp_vertices.size());
+    logger().debug("# bsp_edges = {}", bsp_edges.size());
+    logger().debug("# bsp_faces = {}", bsp_faces.size());
+    logger().debug("# bsp_nodes = {}", bsp_nodes.size());
+    logger().info("Delaunay tetrahedralization done!");
+    double tmp_time = igl_timer.getElapsedTime();
+    addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
+    logger().info("time = {}s", tmp_time);
+    return tmp_time;
+}
+
+// -----------------------------------------------------------------------------
+
+// Match faces of the Delaunay tetrahedralization with faces from the input mesh
+double tetwild_stage_one_mc(
+    const Args &args,
+    const State &state,
+    MeshConformer &MC)
+{
+    igl::Timer igl_timer;
+    igl_timer.start();
+    logger().info("Divfaces matching...");
+    MC.match();
+    logger().info("Divfaces matching done!");
+    double tmp_time = igl_timer.getElapsedTime();
+    addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, MC.bsp_vertices.size(), MC.bsp_nodes.size()), args, state);
+    logger().info("time = {}s", tmp_time);
+    return tmp_time;
+}
+
+// -----------------------------------------------------------------------------
+
+// Compute BSP partition of the domain
+double tetwild_stage_one_bsp(
+    const Args &args,
+    const State &state,
+    MeshConformer &MC)
+{
+    igl::Timer igl_timer;
+    igl_timer.start();
+    logger().info("BSP subdivision ...");
+    BSPSubdivision BS(MC);
+    BS.init();
+    BS.subdivideBSPNodes();
+    logger().debug("Output: ");
+    logger().debug("# node = {}", MC.bsp_nodes.size());
+    logger().debug("# face = {}", MC.bsp_faces.size());
+    logger().debug("# edge = {}", MC.bsp_edges.size());
+    logger().debug("# vertex = {}", MC.bsp_vertices.size());
+    logger().info("BSP subdivision done!");
+    double tmp_time = igl_timer.getElapsedTime();
+    addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, MC.bsp_vertices.size(), MC.bsp_nodes.size()), args, state);
+    logger().info("time = {}s", tmp_time);
+    return tmp_time;
+}
+
+// -----------------------------------------------------------------------------
+
+// Compute an initial tetrahedral mesh from the BSP partition
+double tetwild_stage_one_tetra(
+    const Args &args,
+    const State &state,
+    MeshConformer &MC,
+    const std::vector<int> &m_f_tags,
+    const std::vector<int> &raw_e_tags,
+    const std::vector<std::vector<int>> &raw_conn_e4v,
+    std::vector<TetVertex> &tet_vertices,
+    std::vector<std::array<int, 4>> &tet_indices,
+    std::vector<std::array<int, 4>> &is_surface_facet)
+{
+    igl::Timer igl_timer;
+    igl_timer.start();
+    logger().info("Tetrehedralizing ...");
+    SimpleTetrahedralization ST(state, MC);
+    tet_vertices.clear();
+    tet_indices.clear();
+    is_surface_facet.clear();
+    ST.tetra(tet_vertices, tet_indices);
+    ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, tet_vertices, tet_indices, is_surface_facet);
+    ST.labelBbox(tet_vertices, tet_indices);
+    if (!state.is_mesh_closed)//if input is an open mesh
+        ST.labelBoundary(tet_vertices, tet_indices, is_surface_facet);
+    logger().debug("# tet_vertices = {}", tet_vertices.size());
+    logger().debug("# tets = {}", tet_indices.size());
+    logger().info("Tetrahedralization done!");
+    double tmp_time = igl_timer.getElapsedTime();
+    addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, tet_vertices.size(), tet_indices.size()), args, state);
+    logger().info("time = {}s", tmp_time);
+    return tmp_time;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void tetwild_stage_one(
+    const Eigen::MatrixXd &VI,
+    const Eigen::MatrixXi &FI,
+    const Args &args,
+    State &state,
+    GEO::Mesh &geo_sf_mesh,
+    GEO::Mesh &geo_b_mesh,
+    std::vector<TetVertex> &tet_vertices,
+    std::vector<std::array<int, 4>> &tet_indices,
+    std::vector<std::array<int, 4>> &is_surface_facet)
+{
+    igl::Timer igl_timer;
     double tmp_time = 0;
     double sum_time = 0;
-    igl_timer_total.start();
 
-    ////pipeline
-    MeshRefinement MR(args, state);
+    //preprocess
+    std::vector<Point_3> m_vertices;
+    std::vector<std::array<int, 3>> m_faces;
+    sum_time += tetwild_stage_one_preprocess(VI, FI, args, state, geo_sf_mesh, geo_b_mesh, m_vertices, m_faces);
 
-    /// STAGE 1
-    {
-        //preprocess
-        igl_timer.start();
-        logger().info("Preprocessing...");
-        Preprocess pp(state);
-        if (!pp.init(VI, FI, MR.geo_b_mesh, MR.geo_sf_mesh, args)) {
-            //todo: output a empty tetmesh
-            PyMesh::MshSaver mSaver(state.working_dir + state.postfix + ".msh", true);
-            Eigen::VectorXd oV;
-            Eigen::VectorXi oT;
-            oV.resize(0);
-            oT.resize(0);
-            mSaver.save_mesh(oV, oT, 3, mSaver.TET);
-            log_and_throw("Empty mesh!");
-        }
-        addRecord(MeshRecord(MeshRecord::OpType::OP_INIT, 0, MR.geo_sf_mesh.vertices.nb(), MR.geo_sf_mesh.facets.nb()), args, state);
+    //delaunay tetrahedralization
+    std::vector<Point_3> bsp_vertices;
+    std::vector<BSPEdge> bsp_edges;
+    std::vector<BSPFace> bsp_faces;
+    std::vector<BSPtreeNode> bsp_nodes;
+    std::vector<int> m_f_tags;
+    std::vector<int> raw_e_tags;
+    std::vector<std::vector<int>> raw_conn_e4v;
+    sum_time += tetwild_stage_one_delaunay(args, state, geo_sf_mesh, m_vertices, m_faces,
+        bsp_vertices, bsp_edges, bsp_faces, bsp_nodes, m_f_tags, raw_e_tags, raw_conn_e4v);
 
-        std::vector<Point_3> m_vertices;
-        std::vector<std::array<int, 3>> m_faces;
-        pp.process(MR.geo_sf_mesh, m_vertices, m_faces, args);
-        tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
-        sum_time += tmp_time;
-        logger().info("time = {}s", tmp_time);
+    //mesh conforming
+    MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
+    sum_time += tetwild_stage_one_mc(args, state, MC);
 
-        //delaunay tetrahedralization
-        igl_timer.start();
-        logger().info("Delaunay tetrahedralizing...");
-        DelaunayTetrahedralization DT;
-        std::vector<int> raw_e_tags;
-        std::vector<std::vector<int>> raw_conn_e4v;
-        std::vector<int> m_f_tags;//need to use it in ST
-        DT.init(m_vertices, m_faces, m_f_tags, raw_e_tags, raw_conn_e4v);
-        std::vector<Point_3> bsp_vertices;
-        std::vector<BSPEdge> bsp_edges;
-        std::vector<BSPFace> bsp_faces;
-        std::vector<BSPtreeNode> bsp_nodes;
-        DT.tetra(m_vertices, MR.geo_sf_mesh, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes, args, state);
-        logger().debug("# bsp_vertices = {}", bsp_vertices.size());
-        logger().debug("# bsp_edges = {}", bsp_edges.size());
-        logger().debug("# bsp_faces = {}", bsp_faces.size());
-        logger().debug("# bsp_nodes = {}", bsp_nodes.size());
-        logger().info("Delaunay tetrahedralization done!");
-        tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_DELAUNEY_TETRA, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
-        sum_time += tmp_time;
-        logger().info("time = {}s", tmp_time);
+    //bsp subdivision
+    sum_time += tetwild_stage_one_bsp(args, state, MC);
 
-        //mesh conforming
-        igl_timer.start();
-        logger().info("Divfaces matching...");
-        MeshConformer MC(m_vertices, m_faces, bsp_vertices, bsp_edges, bsp_faces, bsp_nodes);
-        MC.match();
-        logger().info("Divfaces matching done!");
-        tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
-        logger().info("time = {}s", tmp_time);
+    //simple tetrahedralization
+    sum_time += tetwild_stage_one_tetra(args, state, MC, m_f_tags, raw_e_tags, raw_conn_e4v,
+        tet_vertices, tet_indices, is_surface_facet);
 
-        //bsp subdivision
-        igl_timer.start();
-        logger().info("BSP subdivision ...");
-        BSPSubdivision BS(MC);
-        BS.init();
-        BS.subdivideBSPNodes();
-        logger().debug("Output: ");
-        logger().debug("# node = {}", MC.bsp_nodes.size());
-        logger().debug("# face = {}", MC.bsp_faces.size());
-        logger().debug("# edge = {}", MC.bsp_edges.size());
-        logger().debug("# vertex = {}", MC.bsp_vertices.size());
-        logger().info("BSP subdivision done!");
-        tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_BSP, tmp_time, bsp_vertices.size(), bsp_nodes.size()), args, state);
-        sum_time += tmp_time;
-        logger().info("time = {}s", tmp_time);
+    logger().info("Total time for the first stage = {}s", sum_time);
+}
 
-        //simple tetrahedralization
-        igl_timer.start();
-        logger().info("Tetrehedralizing ...");
-        SimpleTetrahedralization ST(state, MC);
-        ST.tetra(MR.tet_vertices, MR.tets);
-        ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, MR.tet_vertices, MR.tets, MR.is_surface_fs);
-        ST.labelBbox(MR.tet_vertices, MR.tets);
-        if (!state.is_mesh_closed)//if input is an open mesh
-            ST.labelBoundary(MR.tet_vertices, MR.tets, MR.is_surface_fs);
-        logger().debug("# tet_vertices = {}", MR.tet_vertices.size());
-        logger().debug("# tets = {}", MR.tets.size());
-        logger().info("Tetrahedralization done!");
-        tmp_time = igl_timer.getElapsedTime();
-        addRecord(MeshRecord(MeshRecord::OpType::OP_SIMPLE_TETRA, tmp_time, MR.tet_vertices.size(), MR.tets.size()), args, state);
-        sum_time += tmp_time;
-        logger().info("time = {}s", tmp_time);
+// -----------------------------------------------------------------------------
 
-        logger().info("Total time for the first stage = {}s", sum_time);
-    }
-
-    /// STAGE 2
+void tetwild_stage_two(const Args &args, State &state,
+    GEO::Mesh &geo_sf_mesh,
+    GEO::Mesh &geo_b_mesh,
+    std::vector<TetVertex> &tet_vertices,
+    std::vector<std::array<int, 4>> &tet_indices,
+    std::vector<std::array<int, 4>> &is_surface_facet,
+    Eigen::MatrixXd &VO,
+    Eigen::MatrixXi &TO,
+    Eigen::VectorXd &AO)
+{
     //init
     logger().info("Refinement initializing...");
+    MeshRefinement MR(geo_sf_mesh, geo_b_mesh, args, state);
+    MR.tet_vertices = std::move(tet_vertices);
+    MR.tets = std::move(tet_indices);
+    MR.is_surface_fs = std::move(is_surface_facet);
     MR.prepareData();
     logger().info("Refinement initialization done!");
 
     //improvement
-    MR.refine(energy_type);
+    MR.refine(state.ENERGY_AMIPS);
 
     extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
+                        Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
+                        const Args &args)
+{
+    igl::Timer igl_timer;
+    igl_timer.start();
+
+    ////pipeline
+    State state(args, VI);
+    GEO::Mesh geo_sf_mesh;
+    GEO::Mesh geo_b_mesh;
+    std::vector<TetVertex> tet_vertices;
+    std::vector<std::array<int, 4>> tet_indices;
+    std::vector<std::array<int, 4>> is_surface_facet;
+
+    /// STAGE 1
+    tetwild_stage_one(VI, FI, args, state, geo_sf_mesh, geo_b_mesh,
+        tet_vertices, tet_indices, is_surface_facet);
+
+    /// STAGE 2
+    tetwild_stage_two(args, state, geo_sf_mesh, geo_b_mesh,
+        tet_vertices, tet_indices, is_surface_facet, VO, TO, AO);
 
     double total_time = igl_timer.getElapsedTime();
     logger().info("Total time for all stages = {}s", total_time);

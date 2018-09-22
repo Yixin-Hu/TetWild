@@ -547,71 +547,39 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
 #ifdef TETWILD_WITH_ISPC
     int n = t_ids.size();
 
-    static int current_max_size = 0;
+    static thread_local std::vector<double> T0;
+    static thread_local std::vector<double> T1;
+    static thread_local std::vector<double> T2;
+    static thread_local std::vector<double> T3;
+    static thread_local std::vector<double> T4;
+    static thread_local std::vector<double> T5;
+    static thread_local std::vector<double> T6;
+    static thread_local std::vector<double> T7;
+    static thread_local std::vector<double> T8;
+    static thread_local std::vector<double> T9;
+    static thread_local std::vector<double> T10;
+    static thread_local std::vector<double> T11;
+    static thread_local std::vector<double> energy;
 
-    static double* T0 = 0;
-    static double* T1 = 0;
-    static double* T2 = 0;
-    static double* T3 = 0;
-    static double* T4 = 0;
-    static double* T5 = 0;
-    static double* T6 = 0;
-    static double* T7 = 0;
-    static double* T8 = 0;
-    static double* T9 = 0;
-    static double* T10 = 0;
-    static double* T11 = 0;
-    static double* energy = 0;
-
-    if (T0 == 0) {
-        logger().warn("Initial ISPC allocation: n = {}", n);
-        current_max_size = n;
-        T0 = new double[n];
-        T1 = new double[n];
-        T2 = new double[n];
-        T3 = new double[n];
-        T4 = new double[n];
-        T5 = new double[n];
-        T6 = new double[n];
-        T7 = new double[n];
-        T8 = new double[n];
-        T9 = new double[n];
-        T10 = new double[n];
-        T11 = new double[n];
-        energy = new double[n];
+    if (T0.empty()) {
+        // logger().trace("Initial ISPC allocation: n = {}", n);
+    } else if (T0.size() != n) {
+        // logger().trace("ISPC reallocation: n = {}", n);
     }
 
-    if (current_max_size < n) {
-        logger().warn("ISPC reallocation: n = {}", n);
-        free(T0);
-        free(T1);
-        free(T2);
-        free(T3);
-        free(T4);
-        free(T5);
-        free(T6);
-        free(T7);
-        free(T8);
-        free(T9);
-        free(T10);
-        free(T11);
-        free(energy);
-
-        current_max_size = n;
-        T0 = new double[n];
-        T1 = new double[n];
-        T2 = new double[n];
-        T3 = new double[n];
-        T4 = new double[n];
-        T5 = new double[n];
-        T6 = new double[n];
-        T7 = new double[n];
-        T8 = new double[n];
-        T9 = new double[n];
-        T10 = new double[n];
-        T11 = new double[n];
-        energy = new double[n];
-    }
+    T0.resize(n);
+    T1.resize(n);
+    T2.resize(n);
+    T3.resize(n);
+    T4.resize(n);
+    T5.resize(n);
+    T6.resize(n);
+    T7.resize(n);
+    T8.resize(n);
+    T9.resize(n);
+    T10.resize(n);
+    T11.resize(n);
+    energy.resize(n);
 
     for (int i = 0; i < n; i++) {
         T0[i] = tet_vertices[tets[t_ids[i]][0]].posf[0];
@@ -628,21 +596,23 @@ double VertexSmoother::getNewEnergy(const std::vector<int>& t_ids) {
         T11[i] = tet_vertices[tets[t_ids[i]][3]].posf[2];
     }
 
-    ispc::energy_ispc(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, energy, n);
+    ispc::energy_ispc(T0.data(), T1.data(), T2.data(), T3.data(), T4.data(),
+        T5.data(), T6.data(), T7.data(), T8.data(),
+        T9.data(), T10.data(), T11.data(), energy.data(), n);
 
     for (int i = 0; i < n; i++) {
         s_energy += energy[i]; //s_energy intialized in the beginning
     }
 #else
     for (int i = 0; i < t_ids.size(); i++) {
-        std::vector<double> t;
-        t.reserve(12);
+        std::array<double, 12> t;
         for (int j = 0; j < 4; j++) {
-            for (int k = 0; k < 3; k++)
-                t.push_back(tet_vertices[tets[t_ids[i]][j]].posf[k]);
+            for (int k = 0; k < 3; k++) {
+                t[j*3 + k] = tet_vertices[tets[t_ids[i]][j]].posf[k];
+            }
         }
         if (energy_type == state.ENERGY_AMIPS) {
-            s_energy += comformalAMIPSEnergy_new(t);
+            s_energy += comformalAMIPSEnergy_new(t.data());
         }
     }
 #endif
@@ -659,14 +629,14 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
     energy = 0;
     for (int i = 0; i < 3; i++) {
         J(i) = 0;
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 3; j++) {
             H(i, j) = 0;
+        }
         X0(i) = tet_vertices[v_id].posf[i];
     }
 
     for (int i = 0; i < t_ids.size(); i++) {
-        std::vector<double> t;
-        t.reserve(12);
+        std::array<double, 12> t;
         int start = 0;
         for (int j = 0; j < 4; j++) {
             if (tets[t_ids[i]][j] == v_id) {
@@ -675,22 +645,23 @@ bool VertexSmoother::NewtonsUpdate(const std::vector<int>& t_ids, int v_id,
             }
         }
         for (int j = 0; j < 4; j++) {
-            for (int k = 0; k < 3; k++)
-                t.push_back(tet_vertices[tets[t_ids[i]][(start + j) % 4]].posf[k]);
+            for (int k = 0; k < 3; k++) {
+                t[j*3+k] = tet_vertices[tets[t_ids[i]][(start + j) % 4]].posf[k];
+            }
         }
 #ifndef TETWILD_WITH_ISPC
         igl_timer.start();
-        energy += comformalAMIPSEnergy_new(t);
+        energy += comformalAMIPSEnergy_new(t.data());
         breakdown_timing[id_value_e] += igl_timer.getElapsedTime();
 #endif
 
         double J_1[3];
         double H_1[9];
         igl_timer.start();
-        comformalAMIPSJacobian_new(t, J_1);
+        comformalAMIPSJacobian_new(t.data(), J_1);
         breakdown_timing[id_value_j] += igl_timer.getElapsedTime();
         igl_timer.start();
-        comformalAMIPSHessian_new(t, H_1);
+        comformalAMIPSHessian_new(t.data(), H_1);
         breakdown_timing[id_value_h] += igl_timer.getElapsedTime();
 
         for (int j = 0; j < 3; j++) {
