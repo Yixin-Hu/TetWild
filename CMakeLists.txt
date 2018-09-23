@@ -79,7 +79,7 @@ include(TetWildDependencies)
 # TetWild
 ################################################################################
 # Build static library for executable
-add_library(libTetWild STATIC
+add_library(tetwild_library STATIC
 		include/tetwild/Args.h
 		include/tetwild/Exception.h
 		include/tetwild/Logger.h
@@ -122,24 +122,38 @@ add_library(libTetWild STATIC
 		src/tetwild/VertexSmoother.h
 		src/tetwild/geogram/mesh_AABB.cpp
 		src/tetwild/geogram/mesh_AABB.h
+		src/tetwild/geogram/utils.cpp
+		src/tetwild/geogram/utils.h
+		src/tetwild/mmg/wrapper.cpp
+		src/tetwild/mmg/wrapper.h
+		src/tetwild/mmg/internal/utils.cpp
+		src/tetwild/mmg/internal/utils.h
 )
-target_include_directories(libTetWild
+add_library(tetwild::tetwild ALIAS tetwild_library)
+target_include_directories(tetwild_library
 	PRIVATE
 		src
 	PUBLIC
 		include
 )
-target_link_libraries(libTetWild
+target_link_libraries(tetwild_library
 	PUBLIC
 		geogram
 		igl::core
 		pymesh::pymesh
 		spdlog::spdlog
+		mmg::mmgs
+		mmg::mmg3d
 	PRIVATE
 		igl::cgal
 		warnings::all
 )
-set_target_properties(libTetWild PROPERTIES OUTPUT_NAME "tetwild")
+set_target_properties(tetwild_library PROPERTIES OUTPUT_NAME "tetwild")
+
+# tetwild private API
+add_library(tetwild_internal INTERFACE)
+add_library(tetwild::internal ALIAS tetwild_internal)
+target_include_directories(tetwild_internal INTERFACE src)
 
 # ispc
 if(TETWILD_WITH_ISPC)
@@ -151,16 +165,20 @@ endif()
 # Building executable
 add_executable(TetWild src/main.cpp)
 target_link_libraries(TetWild
-		libTetWild
+		tetwild::tetwild
+		tetwild::internal
 		CLI11::CLI11
 		igl::cgal
 		warnings::all
 )
-target_include_directories(TetWild PRIVATE src)
 igl_copy_cgal_dll(TetWild)
 
 # Install
 install(TARGETS TetWild RUNTIME DESTINATION bin)
+
+################################################################################
+
+add_subdirectory(misc)
 
 ################################################################################
 # Folders for Visual Studio/XCode IDEs

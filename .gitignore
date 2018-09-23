@@ -4,6 +4,7 @@
 /extern/fmt
 /extern/geogram
 /extern/libigl
+/extern/mmg
 /extern/spdlog
 
 # Build
