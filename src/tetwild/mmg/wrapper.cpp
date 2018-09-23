@@ -12,7 +12,9 @@
 #include "wrapper.h"
 #include "internal/utils.h"
 #include <tetwild/Logger.h>
+#include <tetwild/DistanceQuery.h>
 #include <tetwild/geogram/utils.h>
+#include <igl/avg_edge_length.h>
 #include <igl/bounding_box_diagonal.h>
 #include <igl/boundary_facets.h>
 #include <igl/signed_distance.h>
@@ -20,6 +22,7 @@
 #include <igl/winding_number.h>
 #include <tetwild/geogram/utils.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_AABB.h>
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Wrapper for 3D remeshing comes from:
@@ -146,17 +149,6 @@ bool mmg3d_extract_iso(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, con
         met->m[v+1] = SI[v];
     }
 
-    // Flag border for future deletion
-    // std::vector<bool> on_border(M.vertices.nb(), false);
-    // for (index_t t = 0; t < M.cells.nb(); ++t) {
-    //     for (index_t lf = 0; lf < M.cells.nb_facets(t); ++lf) {
-    //         if (M.cells.adjacent(t,lf) != GEO::NO_CELL) continue;
-    //         for (index_t lv = 0; lv < M.cells.facet_nb_vertices(t,lf); ++lv) {
-    //             on_border[M.cells.facet_vertex(t,lf,lv)] = true;
-    //         }
-    //     }
-    // }
-
     // Set remeshing options
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_iso, 1);
     MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_ls, opt.ls_value);
@@ -186,31 +178,6 @@ bool mmg3d_extract_iso(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, con
 
     // Convert back
     ok = mmg_to_eigen(mesh, VO, FO, TO);
-    // GEO::Attribute<double> ls_out(M_out.vertices.attributes(), opt.ls_attribute);
-    // for(uint v = 0; v < M_out.vertices.nb(); ++v) {
-    //     ls_out[v] = met->m[v+1];
-    // }
-    /* Extract only the border */
-    // M_out.cells.clear(false,false);
-    // M_out.vertices.remove_isolated();
-    // GEO::vector<index_t> to_del(M_out.facets.nb(), 0);
-    // for (index_t f = 0; f < M_out.facets.nb(); ++f) {
-    //     double d = 0;
-    //     bool f_on_border = true;
-    //     for (index_t lv = 0; lv < M_out.facets.nb_vertices(f); ++lv) {
-    //         d = geo_max(d,std::abs(ls_out[M_out.facets.vertex(f,0)] - opt.ls_value));
-    //         if (M_out.facets.vertex(f,lv) < M.vertices.nb()) {
-    //             if (!on_border[M_out.facets.vertex(f,lv)]) f_on_border = false;
-    //         } else {
-    //             f_on_border = false;
-    //         }
-    //     }
-    //     // if (d > 1.1 * opt.hmin) {
-    //     //     to_del[f] = 1;
-    //     // }
-    //     if (f_on_border) to_del[f] = 1;
-    // }
-    // M_out.facets.delete_elements(to_del, true);
 
     mmg3d_free(mesh, met);
     return ok;
@@ -242,10 +209,24 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, co
     assert(V.cols() == 3);
     MmgOptions lv_opt = opt;
     lv_opt.level_set = true;
-    lv_opt.angle_detection = false;
     Eigen::MatrixXi F;
     igl::boundary_facets(T, F);
     mmg3d_extract_iso(V, F, T, S, OV, OF, OT, lv_opt);
+}
+
+void sample_box_regular(const Eigen::MatrixXd &V, double length, Eigen::MatrixXd &VO) {
+    Eigen::RowVector3d pmin = V.colwise().minCoeff();
+    Eigen::RowVector3d pmax = V.colwise().maxCoeff();
+    Eigen::RowVector3d N = ((pmax - pmin).array() / length).unaryExpr([](double x) { return std::round(x); });
+    Eigen::RowVector3d L = (pmax - pmin).array() / N.array();
+    VO.resize((N.array() + 2).prod(), 3);
+    for (int i = -1, cnt = 0; i < N(0) + 1; ++i) {
+        for (int j = -1; j < N(1) + 1; ++j) {
+            for (int k = -1; k < N(2) + 1; ++k) {
+                VO.row(cnt++) = pmin.array() + L.array() * Eigen::RowVector3d(i, j, k).array();
+            }
+        }
+    }
 }
 
 void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, int num_samples,
@@ -254,55 +235,82 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
     // Compute ambient points by sampling CVT points inside a given volume
     Eigen::MatrixXd ambient_vertices;
     Eigen::MatrixXi ambient_tets;
-    sample_bbox(V, num_samples, 0.01 * igl::bounding_box_diagonal(V), ambient_vertices);
+    // resample_surface(V, F, V.rows(), ambient_vertices, 10, 0);
+    // sample_bbox(ambient_vertices, num_samples, 0.5 * igl::avg_edge_length(V, F), ambient_vertices, 10, 0);
+    sample_box_regular(V, opt.hmax, ambient_vertices);
     delaunay_tetrahedralization(ambient_vertices, ambient_tets);
 
-    // Compute signed distance function
-    Eigen::VectorXd S;
-    Eigen::VectorXi face_ids;
-    Eigen::MatrixXd closest_pts, normals;
-    igl::signed_distance(ambient_vertices, V, F,
-        igl::SIGNED_DISTANCE_TYPE_WINDING_NUMBER,
-        S, face_ids, closest_pts, normals);
-    assert(S.size() == V.rows());
-    for (int v = 0; v < S.size(); ++v) {
-        if (std::isnan(S[v])) {
-            S[v] = 0.0;
+    // Compute unsigned distance field
+    Eigen::VectorXd S(ambient_vertices.rows());
+    {
+        logger().debug("computing unsigned distance field");
+        GEO::Mesh M;
+        to_geogram_mesh(V, F, M);
+        GEO::MeshFacetsAABB aabb_tree(M);
+        GEO::index_t nearest_facet = GEO::NO_FACET;
+        GEO::vec3 nearest_point;
+        double sq_dist = std::numeric_limits<double>::max();
+        S.setZero();
+        for (int v = 0; v < ambient_vertices.rows(); ++v) {
+            auto p = ambient_vertices.row(v);
+            GEO::vec3 geo_p(p[0], p[1], p[2]);
+            if (nearest_facet != GEO::NO_FACET) {
+                get_point_facet_nearest_point(M, geo_p, nearest_facet, nearest_point, sq_dist);
+            }
+            aabb_tree.nearest_facet_with_hint(geo_p, nearest_facet, nearest_point, sq_dist);
+            S(v) = std::sqrt(sq_dist);
         }
+        logger().debug("done");
+    }
+
+    // Compute sign using winding number
+    {
+        logger().debug("computing inside/outside using winding number");
+        Eigen::VectorXd W;
+        igl::winding_number(V, F, ambient_vertices, W);
+        for (int v = 0; v < ambient_vertices.rows(); ++v) {
+            if (!(W(v) > 0.5)) {
+                S(v) *= -1.0;
+            }
+        }
+        logger().debug("done");
     }
 
     // Extract iso-surface from level set
     MmgOptions lv_opt = opt;
     lv_opt.level_set = true;
-    lv_opt.angle_detection = false;
     Eigen::MatrixXi ambient_facets;
     igl::boundary_facets(ambient_tets, ambient_facets);
 
-    // GEO::Mesh M;
-    // to_geogram_mesh(ambient_vertices, ambient_facets, ambient_tets, M);
-    // GEO::Attribute<double> attr(M.vertices.attributes(), "sdf");
-    // for (int v = 0; v < ambient_facets.rows(); ++v) {
-    //     attr[v] = S[v];
-    // }
-    // mesh_save(M, "tmp.geogram");
+    GEO::Mesh M;
+    to_geogram_mesh(ambient_vertices, ambient_facets, ambient_tets, M);
+    GEO::Attribute<double> attr(M.vertices.attributes(), "sdf");
+    GEO::vector<GEO::index_t> to_delete;
+    for (int v = 0; v < ambient_vertices.rows(); ++v) {
+        attr[v] = S[v];
+    }
+    mesh_save(M, "tmp.geogram");
 
     mmg3d_extract_iso(ambient_vertices, ambient_facets, ambient_tets, S, OV, OF, OT, lv_opt);
 
     // Keep tets inside using winding number
-    Eigen::MatrixXd P;
-    Eigen::VectorXd W;
-    igl::barycenter(OV, OT, P);
-    igl::winding_number(V, F, P, W);
-    Eigen::MatrixXi TT(OT.rows(), OT.cols());
-    int cnt = 0;
-    for (int e = 0; e < OT.rows(); ++e) {
-        if (W(e) > 0.5) {
-            TT.row(cnt++) = OT.row(e);
+    {
+        logger().debug("computing inside/outside using winding number");
+        Eigen::MatrixXd P;
+        Eigen::VectorXd W;
+        igl::barycenter(OV, OT, P);
+        igl::winding_number(V, F, P, W);
+        Eigen::MatrixXi TT(OT.rows(), OT.cols());
+        int cnt = 0;
+        for (int e = 0; e < OT.rows(); ++e) {
+            if (W(e) > 0.5 + 1e-6) {
+                TT.row(cnt++) = OT.row(e);
+            }
         }
+        OT = TT.topRows(cnt);
+        igl::boundary_facets(OT, OF);
+        logger().debug("done");
     }
-    OT = TT.topRows(cnt);
-
-    igl::boundary_facets(OT, OF);
 }
 
 } // namespace tetwild

@@ -16,6 +16,7 @@
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/voronoi/CVT.h>
+#include <geogram/basic/progress.h>
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace tetwild {
@@ -105,8 +106,8 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 	Eigen::MatrixXd &P, int num_lloyd, int num_newton)
 {
 	assert(num_samples > 3);
-	bool was_quiet = GEO::Logger::instance()->is_quiet();
-	GEO::Logger::instance()->set_quiet(true);
+	// bool was_quiet = GEO::Logger::instance()->is_quiet();
+	// GEO::Logger::instance()->set_quiet(true);
 
 	Eigen::RowVector3d pmin = V.colwise().minCoeff();
 	Eigen::RowVector3d pmax = V.colwise().maxCoeff();
@@ -139,20 +140,79 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 	for (int v = 0; v < 8; ++v) {
 		CVT.lock_point(num_samples + V.rows() + v);
 	}
+	CVT.set_show_iterations(true);
+
+	// if (num_lloyd > 0) {
+	// 	CVT.Lloyd_iterations(num_lloyd);
+	// }
+
+	// if (num_newton > 0) {
+	// 	CVT.Newton_iterations(num_newton);
+	// }
 
 	if (num_lloyd > 0) {
-		CVT.Lloyd_iterations(num_lloyd);
+		try {
+			GEO::ProgressTask progress("Lloyd", 100);
+			CVT.set_progress_logger(&progress);
+			CVT.Lloyd_iterations(num_lloyd);
+		} catch(const GEO::TaskCanceled&) {
+		}
 	}
 
 	if (num_newton > 0) {
-		CVT.Newton_iterations(num_newton);
+		try {
+			GEO::ProgressTask progress("Newton", 100);
+			CVT.set_progress_logger(&progress);
+			CVT.Newton_iterations(num_newton);
+		} catch(const GEO::TaskCanceled&) {
+		}
 	}
 
 	P.resize(3, CVT.nb_points());
 	std::copy_n(CVT.embedding(0), 3*CVT.nb_points(), P.data());
 	P.transposeInPlace();
 
-	GEO::Logger::instance()->set_quiet(was_quiet);
+	// GEO::Logger::instance()->set_quiet(was_quiet);
+}
+
+// -----------------------------------------------------------------------------
+
+void resample_surface(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, int num_samples,
+	Eigen::MatrixXd &P, int num_lloyd, int num_newton)
+{
+	assert(num_samples > 3);
+	// bool was_quiet = GEO::Logger::instance()->is_quiet();
+	// GEO::Logger::instance()->set_quiet(true);
+
+	GEO::Mesh M;
+	to_geogram_mesh(V, F, M);
+	GEO::CentroidalVoronoiTesselation CVT(&M);
+	CVT.compute_initial_sampling(num_samples);
+	CVT.set_show_iterations(true);
+
+	if (num_lloyd > 0) {
+		try {
+			GEO::ProgressTask progress("Lloyd", 100);
+			CVT.set_progress_logger(&progress);
+			CVT.Lloyd_iterations(num_lloyd);
+		} catch(const GEO::TaskCanceled&) {
+		}
+	}
+
+	if (num_newton > 0) {
+		try {
+			GEO::ProgressTask progress("Newton", 100);
+			CVT.set_progress_logger(&progress);
+			CVT.Newton_iterations(num_newton);
+		} catch(const GEO::TaskCanceled&) {
+		}
+	}
+
+	P.resize(3, num_samples);
+	std::copy_n(CVT.embedding(0), 3*num_samples, P.data());
+	P.transposeInPlace();
+
+	// GEO::Logger::instance()->set_quiet(was_quiet);
 }
 
 // -----------------------------------------------------------------------------

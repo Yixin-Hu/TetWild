@@ -25,7 +25,7 @@ struct MmgOptions {
     double hausd = 0.01;
     double hsiz = 0.0; // using hmin and hmax if set to 0
     double hmin = 0.01;
-    double hmax = 2.;
+    double hmax = 2.0;
     double hgrad = 1.105171;
     bool enable_anisotropy = false;
     bool optim = false;

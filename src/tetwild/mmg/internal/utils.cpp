@@ -88,10 +88,11 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     }
     if (volume_mesh) {
         for (int c = 0; c < mmg->ne; ++c) {
-            mmg->tetra[c+1].v[0] = T(c,0) + 1;
-            mmg->tetra[c+1].v[1] = T(c,1) + 1;
-            mmg->tetra[c+1].v[2] = T(c,2) + 1;
-            mmg->tetra[c+1].v[3] = T(c,3) + 1;
+            MMG3D_Set_tetrahedron(mmg, T(c,0)+1, T(c,1)+1, T(c,2)+1, T(c,3)+1, 0, c+1);
+            // mmg->tetra[c+1].v[0] = T(c,0) + 1;
+            // mmg->tetra[c+1].v[1] = T(c,1) + 1;
+            // mmg->tetra[c+1].v[2] = T(c,2) + 1;
+            // mmg->tetra[c+1].v[3] = T(c,3) + 1;
         }
     }
 
@@ -114,9 +115,9 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     }
 
     if (volume_mesh) {
-        // Orient head tetrahedra to have positive volume.
+        // Orient each tetrahedra to have positive volume.
         // TODO: Use the API function MMG3D_Set_tetrahedron instead
-        MMG3D_Set_handGivenMesh(mmg);
+        // MMG3D_Set_handGivenMesh(mmg);
     }
 
     return true;

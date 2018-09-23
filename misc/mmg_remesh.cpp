@@ -20,6 +20,7 @@
 #include <igl/bounding_box_diagonal.h>
 #include <igl/read_triangle_mesh.h>
 #include <igl/write_triangle_mesh.h>
+#include <igl/remove_duplicate_vertices.h>
 #include <igl/writeMESH.h>
 #include <tetwild/DisableWarnings.h>
 #include <CLI/CLI.hpp>
@@ -32,6 +33,7 @@ int main(int argc, char *argv[]) {
         double mesh_size = 0.0;
         double epsilon = 0.0;
         int num_samples = 0;
+        bool sharp = false;
     } args;
 
     CLI::App app{"MMG_Wrapper"};
@@ -39,7 +41,8 @@ int main(int argc, char *argv[]) {
     app.add_option("output,--output", args.output, "Output mesh");
     app.add_option("-m,--mesh_size", args.mesh_size, "Absolute mesh size (default: 5% of the bbox diagonal)");
     app.add_option("-e,--epsilon", args.epsilon, "Absolute Hausdorff distance (default: 0.1% of the bbox diagonal)");
-    app.add_option("-n,--num_samples", args.num_samples, "Number of samples for the SDF field (default: 2x number of vertices)");
+    app.add_option("-n,--num_samples", args.num_samples, "Number of samples for the SDF field (default: 1x number of vertices)");
+    app.add_flag("-s,--sharp_features", args.sharp, "Detect sharp features (default: false)");
 
     try {
         app.parse(argc, argv);
@@ -47,6 +50,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(1));
     spdlog::flush_every(std::chrono::seconds(3));
     GEO::initialize();
 
@@ -56,26 +60,36 @@ int main(int argc, char *argv[]) {
     GEO::CmdLine::import_arg_group("algo");
 
     // Load input
-    Eigen::MatrixXd VI, VO;
-    Eigen::MatrixXi FI, FO, TO;
+    Eigen::MatrixXd VI, SV, VO;
+    Eigen::MatrixXi FI, SF, FO, TO;
     igl::read_triangle_mesh(args.input, VI, FI);
+    Eigen::VectorXi SVI, SVJ;
+    igl::remove_duplicate_vertices(VI, FI, 1e-7 * igl::bounding_box_diagonal(VI), SV, SVI, SVJ, SF);
+    VI = SV;
+    FI = SF;
 
     // Compute default arguments
     if (args.mesh_size == 0.0) {
         args.mesh_size = 5.0 / 100.0 * igl::bounding_box_diagonal(VI);
+    } else {
+        args.mesh_size = args.mesh_size / 100.0 * igl::bounding_box_diagonal(VI);
     }
     if (args.epsilon == 0.0) {
         args.epsilon = 0.1 / 100.0 * igl::bounding_box_diagonal(VI);
+    } else {
+        args.epsilon = args.epsilon / 100.0 * igl::bounding_box_diagonal(VI);
     }
-    if (args.num_samples) {
-        args.num_samples = 2 * VI.rows();
+    if (args.num_samples == 0) {
+        args.num_samples = VI.rows();
     }
 
     // Remesh
     tetwild::MmgOptions opt;
-    opt.hsiz = args.mesh_size;
+    opt.hmin = 0.1 * args.epsilon;
+    opt.hmax = args.mesh_size;
     opt.hausd = args.epsilon;
-    tetwild::isosurface_remeshing(VI, FI, args.num_samples, VO, FO, TO);
+    opt.angle_detection = args.sharp;
+    tetwild::isosurface_remeshing(VI, FI, args.num_samples, VO, FO, TO, opt);
 
     // Save output
     GEO::Mesh M;

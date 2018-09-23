@@ -49,6 +49,19 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 	Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
 
 ///
+/// Sample points on surface.
+///
+/// @param[in]  V            { #V x 3 input mesh vertices }
+/// @param[in]  F            { #F x 3 input mesh triangles }
+/// @param[in]  num_samples  { Number of target samples }
+/// @param      P            { num_samples x 3 output point samples }
+/// @param[in]  num_lloyd    { Number of Lloyd iterations }
+/// @param[in]  num_newton   { Number of Newton iterations }
+///
+void resample_surface(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, int num_samples,
+	Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
+
+///
 /// Computes a Delaunay tiangulation of a point cloud in 3d
 ///
 /// @param[in]  V     { #V x dims input point positions }
