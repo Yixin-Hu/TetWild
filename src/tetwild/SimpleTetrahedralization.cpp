@@ -12,7 +12,6 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/Common.h>
 #include <tetwild/Logger.h>
-#include <igl/winding_number.h>
 #include <igl/Timer.h>
 #include <bitset>
 

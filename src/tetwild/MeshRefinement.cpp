@@ -55,13 +55,18 @@ void MeshRefinement::prepareData(bool is_init) {
 }
 
 void MeshRefinement::round() {
-    int cnt = 0;
-    int sub_cnt = 0;
+    size_t num_removed = 0;
+    size_t num_rounded = 0;
+    size_t num_new = 0;
     for (int i = 0; i < tet_vertices.size(); i++) {
-        if (v_is_removed[i])
+        if (v_is_removed[i]) {
+            ++num_removed;
             continue;
-        if (tet_vertices[i].is_rounded)
+        }
+        if (tet_vertices[i].is_rounded) {
+            ++num_rounded;
             continue;
+        }
         tet_vertices[i].is_rounded = true;
         Point_3 old_p = tet_vertices[i].pos;
         tet_vertices[i].pos = Point_3(tet_vertices[i].posf[0], tet_vertices[i].posf[1], tet_vertices[i].posf[2]);
@@ -89,11 +94,10 @@ void MeshRefinement::round() {
         if (!tet_vertices[i].is_rounded)
             tet_vertices[i].pos = old_p;
         else {
-            cnt++;
-            sub_cnt++;
+            ++num_new;
         }
     }
-    logger().debug("round: {}({})", cnt, tet_vertices.size());
+    logger().debug("rounded: {} / {} (new: {}, removed: {})", num_rounded + num_new, tet_vertices.size() - num_removed, num_new, num_removed);
 
     //for check
 //    for (int i = 0; i < tets.size(); i++) {
@@ -146,13 +150,13 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
         collapser.collapse();
         tmp_time = igl_timer.getElapsedTime();
         collapser.outputInfo(MeshRecord::OpType::OP_COLLAPSE, tmp_time, is_log);
-        logger().info("edge collasing done!");
+        logger().info("edge collapsing done!");
         logger().info("time = {}s", tmp_time);
     }
 
     if (ops[2]) {
         igl_timer.start();
-        logger().info("edge removing...");
+        logger().info("edge removal...");
         edge_remover.init();
         edge_remover.swap();
         tmp_time = igl_timer.getElapsedTime();
@@ -167,7 +171,7 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
         smoother.smooth();
         tmp_time = igl_timer.getElapsedTime();
         smoother.outputInfo(MeshRecord::OpType::OP_SMOOTH, tmp_time, is_log);
-        logger().info("vertex smooth done!");
+        logger().info("vertex smoothing done!");
         logger().info("time = {}s", tmp_time);
     }
 
@@ -438,8 +442,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     }
 
 
-    if (args.target_num_vertices > 0)
+    if (args.target_num_vertices > 0){
         applyTargetedVertexNum(splitter, collapser, edge_remover, smoother);
+    }
 
     if (args.background_mesh != "") {
         applySizingField(splitter, collapser, edge_remover, smoother);
@@ -468,7 +473,7 @@ void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser
                                 VertexSmoother& smoother){
     logger().info("////////////////// Pre-processing //////////////////");
     collapser.is_limit_length = false;
-    doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{{false, true, false, false}});
+    doOperations(splitter, collapser, edge_remover, smoother, {{false, true, false, false}});
     collapser.is_limit_length = true;
 }
 
@@ -480,7 +485,7 @@ void MeshRefinement::refine_post(EdgeSplitter& splitter, EdgeCollapser& collapse
         tet_vertices[i].adaptive_scale = 1;
     }
 
-    doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{{false, true, false, false}});
+    doOperations(splitter, collapser, edge_remover, smoother, {{false, true, false, false}});
 }
 
 void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,
