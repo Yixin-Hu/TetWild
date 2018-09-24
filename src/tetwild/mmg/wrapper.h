@@ -37,7 +37,7 @@ struct MmgOptions {
     bool nosurf = false;
     // Level set extraction
     bool level_set = false;
-    double ls_value = 0.;
+    double ls_value = 0.0;
 };
 
 ///

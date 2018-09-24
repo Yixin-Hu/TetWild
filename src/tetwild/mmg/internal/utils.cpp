@@ -48,7 +48,7 @@ bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, 
     return true;
 }
 
-bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXi &T, MMG5_pMesh& mmg, MMG5_pSol& sol) {
+bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXi &T, const Eigen::VectorXi &R, MMG5_pMesh& mmg, MMG5_pSol& sol) {
     logger().debug("converting Eigen matrices to MMG5_pMesh ...");
     assert(V.cols() == 3);
     bool volume_mesh = (T.rows() > 0);
@@ -92,11 +92,12 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     }
     if (volume_mesh) {
         for (int c = 0; c < mmg->ne; ++c) {
-            // MMG3D_Set_tetrahedron(mmg, T(c,0)+1, T(c,1)+1, T(c,2)+1, T(c,3)+1, 0, c+1);
-            mmg->tetra[c+1].v[0] = T(c,0) + 1;
-            mmg->tetra[c+1].v[1] = T(c,1) + 1;
-            mmg->tetra[c+1].v[2] = T(c,2) + 1;
-            mmg->tetra[c+1].v[3] = T(c,3) + 1;
+            int ref = (R.size() > 0 ? R(c) : 0);
+            MMG3D_Set_tetrahedron(mmg, T(c,0)+1, T(c,1)+1, T(c,2)+1, T(c,3)+1, ref, c+1);
+            // mmg->tetra[c+1].v[0] = T(c,0) + 1;
+            // mmg->tetra[c+1].v[1] = T(c,1) + 1;
+            // mmg->tetra[c+1].v[2] = T(c,2) + 1;
+            // mmg->tetra[c+1].v[3] = T(c,3) + 1;
         }
     }
 
@@ -121,7 +122,7 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     if (volume_mesh) {
         // Orient each tetrahedra to have positive volume.
         // TODO: Use the API function MMG3D_Set_tetrahedron instead
-        MMG3D_Set_handGivenMesh(mmg);
+        // MMG3D_Set_handGivenMesh(mmg);
     }
 
     return true;
@@ -134,7 +135,8 @@ bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F) 
 
 bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, MMG5_pMesh& mmg, MMG5_pSol& sol) {
     Eigen::MatrixXi T;
-    return eigen_to_mmg(V, F, T, mmg, sol);
+    Eigen::VectorXi R;
+    return eigen_to_mmg(V, F, T, R, mmg, sol);
 }
 
 void mmg3d_free(MMG5_pMesh mmg, MMG5_pSol sol) {

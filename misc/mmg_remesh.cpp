@@ -87,8 +87,8 @@ int main(int argc, char *argv[]) {
 
     // Remesh
     tetwild::MmgOptions opt;
-    opt.hmin = std::min(0.1 * args.epsilon, args.mesh_size);
-    opt.hmax = std::max(args.epsilon, args.mesh_size);
+    opt.hmin = 0.1 * args.mesh_size;
+    opt.hmax = args.mesh_size;
     opt.hausd = args.epsilon;
     opt.angle_detection = args.sharp;
     tetwild::isosurface_remeshing(VI, FI, args.num_samples, VO, FO, TO, opt);
