@@ -109,6 +109,8 @@ int main(int argc, char *argv[]) {
     app.add_flag("-q,--is-quiet", args.is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
+    app.add_flag("--mmgs", args.use_mmgs, "Use mmgs in the hybrid pipeline (default: false).");
+    app.add_flag("--mmg3d", args.use_mmg3d, "Use mmg3d in the hybrid pipeline (default: false).");
 
     try {
         app.parse(argc, argv);

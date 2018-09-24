@@ -54,7 +54,7 @@ void MeshRefinement::prepareData(bool is_init) {
     localOperation.outputInfo(MeshRecord::OpType::OP_OPT_INIT, tmp_time);
 }
 
-void MeshRefinement::round() {
+bool MeshRefinement::round() {
     size_t num_removed = 0;
     size_t num_rounded = 0;
     size_t num_new = 0;
@@ -109,6 +109,8 @@ void MeshRefinement::round() {
 //            logger().debug("round hehe");
 //        }
 //    }
+
+    return num_rounded + num_new == tet_vertices.size() - num_removed;
 }
 
 void MeshRefinement::clear() {
@@ -209,7 +211,8 @@ int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& coll
     return loop_cnt;
 }
 
-void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update) {
+void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update)
+{
     GEO::MeshFacetsAABBWithEps geo_sf_tree(geo_sf_mesh);
     if (geo_b_mesh.vertices.nb() == 0) {
         getSimpleMesh(geo_b_mesh);//for constructing aabb tree, the mesh cannot be empty
@@ -250,6 +253,18 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         }
     }
 
+    auto check_all_rounded = [&]() {
+        for (int i = 0; i < tet_vertices.size(); i++) {
+            if (v_is_removed[i]) {
+                continue;
+            }
+            if (!tet_vertices[i].is_rounded) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     double avg_energy0, max_energy0;
     localOperation.getAvgMaxEnergy(avg_energy0, max_energy0);
     double target_energy0 = 1e6;
@@ -272,22 +287,14 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
                      std::array<bool, 4>({{is_split, ops[1], ops[2], ops[3]}}));
         update_cnt++;
 
-        if (is_dealing_unrounded) {
-            bool is_finished = true;
-            for (int i = 0; i < tet_vertices.size(); i++) {
-                if (v_is_removed[i])
-                    continue;
-                if (!tet_vertices[i].is_rounded)
-                    is_finished = false;
-            }
-            if (is_finished) {
-                logger().debug("all vertices rounded!!");
-//                break;
-            }
+        if (args.use_mmg3d && check_all_rounded()) {
+            logger().debug("all vertices rounded!!");
+            break;
         }
 
-        if (localOperation.getMaxEnergy() < args.filter_energy_thres)
+        if (localOperation.getMaxEnergy() < args.filter_energy_thres) {
             break;
+        }
 
         //check and mark is_bad_element
         double avg_energy, max_energy;

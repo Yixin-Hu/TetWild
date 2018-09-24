@@ -61,6 +61,12 @@ struct Args {
     // Background mesh for the edge length sizing field
     std::string background_mesh = "";
 
+    // Use mmgs to simplify the input surface mesh if possible (i.e. it doesn't return an empty mesh)
+    bool use_mmgs = false;
+
+    // Use mmg3d to optimize the final tet mesh if possible (i.e. as soon as all vertices can be rounded)
+    bool use_mmg3d = false;
+
     // [debug] logging
     bool write_csv_file = true;
     std::string working_dir = "";

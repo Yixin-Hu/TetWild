@@ -45,7 +45,10 @@ public:
     { }
 
     void prepareData(bool is_init=true);
-    void round();
+
+    // Returns true if all the vertices can be rounded
+    bool round();
+
     void clear();
 
     int sf_id = 0;

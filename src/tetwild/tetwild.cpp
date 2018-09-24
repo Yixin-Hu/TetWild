@@ -18,6 +18,7 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <tetwild/mmg/remeshing.h>
 #include <igl/boundary_facets.h>
 #include <igl/remove_unreferenced.h>
 #include <pymesh/MshSaver.h>
@@ -192,7 +193,38 @@ double tetwild_stage_one_preprocess(
 
     m_vertices.clear();
     m_faces.clear();
-    pp.process(geo_sf_mesh, m_vertices, m_faces, args);
+    //optimize with mmgs
+    if (args.use_mmgs) {
+        MmgOptions opt;
+        opt.hsiz = state.initial_edge_len;
+        opt.hausd = state.eps_input;
+        switch (logger().level()) {
+            case spdlog::level::trace:
+                opt.verbose = 10; break;
+            case spdlog::level::debug:
+                opt.verbose = 5; break;
+            default:
+                opt.verbose = 0;
+        }
+        Eigen::MatrixXd VO;
+        Eigen::MatrixXi FO;
+        if (remesh_uniform_sf(VI, FI, VO, FO, opt)) {
+            assert(VO.rows() > 0 && FO.rows() > 0);
+            m_vertices.reserve(VO.rows());
+            for (int v = 0; v < VO.rows(); ++v) {
+                m_vertices.emplace_back(VO(v, 0), VO(v, 1), VO(v, 2));
+            }
+            m_faces.reserve(FO.rows());
+            for (int f = 0; f < FO.rows(); ++f) {
+                m_faces.push_back({{FO(f, 0), FO(f, 1), FO(f, 2)}});
+            }
+        } else {
+            logger().warn("mmgs didn't succeed, using TetWild's simplify procedure");
+        }
+    }
+    if (m_vertices.empty()) {
+        pp.process(geo_sf_mesh, m_vertices, m_faces, args);
+    }
     double tmp_time = igl_timer.getElapsedTime();
     addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
     logger().info("time = {}s", tmp_time);
@@ -369,7 +401,7 @@ void tetwild_stage_one(
 
 // -----------------------------------------------------------------------------
 
-void tetwild_stage_two(const Args &args, State &state,
+void tetwild_stage_two(Args &args, State &state,
     GEO::Mesh &geo_sf_mesh,
     GEO::Mesh &geo_b_mesh,
     std::vector<TetVertex> &tet_vertices,
@@ -392,14 +424,42 @@ void tetwild_stage_two(const Args &args, State &state,
     MR.refine(state.ENERGY_AMIPS);
 
     extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+
+    //optimize with mmg3d
+    if (args.use_mmg3d) {
+        MmgOptions opt;
+        opt.hsiz = state.initial_edge_len;
+        opt.hausd = state.eps_input;
+        switch (logger().level()) {
+            case spdlog::level::trace:
+                opt.verbose = 10; break;
+            case spdlog::level::debug:
+                opt.verbose = 5; break;
+            default:
+                opt.verbose = 0;
+        }
+        Eigen::MatrixXi FO;
+        if (remesh_uniform_3d(VO, TO, VO, FO, TO, opt)) {
+            assert(VO.rows() > 0 && FO.rows() > 0);
+        } else {
+            logger().warn("mmg3d failed to optimize the mesh, reverting to TetWild");
+            args.use_mmg3d = false;
+
+            //improvement
+            MR.refine(state.ENERGY_AMIPS);
+
+            extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
                         Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
-                        const Args &args)
+                        const Args &args_)
 {
+    Args args = args_;
     igl::Timer igl_timer;
     igl_timer.start();
 

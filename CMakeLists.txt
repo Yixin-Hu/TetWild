@@ -124,8 +124,8 @@ add_library(tetwild_library STATIC
 		src/tetwild/geogram/mesh_AABB.h
 		src/tetwild/geogram/utils.cpp
 		src/tetwild/geogram/utils.h
-		src/tetwild/mmg/wrapper.cpp
-		src/tetwild/mmg/wrapper.h
+		src/tetwild/mmg/remeshing.cpp
+		src/tetwild/mmg/remeshing.h
 		src/tetwild/mmg/internal/utils.cpp
 		src/tetwild/mmg/internal/utils.h
 )

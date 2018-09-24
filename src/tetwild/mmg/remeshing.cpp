@@ -9,7 +9,7 @@
 // Created by Jeremie Dumas on 09/04/18.
 //
 ////////////////////////////////////////////////////////////////////////////////
-#include "wrapper.h"
+#include "remeshing.h"
 #include "internal/utils.h"
 #include <tetwild/Logger.h>
 #include <tetwild/DistanceQuery.h>
@@ -70,6 +70,7 @@ bool mmgs_tri_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     MMGS_Set_iparameter(mesh, met, MMGS_IPARAM_noswap, int(opt.noswap));
     MMGS_Set_iparameter(mesh, met, MMGS_IPARAM_noinsert, int(opt.noinsert));
     MMGS_Set_iparameter(mesh, met, MMGS_IPARAM_nomove, int(opt.nomove));
+    MMGS_Set_iparameter(mesh, met, MMG3D_IPARAM_verbose, int(opt.verbose));
 
     int ier = MMGS_mmgslib(mesh,met);
     if (ier != MMG5_SUCCESS) {
@@ -119,6 +120,7 @@ bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, cons
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_opnbdy, int(opt.opnbdy));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_optim, int(opt.optim));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_optimLES, int(opt.optimLES));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_verbose, int(opt.verbose));
     if (SI.rows() > 0) {
         assert(SI.size() == VI.rows());
         for(int v = 0; v < SI.size(); ++v) {
@@ -184,6 +186,7 @@ bool mmg3d_extract_iso(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, con
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nomove, int(opt.nomove));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nosurf, int(opt.nosurf));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_opnbdy, int(opt.opnbdy));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_verbose, int(opt.verbose));
 
     int ier = MMG3D_mmg3dls(mesh,met);
     if (ier != MMG5_SUCCESS) {
@@ -203,14 +206,14 @@ bool mmg3d_extract_iso(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, con
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
+bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
         Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, const MmgOptions &opt)
 {
     assert(V.cols() == 3);
-    mmgs_tri_remesh(V, F, OV, OF, opt);
+    return mmgs_tri_remesh(V, F, OV, OF, opt);
 }
 
-void remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
+bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
         Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt)
 {
     assert(V.cols() == 3);
@@ -218,7 +221,7 @@ void remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
     igl::boundary_facets(T, F);
     Eigen::VectorXd S;
     Eigen::VectorXi R;
-    mmg3d_tet_remesh(V, F, T, S, R, OV, OF, OT, opt);
+    return mmg3d_tet_remesh(V, F, T, S, R, OV, OF, OT, opt);
 }
 
 void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &S,

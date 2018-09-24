@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <tetwild/Logger.h>
-#include <tetwild/mmg/wrapper.h>
+#include <tetwild/mmg/remeshing.h>
 #include <tetwild/geogram/utils.h>
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
