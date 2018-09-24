@@ -142,8 +142,7 @@ target_link_libraries(tetwild_library
 		igl::core
 		pymesh::pymesh
 		spdlog::spdlog
-		mmg::mmgs
-		mmg::mmg3d
+		mmg::mmg
 	PRIVATE
 		igl::cgal
 		warnings::all
