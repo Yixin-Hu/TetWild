@@ -6,4 +6,4 @@ target_link_libraries(mmg_remesh
 		warnings::all
 )
 target_include_directories(mmg_remesh PRIVATE src)
-igl_copy_cgal_dll(TetWild)
+igl_copy_cgal_dll(mmg_remesh)
