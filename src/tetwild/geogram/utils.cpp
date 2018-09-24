@@ -15,6 +15,7 @@
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/voronoi/CVT.h>
 #include <geogram/basic/progress.h>
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +99,52 @@ void create_box_mesh(const Eigen::RowVector3d &pmin, const Eigen::RowVector3d &p
 	to_geogram_mesh(V, F, T, M);
 }
 
+void create_sphere_mesh(const Eigen::RowVector3d &center, double radius, const int res,
+	Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXi &T)
+{
+	using namespace Eigen;
+	int VOffset, TOffset, TCOffset;
+	V.resize(res*res+1, 3);
+	F.resize(2*(res-1)*res, 3);
+	T.resize(F.rows(), 4);
+
+	//creating vertices
+	for (int j=0;j<res;j++) {
+		double z=center(2)+radius*cos(M_PI*(double)j/(double(res-1)));
+		for (int k=0;k<res;k++) {
+			double x=center(0)+radius*sin(M_PI*(double)j/(double(res-1)))*cos(2*M_PI*(double)k/(double(res-1)));
+			double y=center(1)+radius*sin(M_PI*(double)j/(double(res-1)))*sin(2*M_PI*(double)k/(double(res-1)));
+			V.row(j*res+k) << x,y,z;
+		}
+	}
+	V.bottomRows<1>() << center;
+
+	//creating faces
+	for (int j=0;j<res-1;j++){
+		for (int k=0;k<res;k++){
+			int v1=j*res+k;
+			int v2=(j+1)*res+k;
+			int v3=(j+1)*res+(k+1)%res;
+			int v4=j*res+(k+1)%res;
+			F.row(2*(res*j+k)) << v1,v2,v3;
+			F.row(2*(res*j+k)+1) << v4,v1,v3;
+		}
+	}
+
+	//creating tets
+	for (int t = 0; t < T.rows(); ++t) {
+		T.row(t) << V.rows() - 1, F.row(t);
+	}
+}
+
+void create_sphere_mesh(const Eigen::RowVector3d &center, double radius, const int res, GEO::Mesh &M)
+{
+	Eigen::MatrixXd V;
+	Eigen::MatrixXi F, T;
+	create_sphere_mesh(center, radius, res, V, F, T);
+	to_geogram_mesh(V, F, T, M);
+}
+
 } // anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +159,8 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 	Eigen::RowVector3d pmin = V.colwise().minCoeff();
 	Eigen::RowVector3d pmax = V.colwise().maxCoeff();
 	GEO::Mesh M;
+	// create_sphere_mesh(0.5*(pmin + pmax), 0.5*(pmax - pmin).norm(), 32, M);
+	// mesh_save(M, "sphere.geogram");
 	create_box_mesh(pmin, pmax, padding, M);
 	GEO::CentroidalVoronoiTesselation CVT(&M);
 	CVT.set_volumetric(true);

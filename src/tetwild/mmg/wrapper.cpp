@@ -142,60 +142,61 @@ bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, cons
 bool mmg3d_extract_iso(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const Eigen::MatrixXi &TI, const Eigen::VectorXd &SI,
         Eigen::MatrixXd &VO, Eigen::MatrixXi &FO, Eigen::MatrixXi &TO, Eigen::VectorXi &RO, const tetwild::MmgOptions& opt)
 {
-        if (!opt.level_set) {
-                logger().error("mmg3d_iso: opt.level_set is set to false, cancel");
-                return false;
-        }
-        if (opt.angle_detection) {
-                logger().warn("mmg3d_iso: angle_detection should probably be disabled because level set functions are smooth");
-        }
+    if (!opt.level_set) {
+        logger().error("mmg3d_iso: opt.level_set is set to false, cancel");
+            return false;
+    }
+    if (opt.angle_detection) {
+        logger().warn("mmg3d_iso: angle_detection should probably be disabled because level set functions are smooth");
+    }
 
-        MMG5_pMesh mesh = NULL;
-        MMG5_pSol met = NULL;
-        Eigen::VectorXi RI;
-        bool ok = eigen_to_mmg(VI, FI, TI, RI, mesh, met);
-        if (!ok) {
-                logger().error("mmg3d: failed to convert mesh to MMG5_pMesh");
-                mmg3d_free(mesh, met);
-                return false;
-        }
-        assert(VI.rows() == SI.size());
-        for (int v = 0; v < SI.size(); ++v) {
-                met->m[v+1] = SI[v];
-        }
-
-        // Set remeshing options
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_iso, 1);
-        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_ls, opt.ls_value);
-        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_angleDetection, opt.angle_value);
-        if (opt.hsiz == 0.0) {
-                MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hmin, opt.hmin);
-                MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hmax, opt.hmax);
-        } else {
-                logger().error("mmg3d_iso: should not use hsiz parameter for level set mode");
-                mmg3d_free(mesh, met);
-                return false;
-        }
-        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hausd, opt.hausd);
-        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hgrad, opt.hgrad);
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_angle, int(opt.angle_detection));
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_noswap, int(opt.noswap));
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_noinsert, 1);
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nomove, 1);
-        MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nosurf, 1);
-
-        int ier = MMG3D_mmg3dls(mesh,met);
-        if (ier != MMG5_SUCCESS) {
-                logger().error("mmg3d_iso: failed to remesh isovalue");
-                mmg3d_free(mesh, met);
-                return false;
-        }
-
-        // Convert back
-        ok = mmg_to_eigen(mesh, VO, FO, TO, &RO);
-
+    MMG5_pMesh mesh = NULL;
+    MMG5_pSol met = NULL;
+    Eigen::VectorXi RI;
+    bool ok = eigen_to_mmg(VI, FI, TI, RI, mesh, met);
+    if (!ok) {
+        logger().error("mmg3d: failed to convert mesh to MMG5_pMesh");
         mmg3d_free(mesh, met);
-        return ok;
+        return false;
+    }
+    assert(VI.rows() == SI.size());
+    for (int v = 0; v < SI.size(); ++v) {
+        met->m[v+1] = SI[v];
+    }
+
+    // Set remeshing options
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_iso, 1);
+    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_ls, opt.ls_value);
+    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_angleDetection, opt.angle_value);
+    if (opt.hsiz == 0.0) {
+        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hmin, opt.hmin);
+        MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hmax, opt.hmax);
+    } else {
+        logger().error("mmg3d_iso: should not use hsiz parameter for level set mode");
+        mmg3d_free(mesh, met);
+        return false;
+    }
+    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hausd, opt.hausd);
+    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_hgrad, opt.hgrad);
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_angle, int(opt.angle_detection));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_noswap, int(opt.noswap));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_noinsert, int(opt.noinsert));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nomove, int(opt.nomove));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_nosurf, int(opt.nosurf));
+    MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_opnbdy, int(opt.opnbdy));
+
+    int ier = MMG3D_mmg3dls(mesh,met);
+    if (ier != MMG5_SUCCESS) {
+        logger().error("mmg3d_iso: failed to remesh isovalue");
+        mmg3d_free(mesh, met);
+        return false;
+    }
+
+    // Convert back
+    ok = mmg_to_eigen(mesh, VO, FO, TO, &RO);
+
+    mmg3d_free(mesh, met);
+    return ok;
 }
 
 } // anonymous namespace
@@ -524,10 +525,10 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
     compute_udf();
 
     // Compute region using winding number
-    Eigen::VectorXi R(ambient_tets.rows());
-    R.setZero();
-    if (1) {
+    Eigen::VectorXi R; //(ambient_tets.rows());
+    if (0) {
         logger().debug("computing inside/outside using winding number");
+        R.setZero();
         Eigen::MatrixXd P;
         Eigen::VectorXd W;
         igl::barycenter(ambient_vertices, ambient_tets, P);
@@ -542,12 +543,12 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
 
     // Remesh adaptive to conform to the SDF
     Eigen::MatrixXi ambient_facets;
-    {
+    if (1) {
         MmgOptions tmp_opt = opt;
         tmp_opt.level_set = false;
         tmp_opt.angle_detection = true;
         tmp_opt.hmin = 0.01 * igl::bounding_box_diagonal(ambient_vertices) / std::sqrt(3.0);
-        tmp_opt.hgrad = 2.0 * opt.hgrad;
+        tmp_opt.hgrad = opt.hgrad;
         Eigen::VectorXd dist = S;
         propagate_sizing_field(ambient_vertices, ambient_tets, dist, S, 0.1 * tmp_opt.hmin, tmp_opt.hmin, tmp_opt.hgrad);
         save_mesh(ambient_vertices, ambient_tets, S, "ambient.mesh");
@@ -561,7 +562,7 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
 
     // Compute signed distance field on the remeshed domain
     compute_udf();
-    save_mesh(ambient_vertices, ambient_tets, S, "remeshed.geogram");
+    save_mesh(ambient_vertices, ambient_tets, S, "remeshed.mesh");
 
     // Compute sign using winding number
     {
@@ -575,6 +576,7 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
         }
         logger().debug("done");
     }
+    dump_sol(S, "remeshed.sol");
 
     // Extract iso-surface from level set
     MmgOptions lv_opt = opt;
@@ -591,9 +593,8 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
         // igl::winding_number(V, F, P, W);
         Eigen::MatrixXi TT(OT.rows(), OT.cols());
         int cnt = 0;
-        int rmin = OR.minCoeff();
         for (int e = 0; e < OT.rows(); ++e) {
-            if (OR(e) == rmin)  {
+            if (OR(e) == 3)  {
                 TT.row(cnt++) = OT.row(e);
             }
         }

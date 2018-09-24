@@ -57,6 +57,6 @@ endfunction()
 function(tetwild_download_mmg)
     tetwild_download_project(mmg
         GIT_REPOSITORY https://github.com/MmgTools/mmg.git
-        GIT_TAG        v5.3.11
+        GIT_TAG        3175fb35f014c7c12c058dcc325d912d6d2fc179
     )
 endfunction()

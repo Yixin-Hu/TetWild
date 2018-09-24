@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     CLI::App app{"MMG_Wrapper"};
     app.add_option("input,--input", args.input, "Input mesh")->required()->check(CLI::ExistingFile);
     app.add_option("output,--output", args.output, "Output mesh");
-    app.add_option("-m,--mesh_size", args.mesh_size, "Absolute mesh size (default: 5% of the bbox diagonal)");
+    app.add_option("-m,--mesh_size", args.mesh_size, "Maximum mesh size (default: 100% of the bbox diagonal)");
     app.add_option("-e,--epsilon", args.epsilon, "Absolute Hausdorff distance (default: 0.1% of the bbox diagonal)");
     app.add_option("-n,--num_samples", args.num_samples, "Number of samples for the SDF field (default: 1x number of vertices)");
     app.add_option("-l,--level", args.log_level, "Log level (default: debug)");
@@ -72,12 +72,12 @@ int main(int argc, char *argv[]) {
 
     // Compute default arguments
     if (args.mesh_size == 0.0) {
-        args.mesh_size = 5.0 / 100.0 * igl::bounding_box_diagonal(VI);
+        args.mesh_size = 1.0 * igl::bounding_box_diagonal(VI);
     } else {
         args.mesh_size = args.mesh_size / 100.0 * igl::bounding_box_diagonal(VI);
     }
     if (args.epsilon == 0.0) {
-        args.epsilon = 0.1 / 100.0 * igl::bounding_box_diagonal(VI);
+        args.epsilon =  0.1 * igl::bounding_box_diagonal(VI);
     } else {
         args.epsilon = args.epsilon / 100.0 * igl::bounding_box_diagonal(VI);
     }
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     // Remesh
     tetwild::MmgOptions opt;
-    opt.hmin = 0.1 * args.mesh_size;
+    opt.hmin = std::min(0.1 * args.mesh_size, 0.01 * igl::bounding_box_diagonal(VI));
     opt.hmax = args.mesh_size;
     opt.hausd = args.epsilon;
     opt.angle_detection = args.sharp;
