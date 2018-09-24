@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
         double epsilon = 0.0;
         int num_samples = 0;
         bool sharp = false;
+        int log_level = 1; // debug
     } args;
 
     CLI::App app{"MMG_Wrapper"};
@@ -42,6 +43,7 @@ int main(int argc, char *argv[]) {
     app.add_option("-m,--mesh_size", args.mesh_size, "Absolute mesh size (default: 5% of the bbox diagonal)");
     app.add_option("-e,--epsilon", args.epsilon, "Absolute Hausdorff distance (default: 0.1% of the bbox diagonal)");
     app.add_option("-n,--num_samples", args.num_samples, "Number of samples for the SDF field (default: 1x number of vertices)");
+    app.add_option("-l,--level", args.log_level, "Log level (default: debug)");
     app.add_flag("-s,--sharp_features", args.sharp, "Detect sharp features (default: false)");
 
     try {
@@ -50,7 +52,7 @@ int main(int argc, char *argv[]) {
         return app.exit(e);
     }
 
-    spdlog::set_level(static_cast<spdlog::level::level_enum>(1));
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(args.log_level));
     spdlog::flush_every(std::chrono::seconds(3));
     GEO::initialize();
 
@@ -85,8 +87,8 @@ int main(int argc, char *argv[]) {
 
     // Remesh
     tetwild::MmgOptions opt;
-    opt.hmin = 0.1 * args.epsilon;
-    opt.hmax = args.mesh_size;
+    opt.hmin = std::min(0.1 * args.epsilon, args.mesh_size);
+    opt.hmax = std::max(args.epsilon, args.mesh_size);
     opt.hausd = args.epsilon;
     opt.angle_detection = args.sharp;
     tetwild::isosurface_remeshing(VI, FI, args.num_samples, VO, FO, TO, opt);

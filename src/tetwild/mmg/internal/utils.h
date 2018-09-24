@@ -17,7 +17,7 @@
 namespace tetwild {
 
 bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F);
-bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &T);
+bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &T, Eigen::VectorXi *R = nullptr);
 
 bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, MMG5_pMesh& mmg, MMG5_pSol& sol);
 bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXi &T, MMG5_pMesh& mmg, MMG5_pSol& sol);

@@ -142,6 +142,8 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 	}
 	CVT.set_show_iterations(true);
 
+	// CVT.unlock_all_points();
+
 	// if (num_lloyd > 0) {
 	// 	CVT.Lloyd_iterations(num_lloyd);
 	// }

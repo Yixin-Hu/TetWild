@@ -15,7 +15,7 @@
 
 namespace tetwild {
 
-bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &T) {
+bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXi &T, Eigen::VectorXi *R) {
     logger().debug("converting MMG5_pMesh to Eigen matrices ...");
 
     // Note: indexing seems to start at 1 in MMG
@@ -23,6 +23,7 @@ bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, 
     V.resize(mmg->np, 3);
     F.resize(mmg->nt, 3);
     T.resize(mmg->ne, 4);
+    if (R) { R->resize(mmg->ne); }
 
     for (int v = 0; v < V.rows(); ++v) {
         for (int d = 0; d < mmg->dim; ++d) {
@@ -35,6 +36,9 @@ bool mmg_to_eigen(const MMG5_pMesh mmg, Eigen::MatrixXd &V, Eigen::MatrixXi &F, 
         F(t,2) = mmg->tria[t+1].v[2] - 1;
     }
     for (int c = 0; c < T.rows(); ++c) {
+        int v0,v1,v2,v3,ref,required;
+        MMG3D_Get_tetrahedron(mmg, &v0, &v1, &v2, &v3,&ref, &required);
+        if (R) { (*R)(c) = ref; }
         T(c,0) = mmg->tetra[c+1].v[0] - 1;
         T(c,1) = mmg->tetra[c+1].v[1] - 1;
         T(c,2) = mmg->tetra[c+1].v[2] - 1;
@@ -88,11 +92,11 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     }
     if (volume_mesh) {
         for (int c = 0; c < mmg->ne; ++c) {
-            MMG3D_Set_tetrahedron(mmg, T(c,0)+1, T(c,1)+1, T(c,2)+1, T(c,3)+1, 0, c+1);
-            // mmg->tetra[c+1].v[0] = T(c,0) + 1;
-            // mmg->tetra[c+1].v[1] = T(c,1) + 1;
-            // mmg->tetra[c+1].v[2] = T(c,2) + 1;
-            // mmg->tetra[c+1].v[3] = T(c,3) + 1;
+            // MMG3D_Set_tetrahedron(mmg, T(c,0)+1, T(c,1)+1, T(c,2)+1, T(c,3)+1, 0, c+1);
+            mmg->tetra[c+1].v[0] = T(c,0) + 1;
+            mmg->tetra[c+1].v[1] = T(c,1) + 1;
+            mmg->tetra[c+1].v[2] = T(c,2) + 1;
+            mmg->tetra[c+1].v[3] = T(c,3) + 1;
         }
     }
 
@@ -117,7 +121,7 @@ bool eigen_to_mmg(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eige
     if (volume_mesh) {
         // Orient each tetrahedra to have positive volume.
         // TODO: Use the API function MMG3D_Set_tetrahedron instead
-        // MMG3D_Set_handGivenMesh(mmg);
+        MMG3D_Set_handGivenMesh(mmg);
     }
 
     return true;
