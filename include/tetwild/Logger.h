@@ -14,8 +14,7 @@
 #include <tetwild/Exception.h>
 #include <tetwild/DisableWarnings.h>
 #include <spdlog/spdlog.h>
-#include <spdlog/async.h>
-#include <fmt/ranges.h>
+#include <spdlog/async_logger.h>
 #include <tetwild/EnableWarnings.h>
 
 namespace tetwild {
