@@ -53,7 +53,7 @@ struct MmgOptions {
 /// @return     { True if ok }
 ///
 bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
-	Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, const MmgOptions &opt = MmgOptions());
+    Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, const MmgOptions &opt = MmgOptions());
 
 ///
 /// Remesh a 3d tet-mesh uniformly using mmgs.
@@ -68,7 +68,7 @@ bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
 /// @return     { True if ok }
 ///
 bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
-	Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt = MmgOptions());
+    Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt = MmgOptions());
 
 ///
 /// Mesh isosurface defined by the 0 level set of a tetrahedral mesh.

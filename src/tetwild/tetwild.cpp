@@ -18,9 +18,10 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
-#include <tetwild/mmg/remeshing.h>
+#include <tetwild/mmg/Remeshing.h>
 #include <igl/boundary_facets.h>
 #include <igl/remove_unreferenced.h>
+#include <igl/write_triangle_mesh.h>
 #include <pymesh/MshSaver.h>
 #include <geogram/mesh/mesh.h>
 
@@ -210,6 +211,7 @@ double tetwild_stage_one_preprocess(
         Eigen::MatrixXi FO;
         if (remesh_uniform_sf(VI, FI, VO, FO, opt)) {
             assert(VO.rows() > 0 && FO.rows() > 0);
+            igl::write_triangle_mesh("simplified.obj", VO, FO);
             m_vertices.reserve(VO.rows());
             for (int v = 0; v < VO.rows(); ++v) {
                 m_vertices.emplace_back(VO(v, 0), VO(v, 1), VO(v, 2));

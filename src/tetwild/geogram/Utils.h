@@ -46,7 +46,7 @@ void to_geogram_mesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const E
 /// @param[in]  num_newton   { Number of Newton iterations }
 ///
 void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
-	Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
+    Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
 
 ///
 /// Sample points on surface.
@@ -59,7 +59,7 @@ void sample_bbox(const Eigen::MatrixXd &V, int num_samples, double padding,
 /// @param[in]  num_newton   { Number of Newton iterations }
 ///
 void resample_surface(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, int num_samples,
-	Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
+    Eigen::MatrixXd &P, int num_lloyd = 10, int num_newton = 10);
 
 ///
 /// Computes a Delaunay tiangulation of a point cloud in 3d

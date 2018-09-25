@@ -9,11 +9,11 @@
 // Created by Jeremie Dumas on 09/04/18.
 //
 ////////////////////////////////////////////////////////////////////////////////
-#include "remeshing.h"
-#include "internal/utils.h"
+#include "Remeshing.h"
+#include "internal/Conversion.h"
 #include <tetwild/Logger.h>
 #include <tetwild/DistanceQuery.h>
-#include <tetwild/geogram/utils.h>
+#include <tetwild/geogram/Utils.h>
 #include <igl/avg_edge_length.h>
 #include <igl/barycenter.h>
 #include <igl/bfs_orient.h>
@@ -26,7 +26,6 @@
 #include <igl/remove_unreferenced.h>
 #include <igl/signed_distance.h>
 #include <igl/winding_number.h>
-#include <tetwild/geogram/utils.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <fstream>

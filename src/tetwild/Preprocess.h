@@ -14,7 +14,7 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/CGALTypes.h>
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <geogram/mesh/mesh.h>
 #include <Eigen/Dense>
 #include <unordered_set>

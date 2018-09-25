@@ -14,7 +14,7 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/TetmeshElements.h>
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <igl/grad.h>
 #include <igl/Timer.h>
 

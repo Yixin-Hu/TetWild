@@ -120,14 +120,14 @@ add_library(tetwild_library STATIC
 		src/tetwild/tetwild.cpp
 		src/tetwild/VertexSmoother.cpp
 		src/tetwild/VertexSmoother.h
-		src/tetwild/geogram/mesh_AABB.cpp
-		src/tetwild/geogram/mesh_AABB.h
-		src/tetwild/geogram/utils.cpp
-		src/tetwild/geogram/utils.h
-		src/tetwild/mmg/remeshing.cpp
-		src/tetwild/mmg/remeshing.h
-		src/tetwild/mmg/internal/utils.cpp
-		src/tetwild/mmg/internal/utils.h
+		src/tetwild/geogram/MeshAABB.cpp
+		src/tetwild/geogram/MeshAABB.h
+		src/tetwild/geogram/Utils.cpp
+		src/tetwild/geogram/Utils.h
+		src/tetwild/mmg/Remeshing.cpp
+		src/tetwild/mmg/Remeshing.h
+		src/tetwild/mmg/internal/Conversion.cpp
+		src/tetwild/mmg/internal/Conversion.h
 )
 add_library(tetwild::tetwild ALIAS tetwild_library)
 target_include_directories(tetwild_library

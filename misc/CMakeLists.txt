@@ -1,9 +1,9 @@
-add_executable(mmg_remesh mmg_remesh)
-target_link_libraries(mmg_remesh
+add_executable(levelset levelset)
+target_link_libraries(levelset
 		tetwild::tetwild
 		tetwild::internal
 		CLI11::CLI11
 		warnings::all
 )
-target_include_directories(mmg_remesh PRIVATE src)
-igl_copy_cgal_dll(mmg_remesh)
+target_include_directories(levelset PRIVATE src)
+igl_copy_cgal_dll(levelset)

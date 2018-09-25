@@ -19,7 +19,7 @@
 #include <tetwild/EdgeRemover.h>
 #include <tetwild/VertexSmoother.h>
 #include <tetwild/DisableWarnings.h>
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <CGAL/centroid.h>
 #include <tetwild/EnableWarnings.h>
 #include <pymesh/MshLoader.h>
