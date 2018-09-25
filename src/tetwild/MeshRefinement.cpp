@@ -289,7 +289,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 
         if (args.use_mmg3d && check_all_rounded()) {
             logger().debug("all vertices rounded!!");
-            break;
+            return;
         }
 
         if (localOperation.getMaxEnergy() < args.filter_energy_thres) {

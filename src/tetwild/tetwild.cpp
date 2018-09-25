@@ -20,6 +20,7 @@
 #include <tetwild/InoutFiltering.h>
 #include <tetwild/mmg/Remeshing.h>
 #include <igl/boundary_facets.h>
+#include <igl/bounding_box_diagonal.h>
 #include <igl/remove_unreferenced.h>
 #include <igl/write_triangle_mesh.h>
 #include <pymesh/MshSaver.h>
@@ -197,7 +198,8 @@ double tetwild_stage_one_preprocess(
     //optimize with mmgs
     if (args.use_mmgs) {
         MmgOptions opt;
-        opt.hsiz = state.initial_edge_len;
+        opt.hsiz = 2.0 * igl::bounding_box_diagonal(VI);
+        opt.hgrad *= 2.0;
         opt.hausd = state.eps_input;
         switch (logger().level()) {
             case spdlog::level::trace:
