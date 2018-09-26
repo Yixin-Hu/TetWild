@@ -18,6 +18,7 @@
 #include <tetwild/EdgeSplitter.h>
 #include <tetwild/EdgeRemover.h>
 #include <tetwild/VertexSmoother.h>
+#include <tetwild/Quality.h>
 #include <tetwild/DisableWarnings.h>
 #include <tetwild/geogram/MeshAABB.h>
 #include <CGAL/centroid.h>
@@ -276,6 +277,15 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    state.eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
+        // early stop if quality is good enough for mmg
+        if (args.use_mmg3d && check_all_rounded()
+            && isMeshQualityOk(tet_vertices, tets, t_is_removed)
+            && checkVolume(tet_vertices, tets, t_is_removed))
+        {
+            logger().debug("all vertices rounded!!");
+            return;
+        }
+
         if (is_dealing_unrounded && pass == old_pass) {
             updateScalarField(false, false, args.filter_energy_thres);
         }
@@ -286,11 +296,6 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         doOperations(splitter, collapser, edge_remover, smoother,
                      std::array<bool, 4>({{is_split, ops[1], ops[2], ops[3]}}));
         update_cnt++;
-
-        if (args.use_mmg3d && check_all_rounded()) {
-            logger().debug("all vertices rounded!!");
-            return;
-        }
 
         if (localOperation.getMaxEnergy() < args.filter_energy_thres) {
             break;
@@ -457,8 +462,9 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         applySizingField(splitter, collapser, edge_remover, smoother);
     }
 
-    if (args.save_mid_result == 2)
+    if (args.save_mid_result == 2) {
         outputMidResult(true, 2);//mark in/out
+    }
 
 
 //    if (!args.is_quiet) {

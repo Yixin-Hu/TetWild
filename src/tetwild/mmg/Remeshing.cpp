@@ -212,14 +212,13 @@ bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
     return mmgs_tri_remesh(V, F, OV, OF, opt);
 }
 
-bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
+bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXi &R,
         Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt)
 {
     assert(V.cols() == 3);
     Eigen::MatrixXi F;
     igl::boundary_facets(T, F);
     Eigen::VectorXd S;
-    Eigen::VectorXi R;
     return mmg3d_tet_remesh(V, F, T, S, R, OV, OF, OT, opt);
 }
 

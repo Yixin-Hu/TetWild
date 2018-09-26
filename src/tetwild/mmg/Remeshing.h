@@ -60,6 +60,7 @@ bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
 ///
 /// @param[in]  V     { #V x 3 input mesh vertices }
 /// @param[in]  T     { #T x 4 input mesh tetrahedra }
+/// @param[in]  R     { #T x 1 region tags for each input tetrahedra (can be empty) }
 /// @param[out] OV    { #OV x 3 output mesh vertices }
 /// @param[out] OF    { #OF x F output mesh boundary triangles }
 /// @param[out] OT    { #OT x 4 output mesh tetrahedra }
@@ -67,7 +68,7 @@ bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
 ///
 /// @return     { True if ok }
 ///
-bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
+bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXi &R,
     Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt = MmgOptions());
 
 ///
