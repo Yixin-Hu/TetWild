@@ -86,7 +86,8 @@ bool mmgs_tri_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
 
 bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const Eigen::MatrixXi &TI,
     const Eigen::VectorXd &SI, const Eigen::VectorXi &RI,
-    Eigen::MatrixXd &VO, Eigen::MatrixXi &FO, Eigen::MatrixXi &TO, const tetwild::MmgOptions& opt)
+    Eigen::MatrixXd &VO, Eigen::MatrixXi &FO, Eigen::MatrixXi &TO, Eigen::VectorXi &RO,
+    const tetwild::MmgOptions& opt)
 {
     MMG5_pMesh mesh = NULL;
     MMG5_pSol met = NULL;
@@ -134,7 +135,7 @@ bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, cons
         return false;
     }
 
-    ok = mmg_to_eigen(mesh, VO, FO, TO);
+    ok = mmg_to_eigen(mesh, VO, FO, TO, &RO);
 
     mmg3d_free(mesh, met);
     return ok;
@@ -213,13 +214,14 @@ bool remesh_uniform_sf(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
 }
 
 bool remesh_uniform_3d(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXi &R,
-        Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, const MmgOptions &opt)
+    Eigen::MatrixXd &OV, Eigen::MatrixXi &OF, Eigen::MatrixXi &OT, Eigen::VectorXi &OR,
+    const MmgOptions &opt)
 {
     assert(V.cols() == 3);
     Eigen::MatrixXi F;
     igl::boundary_facets(T, F);
     Eigen::VectorXd S;
-    return mmg3d_tet_remesh(V, F, T, S, R, OV, OF, OT, opt);
+    return mmg3d_tet_remesh(V, F, T, S, R, OV, OF, OT, OR, opt);
 }
 
 void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXd &S,
@@ -557,8 +559,9 @@ void isosurface_remeshing(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, in
         tmp_opt.hmax = 10.0 * S.maxCoeff();
         logger().debug("hmin {}, hmax {}, hausd {}", S.minCoeff(), S.maxCoeff(), tmp_opt.hausd);
         dump_sol(S, "ambient.sol");
+        Eigen::VectorXi RO;
         mmg3d_tet_remesh(ambient_vertices, ambient_facets, ambient_tets, S, R,
-            ambient_vertices, ambient_facets, ambient_tets, tmp_opt);
+            ambient_vertices, ambient_facets, ambient_tets, RO, tmp_opt);
     }
 
     // Compute signed distance field on the remeshed domain

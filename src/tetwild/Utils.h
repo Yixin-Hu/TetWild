@@ -87,4 +87,17 @@ void extractVolumeMesh(const std::vector<TetVertex> &verts,
     Eigen::MatrixXd &V,
     Eigen::MatrixXi &T);
 
+///
+/// @brief      { Filter tet mesh corresponding to a given region }
+///
+/// @param[in]  V     { #V x 3 input mesh vertices }
+/// @param[in]  T     { #T x 4 input mesh tetrahedra }
+/// @param[in]  R     { #T x 1 input region tags }
+/// @param[in]  id    { Region tag to keep }
+/// @param[out] OV    { #OV x 3 output mesh vertices }
+/// @param[out] OT    { #OT x 4 output mesh tetrahedra }
+///
+void filterRegion(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXi &R, int id,
+    Eigen::MatrixXd &OV, Eigen::MatrixXi &OT);
+
 } // namespace tetwild

@@ -96,4 +96,16 @@ void extractVolumeMesh(const std::vector<TetVertex> &verts,
     igl::remove_unreferenced(V0, T0, V, T, I);
 }
 
+void filterRegion(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T, const Eigen::VectorXi &R, int id,
+    Eigen::MatrixXd &OV, Eigen::MatrixXi &OT)
+{
+    int num_in_region = (R.array() == id).count();
+    OT.resize(num_in_region, T.cols());
+    for (int e = 0, cnt = 0; e < T.rows(); ++e) {
+        OT.row(cnt++) = T.row(e);
+    }
+    Eigen::VectorXi I;
+    igl::remove_unreferenced(V, OT, OV, OT, I);
+}
+
 } // namespace tetwild

@@ -519,12 +519,13 @@ void tetwild_stage_two(Args &args, State &state,
         // extractRegionMesh(MR, VO, TO, R, state);
         extractInsideMesh(MR, VO, TO, state);
         igl::writeMESH("before_mmg.mesh", VO, TO, FO);
-        // logger().debug("mesh quality ok: {}", isMeshQualityOk(VO, TO));
-        // logger().debug("volume ok: {}", checkVolume(VO, TO));
-        if (remesh_uniform_3d(VO, TO, R, VO, FO, TO, opt)) {
+        logger().debug("mesh quality ok: {}", isMeshQualityOk(VO, TO));
+        logger().debug("volume ok: {}", checkVolume(VO, TO));
+        if (remesh_uniform_3d(VO, TO, R, VO, FO, TO, R, opt)) {
             assert(VO.rows() > 0 && FO.rows() > 0);
+            // filterRegion(VO, TO, R, 1, VO, TO);
             AO.resize(TO.rows());
-            AO.setZero(); //clear outdated values
+            AO.setZero(); //clear values
         } else {
             logger().warn("mmg3d failed to optimize the mesh, reverting to TetWild");
             args.use_mmg3d = false;
