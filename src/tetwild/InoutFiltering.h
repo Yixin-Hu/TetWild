@@ -29,7 +29,11 @@ public:
                    const std::vector<std::array<int, 4>>& is_sf_fs,
                    const std::vector<bool>& t_is_rm,
                    const State &st)
-        : tet_vertices(t_vs), tets(ts), is_surface_fs(is_sf_fs), t_is_removed(t_is_rm), state(st)
+        : state(st)
+        , tet_vertices(t_vs)
+        , tets(ts)
+        , is_surface_fs(is_sf_fs)
+        , t_is_removed(t_is_rm)
     { }
 
     void getSurface(Eigen::MatrixXd& V_sf, Eigen::MatrixXi& F_sf);

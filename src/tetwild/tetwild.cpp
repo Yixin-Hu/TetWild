@@ -70,12 +70,14 @@ void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
         avg_slim_energy += tet_qualities[i].slim_energy;
 
         for (int j = 0; j < 3; j++) {
-            if (tet_qualities[i].min_d_angle < cmp_d_angles[j])
+            if (tet_qualities[i].min_d_angle < cmp_d_angles[j]) {
                 cmp_cnt[j]++;
+            }
         }
         for (int j = 0; j < 3; j++) {
-            if (tet_qualities[i].max_d_angle > cmp_d_angles[j + 3])
+            if (tet_qualities[i].max_d_angle > cmp_d_angles[j + 3]) {
                 cmp_cnt[j + 3]++;
+            }
         }
     }
     logger().debug("min_d_angle = {}, max_d_angle = {}, max_slim_energy = {}", min, max, max_slim_energy);
@@ -258,6 +260,7 @@ double tetwild_stage_one_preprocess(
     igl::Timer igl_timer;
     igl_timer.start();
     logger().info("Preprocessing...");
+    if (args.user_callback) { args.user_callback(Step::Preprocess, 0.0); }
     Preprocess pp(state);
     if (!pp.init(VI, FI, geo_b_mesh, geo_sf_mesh, args)) {
         //todo: output a empty tetmesh
@@ -279,19 +282,18 @@ double tetwild_stage_one_preprocess(
         opt.hsiz = 2.0 * igl::bounding_box_diagonal(VI);
         opt.hgrad *= 2.0;
         opt.hausd = state.eps_input;
-        switch (logger().level()) {
-            case spdlog::level::trace:
-                opt.verbose = 10; break;
-            case spdlog::level::debug:
-                opt.verbose = 5; break;
-            default:
-                opt.verbose = 0;
+        if (logger().level() == spdlog::level::trace) {
+            opt.verbose = 10;
+        } else if (logger().level() == spdlog::level::debug) {
+            opt.verbose = 5;
+        } else {
+            opt.verbose = 0;
         }
         Eigen::MatrixXd VO;
         Eigen::MatrixXi FO;
         if (remesh_uniform_sf(VI, FI, VO, FO, opt)) {
             assert(VO.rows() > 0 && FO.rows() > 0);
-            igl::write_triangle_mesh("simplified.obj", VO, FO);
+            // igl::write_triangle_mesh("simplified.obj", VO, FO);
             m_vertices.reserve(VO.rows());
             for (int v = 0; v < VO.rows(); ++v) {
                 m_vertices.emplace_back(VO(v, 0), VO(v, 1), VO(v, 2));
@@ -333,6 +335,7 @@ double tetwild_stage_one_delaunay(
     igl::Timer igl_timer;
     igl_timer.start();
     logger().info("Delaunay tetrahedralizing...");
+    if (args.user_callback) { args.user_callback(Step::Delaunay, 0.0); }
     DelaunayTetrahedralization DT;
     m_f_tags.clear();
     raw_e_tags.clear();
@@ -365,7 +368,8 @@ double tetwild_stage_one_mc(
     igl::Timer igl_timer;
     igl_timer.start();
     logger().info("Divfaces matching...");
-    MC.match();
+    if (args.user_callback) { args.user_callback(Step::FaceMatching, 0.0); }
+    MC.match(args);
     logger().info("Divfaces matching done!");
     double tmp_time = igl_timer.getElapsedTime();
     addRecord(MeshRecord(MeshRecord::OpType::OP_DIVFACE_MATCH, tmp_time, MC.bsp_vertices.size(), MC.bsp_nodes.size()), args, state);
@@ -384,9 +388,10 @@ double tetwild_stage_one_bsp(
     igl::Timer igl_timer;
     igl_timer.start();
     logger().info("BSP subdivision ...");
+    if (args.user_callback) { args.user_callback(Step::BSP, 0.0); }
     BSPSubdivision BS(MC);
     BS.init();
-    BS.subdivideBSPNodes();
+    BS.subdivideBSPNodes(args);
     logger().debug("Output: ");
     logger().debug("# node = {}", MC.bsp_nodes.size());
     logger().debug("# face = {}", MC.bsp_faces.size());
@@ -416,15 +421,18 @@ double tetwild_stage_one_tetra(
     igl::Timer igl_timer;
     igl_timer.start();
     logger().info("Tetrehedralizing ...");
-    SimpleTetrahedralization ST(state, MC);
+    if (args.user_callback) { args.user_callback(Step::Tetra, 0.0); }
+    SimpleTetrahedralization ST(args, state, MC);
     tet_vertices.clear();
     tet_indices.clear();
     is_surface_facet.clear();
     ST.tetra(tet_vertices, tet_indices);
     ST.labelSurface(m_f_tags, raw_e_tags, raw_conn_e4v, tet_vertices, tet_indices, is_surface_facet);
     ST.labelBbox(tet_vertices, tet_indices);
-    if (!state.is_mesh_closed)//if input is an open mesh
+    if (!state.is_mesh_closed) {
+        //if input is an open mesh
         ST.labelBoundary(tet_vertices, tet_indices, is_surface_facet);
+    }
     logger().debug("# tet_vertices = {}", tet_vertices.size());
     logger().debug("# tets = {}", tet_indices.size());
     logger().info("Tetrahedralization done!");
@@ -499,6 +507,7 @@ void tetwild_stage_two(
 {
     //init
     logger().info("Refinement initializing...");
+    if (args.user_callback) { args.user_callback(Step::Optimize, 0.0); }
     MeshRefinement MR(geo_sf_mesh, geo_b_mesh, args, state);
     MR.tet_vertices = std::move(tet_vertices);
     MR.tets = std::move(tet_indices);
@@ -514,19 +523,18 @@ void tetwild_stage_two(
         MmgOptions opt;
         opt.hsiz = state.initial_edge_len;
         opt.hausd = state.eps_input;
-        switch (logger().level()) {
-            case spdlog::level::trace:
-                opt.verbose = 10; break;
-            case spdlog::level::debug:
-                opt.verbose = 5; break;
-            default:
-                opt.verbose = 0;
+        if (logger().level() == spdlog::level::trace) {
+            opt.verbose = 10;
+        } else if (logger().level() == spdlog::level::debug) {
+            opt.verbose = 5;
+        } else {
+            opt.verbose = 0;
         }
         Eigen::MatrixXi FO;
         Eigen::VectorXi R;
         // extractRegionMesh(MR, VO, TO, R, state);
         extractInsideMesh(VI, FI, MR, VO, TO, state);
-        igl::writeMESH("before_mmg.mesh", VO, TO, FO);
+        // igl::writeMESH("before_mmg.mesh", VO, TO, FO);
         logger().debug("mesh quality ok: {}", isMeshQualityOk(VO, TO));
         logger().debug("volume ok: {}", checkVolume(VO, TO));
         if (remesh_uniform_3d(VO, TO, R, VO, FO, TO, R, opt)) {

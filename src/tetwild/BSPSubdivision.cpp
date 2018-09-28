@@ -12,6 +12,7 @@
 #include <tetwild/BSPSubdivision.h>
 #include <tetwild/MeshConformer.h>
 #include <tetwild/Logger.h>
+#include <tetwild/Args.h>
 
 namespace tetwild {
 
@@ -33,7 +34,7 @@ void BSPSubdivision::init() {
 	logger().debug("# nodes need subdivision = {}/{}/{}", nf, processing_n_ids.size(), MC.bsp_nodes.size());
 }
 
-void BSPSubdivision::subdivideBSPNodes() {
+void BSPSubdivision::subdivideBSPNodes(const Args &args) {
     std::vector<BSPtreeNode> &nodes = MC.bsp_nodes;
     std::vector<BSPFace> &faces = MC.bsp_faces;
     std::vector<BSPEdge> &edges = MC.bsp_edges;
@@ -41,9 +42,16 @@ void BSPSubdivision::subdivideBSPNodes() {
     const std::vector<Point_3> &div_vertices = MC.m_vertices;
     const std::vector<std::array<int, 3>> &div_faces = MC.m_faces;
 
+    size_t progress_current = 0;
+    size_t progress_total = processing_n_ids.size();
     while (!processing_n_ids.empty()) {
         int old_n_id = processing_n_ids.front();
         processing_n_ids.pop();
+
+        if (args.user_callback) {
+            args.user_callback(Step::BSP, double(progress_current) / double(progress_total));
+        }
+        ++progress_current;
 
         ///re-assign divfaces
         int cnt_pos=0, cnt_neg=0;
@@ -317,10 +325,12 @@ void BSPSubdivision::subdivideBSPNodes() {
 
         ///check if divface.size==0
         for (int i = 0; i < new_n_ids.size(); i++) {
-            if (nodes[new_n_ids[i]].div_faces.size() == 0)
+            if (nodes[new_n_ids[i]].div_faces.size() == 0) {
                 nodes[new_n_ids[i]].is_leaf = true;
-            else
+            } else {
                 processing_n_ids.push(new_n_ids[i]);
+                ++progress_total;
+            }
         }
     }
 

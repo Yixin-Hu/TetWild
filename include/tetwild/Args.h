@@ -12,8 +12,12 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 namespace tetwild {
+
+// Forward declaration
+enum class Step;
 
 // Global arguments controlling the behavior of TetWild
 struct Args {
@@ -23,9 +27,9 @@ struct Args {
     // Target epsilon (in % of the bbox diagonal)
     double eps_rel = 0.1;
 
-    //////////////////////
-    // Advanced options //
-    //////////////////////
+    ////////////////
+    // [Advanced] //
+    ////////////////
 
     // Explicitly specify a sampling distance for triangles (in % of the bbox diagonal)
     int sampling_dist_rel = -1;
@@ -61,6 +65,10 @@ struct Args {
     // Background mesh for the edge length sizing field
     std::string background_mesh = "";
 
+    ////////////////////
+    // [Experimental] //
+    ////////////////////
+
     // Use mmgs to simplify the input surface mesh if possible (i.e. it doesn't return an empty mesh)
     bool use_mmgs = false;
 
@@ -76,7 +84,10 @@ struct Args {
     // Skip the check if 0 is given
     double mmg3d_slivers_thres = 0;
 
-    // [debug] logging
+    ///////////////
+    // [Logging] //
+    ///////////////
+
     bool write_csv_file = true;
     std::string working_dir = "";
     std::string postfix = "_";
@@ -84,6 +95,36 @@ struct Args {
     int save_mid_result = -1; // save intermediate result
 
     bool is_quiet = false;
+
+    /////////////////
+    // [Callbacks] //
+    /////////////////
+
+    // User callback called between every step. The first argument is an integer
+    // indicating what substep is currently being performed. The second argument
+    // is a very loose percentage (between 0 and 1) indicating the progress of
+    // the current step.
+    //
+    // Cancellation can be achieved by throwing an exception within this callback.
+    //
+    // Codes for the step corresponding to the first argument:
+    // 00 = Preprocessing (surface simplification)
+    // 01 = Delaunay tetrahedralization
+    // 02 = Face matching
+    // 03 = BSP subdivision
+    // 04 = Initial tetrahedralization
+    // 10 = Mesh optimization
+    std::function<void(Step, double)> user_callback;
+};
+
+// Different steps of the pipeline
+enum class Step {
+    Preprocess   = 0,
+    Delaunay     = 1,
+    FaceMatching = 2,
+    BSP          = 3,
+    Tetra        = 4,
+    Optimize     = 10,
 };
 
 } // namespace tetwild

@@ -12,6 +12,7 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/Common.h>
 #include <tetwild/Logger.h>
+#include <tetwild/Args.h>
 #include <igl/Timer.h>
 #include <bitset>
 
@@ -75,8 +76,13 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
 
     ///cal arrangement
     for (int i = 0; i < bsp_faces.size(); i++) {
-        if (bsp_faces[i].div_faces.size() == 0)
+        if (bsp_faces[i].div_faces.size() == 0) {
             continue;
+        }
+
+        if (args.user_callback) {
+            args.user_callback(Step::Tetra, 0.3 * double(i) / double(bsp_faces.size()));
+        }
 
         ///cal arrangement
         Plane_3 pln;
@@ -226,6 +232,10 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     std::unordered_map<int, int> centroids_for_nodes;
     tets.reserve(bsp_nodes.size()*6);//approx
     for(unsigned int i = 0; i < bsp_nodes.size(); i++) {
+        if (args.user_callback) {
+            args.user_callback(Step::Tetra, 0.3 + 0.3 * double(i) / double(bsp_nodes.size()));
+        }
+
         BSPtreeNode &node = bsp_nodes[i];
         std::vector<int> v_ids;
         for (int j = 0; j < node.faces.size(); j++) {
@@ -269,6 +279,10 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     std::vector<std::vector<std::array<int, 3>>> cdt_faces(bsp_faces.size(), std::vector<std::array<int, 3>>());
     CDT cdt;
     for (unsigned int i = 0; i < bsp_faces.size(); i++) {
+        if (args.user_callback) {
+            args.user_callback(Step::Tetra, 0.6 + 0.3 * double(i) / double(bsp_faces.size()));
+        }
+
         if (bsp_faces[i].vertices.size() == 3) {
             cdt_faces[i].push_back(std::array<int, 3>({{bsp_faces[i].vertices[0], bsp_faces[i].vertices[1],
                                                         bsp_faces[i].vertices[2]}}));
@@ -308,25 +322,32 @@ void SimpleTetrahedralization::triangulation(std::vector<TetVertex>& tet_vertice
     int rounded_cnt = 0;
     int all_cnt = 0;
     for(unsigned int i=0;i<bsp_nodes.size();i++) {
-        if (is_tets[i])
+        if (is_tets[i]) {
             continue;
+        }
 
         all_cnt++;
+
+        if (args.user_callback) {
+            args.user_callback(Step::Tetra, 0.9 + 0.1 * double(i) / double(bsp_nodes.size()));
+        }
 
         //calculate exact centroid
         int c_id = centroids_for_nodes[i];
         std::unordered_set<int> v_ids;
         for (int j = 0; j < bsp_nodes[i].faces.size(); j++) {
             for (int v_id:bsp_faces[bsp_nodes[i].faces[j]].vertices) {
-                if (v_id < original_v_size)
+                if (v_id < original_v_size) {
                     v_ids.insert(v_id);
+                }
             }
         }
 
         std::vector<Point_3> vs;
         vs.reserve(v_ids.size());
-        for (int v_id:v_ids)
+        for (int v_id:v_ids) {
             vs.push_back(bsp_vertices[v_id]);
+        }
         tet_vertices[c_id].pos = CGAL::centroid(vs.begin(), vs.end(), CGAL::Dimension_tag<0>());
 
         //insert new tets
