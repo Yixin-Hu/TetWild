@@ -19,7 +19,7 @@
 
 namespace tetwild {
 
-std::shared_ptr<spdlog::async_logger> Logger::logger_;
+std::shared_ptr<spdlog::logger> Logger::logger_;
 
 // Some code was copied over from <spdlog/async.h>
 void Logger::init(bool use_cout, const std::string &filename, bool truncate) {

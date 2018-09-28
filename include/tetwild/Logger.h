@@ -20,14 +20,14 @@
 namespace tetwild {
 
 struct Logger {
-	static std::shared_ptr<spdlog::async_logger> logger_;
+	static std::shared_ptr<spdlog::logger> logger_;
 
 	// By default, write to stdout, but don't write to any file
 	static void init(bool use_cout = true, const std::string &filename = "", bool truncate = true);
 };
 
 // Retrieve current logger, or create one if not available
-inline spdlog::async_logger & logger() {
+inline spdlog::logger & logger() {
 	if (!Logger::logger_) {
 		Logger::init();
 	}
