@@ -47,6 +47,8 @@ add_library(tetwild STATIC
 		src/tetwild/MeshRefinement.h
 		src/tetwild/Preprocess.cpp
 		src/tetwild/Preprocess.h
+		src/tetwild/Quality.cpp
+		src/tetwild/Quality.h
 		src/tetwild/SimpleTetrahedralization.cpp
 		src/tetwild/SimpleTetrahedralization.h
 		src/tetwild/State.cpp
@@ -54,6 +56,8 @@ add_library(tetwild STATIC
 		src/tetwild/TetmeshElements.cpp
 		src/tetwild/TetmeshElements.h
 		src/tetwild/tetwild.cpp
+		src/tetwild/Utils.cpp
+		src/tetwild/Utils.h
 		src/tetwild/VertexSmoother.cpp
 		src/tetwild/VertexSmoother.h
 		src/tetwild/geogram/MeshAABB.cpp

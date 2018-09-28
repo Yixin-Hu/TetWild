@@ -11,16 +11,18 @@
 
 #include <tetwild/InoutFiltering.h>
 #include <tetwild/Logger.h>
+#include <tetwild/Utils.h>
 #include <tetwild/DisableWarnings.h>
 #include <CGAL/centroid.h>
 #include <tetwild/EnableWarnings.h>
 #include <pymesh/MshSaver.h>
 #include <igl/winding_number.h>
-#include <igl/writeSTL.h>
+#include <igl/write_triangle_mesh.h>
+#include <igl/remove_unreferenced.h>
 
 namespace tetwild {
 
-void InoutFiltering::filter() {
+std::vector<bool> InoutFiltering::filter() {
     logger().debug("In/out filtering...");
 
     Eigen::MatrixXd C(std::count(t_is_removed.begin(), t_is_removed.end(), false), 3);
@@ -76,29 +78,32 @@ void InoutFiltering::filter() {
 
 //    outputWindingNumberField(W);
 
-    t_is_removed = tmp_t_is_removed;
     logger().debug("In/out Filtered!");
+    return tmp_t_is_removed;
 }
 
 void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
+    extractTrackedSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
+#if 0
     std::vector<std::array<int, 3>> fs;
     std::vector<int> vs;
     for(int i=0;i<tets.size();i++) {
-        if (t_is_removed[i])
+        if (t_is_removed[i]) {
             continue;
+        }
         for (int j = 0; j < 4; j++) {
             if (is_surface_fs[i][j] != state.NOT_SURFACE && is_surface_fs[i][j] > 0) {//outside
                 std::array<int, 3> v_ids = {{tets[i][(j + 1) % 4], tets[i][(j + 2) % 4], tets[i][(j + 3) % 4]}};
                 if (CGAL::orientation(tet_vertices[v_ids[0]].pos, tet_vertices[v_ids[1]].pos,
                                       tet_vertices[v_ids[2]].pos, tet_vertices[tets[i][j]].pos) != CGAL::POSITIVE) {
-                    int tmp = v_ids[0];
-                    v_ids[0] = v_ids[2];
-                    v_ids[2] = tmp;
+                    std::swap(v_ids[0], v_ids[2]);
                 }
-                for (int k = 0; k < is_surface_fs[i][j]; k++)
+                for (int k = 0; k < is_surface_fs[i][j]; k++) {
                     fs.push_back(v_ids);
-                for (int k = 0; k < 3; k++)
+                }
+                for (int k = 0; k < 3; k++) {
                     vs.push_back(v_ids[k]);
+                }
             }
         }
     }
@@ -118,8 +123,8 @@ void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
         for(int j=0;j<3;j++)
             F(i, j)=map_ids[fs[i][j]];
     }
-
-//    igl::writeSTL(state.working_dir+state.postfix+"_debug.stl", V, F);
+#endif
+   // igl::write_triangle_mesh(state.working_dir+state.postfix+"_debug.obj", V, F);
 }
 
 void InoutFiltering::outputWindingNumberField(const Eigen::VectorXd& W){
