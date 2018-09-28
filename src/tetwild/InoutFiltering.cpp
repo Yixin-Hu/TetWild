@@ -83,7 +83,7 @@ std::vector<bool> InoutFiltering::filter() {
 }
 
 void InoutFiltering::getSurface(Eigen::MatrixXd& V, Eigen::MatrixXi& F){
-    extractSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
+    extractTrackedSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
 #if 0
     std::vector<std::array<int, 3>> fs;
     std::vector<int> vs;

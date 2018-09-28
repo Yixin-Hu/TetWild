@@ -189,7 +189,7 @@ void extractRegionMesh(const MeshRefinement& MR,
     // surface mesh
     Eigen::MatrixXd VS;
     Eigen::MatrixXi FS;
-    extractSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
+    extractTrackedSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
     igl::write_triangle_mesh("boundary_mesh.obj", VS, FS);
 
     // compute inside/outside info
@@ -206,8 +206,8 @@ void extractRegionMesh(const MeshRefinement& MR,
 // -----------------------------------------------------------------------------
 
 void extractInsideMesh(
-    const Eigen::MatrixXd &VI,
-    const Eigen::MatrixXi &FI,
+    // const Eigen::MatrixXd &VI,
+    // const Eigen::MatrixXi &FI,
     const MeshRefinement& MR,
     Eigen::MatrixXd &V,
     Eigen::MatrixXi &T,
@@ -217,9 +217,9 @@ void extractInsideMesh(
     extractVolumeMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, V, T);
 
     // surface mesh
-    Eigen::MatrixXd VS = VI;
-    Eigen::MatrixXi FS = FI;
-    // extractSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
+    Eigen::MatrixXd VS;
+    Eigen::MatrixXi FS;
+    extractTrackedSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
 
     // compute inside/outside info
     Eigen::MatrixXd C;
@@ -497,6 +497,13 @@ void tetwild_stage_two(
     Eigen::MatrixXi &TO,
     Eigen::VectorXd &AO)
 {
+    double old_initial_edge_len_rel = args.initial_edge_len_rel;
+    if (args.use_mmg3d) {
+        //if using mmg3d, then let mmg3d refine to the target edge length
+        args.initial_edge_len_rel = 100.0;
+        state.initial_edge_len = State(args, VI).initial_edge_len;
+    }
+
     //init
     logger().info("Refinement initializing...");
     MeshRefinement MR(geo_sf_mesh, geo_b_mesh, args, state);
@@ -509,8 +516,12 @@ void tetwild_stage_two(
     //improvement
     MR.refine(state.ENERGY_AMIPS);
 
-    //optimize with mmg3d
+    extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+
+    //post-optimization with mmg3d
     if (args.use_mmg3d) {
+        args.initial_edge_len_rel = old_initial_edge_len_rel;
+        state.initial_edge_len = State(args, VI).initial_edge_len;
         MmgOptions opt;
         opt.hsiz = state.initial_edge_len;
         opt.hausd = state.eps_input;
@@ -525,7 +536,7 @@ void tetwild_stage_two(
         Eigen::MatrixXi FO;
         Eigen::VectorXi R;
         // extractRegionMesh(MR, VO, TO, R, state);
-        extractInsideMesh(VI, FI, MR, VO, TO, state);
+        // extractInsideMesh(MR, VO, TO, state);
         igl::writeMESH("before_mmg.mesh", VO, TO, FO);
         logger().debug("mesh quality ok: {}", isMeshQualityOk(VO, TO));
         logger().debug("volume ok: {}", checkVolume(VO, TO));
@@ -540,11 +551,7 @@ void tetwild_stage_two(
 
             //improvement
             MR.refine(state.ENERGY_AMIPS, {{true, true, true, true}}, false, true);
-
-            extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
         }
-    } else {
-       extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
     }
 }
 

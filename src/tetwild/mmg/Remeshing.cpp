@@ -28,6 +28,7 @@
 #include <igl/winding_number.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <queue>
 #include <fstream>
 ////////////////////////////////////////////////////////////////////////////////
 //

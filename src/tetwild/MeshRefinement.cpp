@@ -266,11 +266,13 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    state.eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
-        if (args.use_mmg3d && check_all_rounded()
+
+        // early stop if quality is good enough for mmg
+        if (args.use_mmg3d && args.mmg3d_stop_early && check_all_rounded()
             && isMeshQualityOk(tet_vertices, tets, t_is_removed)
-            && checkVolume(tet_vertices, tets, t_is_removed))
+            && checkVolume(tet_vertices, tets, t_is_removed)
+            && hasNoSlivers(tet_vertices, tets, t_is_removed, args.mmg3d_slivers_thres))
         {
-            // early stop if quality is good enough for mmg
             logger().debug("all vertices rounded!!");
             break;
         }
@@ -283,7 +285,7 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         {
             Eigen::MatrixXd V;
             Eigen::MatrixXi F;
-            extractSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
+            extractTrackedSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
             static int __iter = 0;
             igl::write_triangle_mesh("iter_" + std::to_string(__iter++) + ".obj", V, F);
         }

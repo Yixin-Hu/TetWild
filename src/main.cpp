@@ -14,6 +14,7 @@
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/read_triangle_mesh.h>
 #include <igl/write_triangle_mesh.h>
+#include <igl/writeOBJ.h>
 #include <pymesh/MshSaver.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/command_line.h>

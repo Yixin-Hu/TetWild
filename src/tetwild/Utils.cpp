@@ -66,7 +66,7 @@ void extractTetrahedra(const std::vector<std::array<int, 4>> &tets,
     }
 }
 
-void extractSurfaceMesh(const std::vector<TetVertex> &verts,
+void extractTrackedSurfaceMesh(const std::vector<TetVertex> &verts,
     const std::vector<std::array<int, 4>> &tets,
     const std::vector<bool> &tet_is_removed,
     const std::vector<std::array<int, 4>> &is_surface_fs,

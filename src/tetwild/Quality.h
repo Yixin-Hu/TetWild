@@ -46,7 +46,22 @@ bool checkVolume(const std::vector<TetVertex> &verts,
     const std::vector<std::array<int, 4>> &tets,
     const std::vector<bool> &tet_is_removed);
 
-// Check that tets don't have zero volume
+// Same as above
 bool checkVolume(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T);
+
+///
+/// @brief      Determines if the tet mesh has no slivers.
+///
+/// @param[in]  verts           { Input mesh vertices }
+/// @param[in]  tets            { List of input tets }
+/// @param[in]  tet_is_removed  { Whether a tet has been removed }
+/// @param[in]  angle_thres     { Angle threshold in degree }
+///
+/// @return     true if there are no slivers below the given threshold, false otherwise.
+///
+bool hasNoSlivers(const std::vector<TetVertex> &verts,
+    const std::vector<std::array<int, 4>> &tets,
+    const std::vector<bool> &tet_is_removed,
+    double angle_thres);
 
 } // namespace tetwild

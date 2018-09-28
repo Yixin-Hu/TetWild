@@ -67,6 +67,15 @@ struct Args {
     // Use mmg3d to optimize the final tet mesh if possible (i.e. as soon as all vertices can be rounded)
     bool use_mmg3d = false;
 
+    // Stop TetWild's optimization process early if using mmg3d for post-processing
+    // Disabled by default because it has some issues.
+    // When disabled, then mmg3d will only be used as a final post-processing to refine
+    bool mmg3d_stop_early = false;
+
+    // Only defers to mmg3d if there are no slivers with a dihedral angle below the given threshold (in degree)
+    // Skip the check if 0 is given
+    double mmg3d_slivers_thres = 5;
+
     // [debug] logging
     bool write_csv_file = true;
     std::string working_dir = "";

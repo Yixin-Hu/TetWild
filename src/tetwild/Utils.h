@@ -54,7 +54,7 @@ void extractTetrahedra(const std::vector<std::array<int, 4>> &tets,
     Eigen::MatrixXi &T);
 
 ///
-/// @brief      { Extract boundary triangle mesh in matrix form, remapping vertex indices }
+/// @brief      { Extract the tracked surface mesh in matrix form, remapping vertex indices }
 ///
 /// @param[in]  verts           { Input mesh vertices }
 /// @param[in]  tets            { List of input tets }
@@ -64,7 +64,7 @@ void extractTetrahedra(const std::vector<std::array<int, 4>> &tets,
 /// @param[out] F               { #F x 3 matrix of output facets }
 /// @param[in]  state           { Global state of the program }
 ///
-void extractSurfaceMesh(const std::vector<TetVertex> &verts,
+void extractTrackedSurfaceMesh(const std::vector<TetVertex> &verts,
     const std::vector<std::array<int, 4>> &tets,
     const std::vector<bool> &tet_is_removed,
     const std::vector<std::array<int, 4>> &is_surface_fs,

@@ -13,7 +13,11 @@
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/TetmeshElements.h>
 #include <tetwild/Logger.h>
+#include <tetwild/Utils.h>
 #include <mmg/libmmg.h>
+#include <igl/edge_lengths.h>
+#include <igl/face_areas.h>
+#include <igl/dihedral_angles.h>
 #include <Eigen/Dense>
 
 namespace tetwild {
@@ -250,6 +254,30 @@ bool checkVolume(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T) {
         }
     }
     return true;
+}
+
+// -----------------------------------------------------------------------------
+
+bool hasNoSlivers(const std::vector<TetVertex> &verts,
+    const std::vector<std::array<int, 4>> &tets,
+    const std::vector<bool> &tet_is_removed,
+    double angle_thres)
+{
+    if (angle_thres == 0.0) { return true; }
+
+    double max_cos = std::cos(angle_thres * M_PI / 180.0);
+    double min_cos = -max_cos;
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi T;
+    Eigen::MatrixXd theta, cos_theta;
+    extractVolumeMesh(verts, tets, tet_is_removed, V, T);
+    igl::dihedral_angles(V, T, theta, cos_theta);
+
+    double c0 = cos_theta.minCoeff();
+    double c1 = cos_theta.maxCoeff();
+    logger().warn("min_max_dihedral_angles: {} {}", c0, c1);
+    return !(c0 < min_cos || c1 > max_cos);
 }
 
 } // namespace tetwild
