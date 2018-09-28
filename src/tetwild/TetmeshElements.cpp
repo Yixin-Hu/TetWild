@@ -18,7 +18,7 @@ namespace tetwild {
 void TetVertex::printInfo() const {
     logger().debug("is_on_surface = {}", is_on_surface);
     logger().debug("is_on_bbox = {}", is_on_bbox);
-    logger().debug("conn_tets = {}", conn_tets);
+    // logger().debug("conn_tets = {}", conn_tets);
 }
 
 void Stage::serialize(std::string serialize_file) {

@@ -18,8 +18,10 @@
 #include <tetwild/EdgeSplitter.h>
 #include <tetwild/EdgeRemover.h>
 #include <tetwild/VertexSmoother.h>
+#include <tetwild/Quality.h>
+#include <tetwild/Utils.h>
 #include <tetwild/DisableWarnings.h>
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <CGAL/centroid.h>
 #include <tetwild/EnableWarnings.h>
 #include <pymesh/MshLoader.h>
@@ -27,6 +29,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/points/kd_tree.h>
 #include <igl/winding_number.h>
+#include <igl/write_triangle_mesh.h>
 
 namespace tetwild {
 
@@ -54,14 +57,19 @@ void MeshRefinement::prepareData(bool is_init) {
     localOperation.outputInfo(MeshRecord::OpType::OP_OPT_INIT, tmp_time);
 }
 
-void MeshRefinement::round() {
-    int cnt = 0;
-    int sub_cnt = 0;
+bool MeshRefinement::round() {
+    size_t num_removed = 0;
+    size_t num_rounded = 0;
+    size_t num_new = 0;
     for (int i = 0; i < tet_vertices.size(); i++) {
-        if (v_is_removed[i])
+        if (v_is_removed[i]) {
+            ++num_removed;
             continue;
-        if (tet_vertices[i].is_rounded)
+        }
+        if (tet_vertices[i].is_rounded) {
+            ++num_rounded;
             continue;
+        }
         tet_vertices[i].is_rounded = true;
         Point_3 old_p = tet_vertices[i].pos;
         tet_vertices[i].pos = Point_3(tet_vertices[i].posf[0], tet_vertices[i].posf[1], tet_vertices[i].posf[2]);
@@ -89,11 +97,10 @@ void MeshRefinement::round() {
         if (!tet_vertices[i].is_rounded)
             tet_vertices[i].pos = old_p;
         else {
-            cnt++;
-            sub_cnt++;
+            ++num_new;
         }
     }
-    logger().debug("round: {}({})", cnt, tet_vertices.size());
+    logger().debug("rounded: {} / {} (new: {}, removed: {})", num_rounded + num_new, tet_vertices.size() - num_removed, num_new, num_removed);
 
     //for check
 //    for (int i = 0; i < tets.size(); i++) {
@@ -105,6 +112,8 @@ void MeshRefinement::round() {
 //            logger().debug("round hehe");
 //        }
 //    }
+
+    return num_rounded + num_new == tet_vertices.size() - num_removed;
 }
 
 void MeshRefinement::clear() {
@@ -146,13 +155,13 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
         collapser.collapse();
         tmp_time = igl_timer.getElapsedTime();
         collapser.outputInfo(MeshRecord::OpType::OP_COLLAPSE, tmp_time, is_log);
-        logger().info("edge collasing done!");
+        logger().info("edge collapsing done!");
         logger().info("time = {}s", tmp_time);
     }
 
     if (ops[2]) {
         igl_timer.start();
-        logger().info("edge removing...");
+        logger().info("edge removal...");
         edge_remover.init();
         edge_remover.swap();
         tmp_time = igl_timer.getElapsedTime();
@@ -167,7 +176,7 @@ int MeshRefinement::doOperations(EdgeSplitter& splitter, EdgeCollapser& collapse
         smoother.smooth();
         tmp_time = igl_timer.getElapsedTime();
         smoother.outputInfo(MeshRecord::OpType::OP_SMOOTH, tmp_time, is_log);
-        logger().info("vertex smooth done!");
+        logger().info("vertex smoothing done!");
         logger().info("time = {}s", tmp_time);
     }
 
@@ -205,18 +214,15 @@ int MeshRefinement::doOperationLoops(EdgeSplitter& splitter, EdgeCollapser& coll
     return loop_cnt;
 }
 
-void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update) {
+void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, bool is_pre, bool is_post, int scalar_update)
+{
     GEO::MeshFacetsAABBWithEps geo_sf_tree(geo_sf_mesh);
     if (geo_b_mesh.vertices.nb() == 0) {
         getSimpleMesh(geo_b_mesh);//for constructing aabb tree, the mesh cannot be empty
     }
     GEO::MeshFacetsAABBWithEps geo_b_tree(geo_b_mesh);
 
-    if (is_dealing_unrounded)
-        min_adaptive_scale = state.eps / state.initial_edge_len * 0.5; //min to eps/2
-    else
-//        min_adaptive_scale = state.eps_input / state.initial_edge_len; // state.eps_input / state.initial_edge_len * 0.5 is too small
-        min_adaptive_scale = (state.bbox_diag / 1000) / state.initial_edge_len; // set min_edge_length to diag / 1000 would be better
+    min_adaptive_scale = (state.bbox_diag / 1000) / state.initial_edge_len; // set min_edge_length to diag / 1000 would be better
 
     LocalOperations localOperation(tet_vertices, tets, is_surface_fs, v_is_removed, t_is_removed, tet_qualities,
                                    energy_type, geo_sf_mesh, geo_sf_tree, geo_b_tree, args, state);
@@ -237,14 +243,17 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     if (is_pre)
         refine_pre(splitter, collapser, edge_remover, smoother);
 
-    /// apply the local operations
-    if (is_dealing_unrounded) {
+    auto check_all_rounded = [&]() {
         for (int i = 0; i < tet_vertices.size(); i++) {
-            if (v_is_removed[i] || tet_vertices[i].is_rounded)
+            if (v_is_removed[i]) {
                 continue;
-            smoother.outputOneRing(i, "");
+            }
+            if (!tet_vertices[i].is_rounded) {
+                return false;
+            }
         }
-    }
+        return true;
+    };
 
     double avg_energy0, max_energy0;
     localOperation.getAvgMaxEnergy(avg_energy0, max_energy0);
@@ -257,33 +266,33 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
 //    state.eps_2 *= eps_s*eps_s;
     bool is_split = true;
     for (int pass = old_pass; pass < old_pass + args.max_num_passes; pass++) {
-        if (is_dealing_unrounded && pass == old_pass) {
-            updateScalarField(false, false, args.filter_energy_thres);
+
+        // early stop if quality is good enough for mmg
+        if (args.use_mmg3d && args.mmg3d_stop_early && check_all_rounded()
+            && isMeshQualityOk(tet_vertices, tets, t_is_removed)
+            && checkVolume(tet_vertices, tets, t_is_removed)
+            && hasNoSlivers(tet_vertices, tets, t_is_removed, args.mmg3d_slivers_thres))
+        {
+            logger().debug("all vertices rounded!!");
+            break;
         }
 
         logger().info("//////////////// Pass {} ////////////////", pass);
-        if (is_dealing_unrounded)
-            collapser.is_limit_length = false;
         doOperations(splitter, collapser, edge_remover, smoother,
                      std::array<bool, 4>({{is_split, ops[1], ops[2], ops[3]}}));
         update_cnt++;
 
-        if (is_dealing_unrounded) {
-            bool is_finished = true;
-            for (int i = 0; i < tet_vertices.size(); i++) {
-                if (v_is_removed[i])
-                    continue;
-                if (!tet_vertices[i].is_rounded)
-                    is_finished = false;
-            }
-            if (is_finished) {
-                logger().debug("all vertices rounded!!");
-//                break;
-            }
+        {
+            Eigen::MatrixXd V;
+            Eigen::MatrixXi F;
+            extractTrackedSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);
+            static int __iter = 0;
+            igl::write_triangle_mesh("iter_" + std::to_string(__iter++) + ".obj", V, F);
         }
 
-        if (localOperation.getMaxEnergy() < args.filter_energy_thres)
+        if (localOperation.getMaxEnergy() < args.filter_energy_thres) {
             break;
+        }
 
         //check and mark is_bad_element
         double avg_energy, max_energy;
@@ -438,15 +447,17 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
     }
 
 
-    if (args.target_num_vertices > 0)
+    if (args.target_num_vertices > 0){
         applyTargetedVertexNum(splitter, collapser, edge_remover, smoother);
+    }
 
     if (args.background_mesh != "") {
         applySizingField(splitter, collapser, edge_remover, smoother);
     }
 
-    if (args.save_mid_result == 2)
+    if (args.save_mid_result == 2) {
         outputMidResult(true, 2);//mark in/out
+    }
 
 
 //    if (!args.is_quiet) {
@@ -468,7 +479,7 @@ void MeshRefinement::refine_pre(EdgeSplitter& splitter, EdgeCollapser& collapser
                                 VertexSmoother& smoother){
     logger().info("////////////////// Pre-processing //////////////////");
     collapser.is_limit_length = false;
-    doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{{false, true, false, false}});
+    doOperations(splitter, collapser, edge_remover, smoother, {{false, true, false, false}});
     collapser.is_limit_length = true;
 }
 
@@ -480,7 +491,7 @@ void MeshRefinement::refine_post(EdgeSplitter& splitter, EdgeCollapser& collapse
         tet_vertices[i].adaptive_scale = 1;
     }
 
-    doOperations(splitter, collapser, edge_remover, smoother, std::array<bool, 4>{{false, true, false, false}});
+    doOperations(splitter, collapser, edge_remover, smoother, {{false, true, false, false}});
 }
 
 void MeshRefinement::refine_local(EdgeSplitter& splitter, EdgeCollapser& collapser, EdgeRemover& edge_remover,

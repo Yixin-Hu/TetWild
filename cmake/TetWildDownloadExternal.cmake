@@ -52,3 +52,11 @@ function(tetwild_download_cli11)
         URL_MD5 48ef97262adb0b47a2f0a7edbda6e2aa
     )
 endfunction()
+
+## mmg
+function(tetwild_download_mmg)
+    tetwild_download_project(mmg
+        GIT_REPOSITORY https://github.com/MmgTools/mmg.git
+        GIT_TAG        3175fb35f014c7c12c058dcc325d912d6d2fc179
+    )
+endfunction()

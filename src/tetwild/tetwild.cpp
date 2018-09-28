@@ -18,8 +18,16 @@
 #include <tetwild/SimpleTetrahedralization.h>
 #include <tetwild/MeshRefinement.h>
 #include <tetwild/InoutFiltering.h>
+#include <tetwild/Utils.h>
+#include <tetwild/Quality.h>
+#include <tetwild/mmg/Remeshing.h>
 #include <igl/boundary_facets.h>
+#include <igl/bounding_box_diagonal.h>
 #include <igl/remove_unreferenced.h>
+#include <igl/write_triangle_mesh.h>
+#include <igl/writeMESH.h>
+#include <igl/barycenter.h>
+#include <igl/winding_number.h>
 #include <pymesh/MshSaver.h>
 #include <geogram/mesh/mesh.h>
 
@@ -89,6 +97,8 @@ void printFinalQuality(double time, const std::vector<TetVertex>& tet_vertices,
     addRecord(MeshRecord(MeshRecord::OpType::OP_UNROUNDED, -1, cnt, -1), args, state);
 }
 
+// -----------------------------------------------------------------------------
+
 void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
     Eigen::MatrixXd &VS, Eigen::MatrixXi &FS)
 {
@@ -97,22 +107,26 @@ void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
     igl::remove_unreferenced(V, FS, VS, FS, I);
 }
 
+// -----------------------------------------------------------------------------
+
 void extractFinalTetmesh(MeshRefinement& MR,
     Eigen::MatrixXd &V_out, Eigen::MatrixXi &T_out, Eigen::VectorXd &A_out,
     const Args &args, const State &state)
 {
     std::vector<TetVertex> &tet_vertices = MR.tet_vertices;
     std::vector<std::array<int, 4>> &tets = MR.tets;
-    std::vector<bool> &v_is_removed = MR.v_is_removed;
     std::vector<bool> &t_is_removed = MR.t_is_removed;
     std::vector<TetQuality> &tet_qualities = MR.tet_qualities;
     int t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
     double tmp_time = 0;
+    // When explicitly smoothing open boundaries, the "in-out" filtering has
+    // been done previously as a post-processing step of MeshRefinement.
+    // Otherwise we need to tag in-out tetrahedra here.
     if (!args.smooth_open_boundary) {
-        InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, v_is_removed, t_is_removed, tet_qualities, state);
+        InoutFiltering IOF(tet_vertices, tets, MR.is_surface_fs, t_is_removed, state);
         igl::Timer igl_timer;
         igl_timer.start();
-        IOF.filter();
+        t_is_removed = IOF.filter();
         t_cnt = std::count(t_is_removed.begin(), t_is_removed.end(), false);
         tmp_time = igl_timer.getElapsedTime();
         logger().info("time = {}s", tmp_time);
@@ -130,8 +144,9 @@ void extractFinalTetmesh(MeshRefinement& MR,
     std::sort(v_ids.begin(), v_ids.end());
     v_ids.erase(std::unique(v_ids.begin(), v_ids.end()), v_ids.end());
     std::unordered_map<int, int> map_ids;
-    for (int i = 0; i < v_ids.size(); i++)
+    for (int i = 0; i < v_ids.size(); i++) {
         map_ids[v_ids[i]] = i;
+    }
 
     V_out.resize(v_ids.size(), 3);
     T_out.resize(t_cnt, 4);
@@ -159,6 +174,72 @@ void extractFinalTetmesh(MeshRefinement& MR,
         return;
     }
     printFinalQuality(tmp_time, tet_vertices, tets, t_is_removed, tet_qualities, v_ids, args, state);
+}
+
+// -----------------------------------------------------------------------------
+
+// Extract ambient tet-mesh with a region tag, 0 being outside, 1 being inside
+void extractRegionMesh(const MeshRefinement& MR,
+    Eigen::MatrixXd &V, Eigen::MatrixXi &T, Eigen::VectorXi &R,
+    const State &state)
+{
+    // volume mesh
+    extractVolumeMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, V, T);
+
+    // surface mesh
+    Eigen::MatrixXd VS;
+    Eigen::MatrixXi FS;
+    extractTrackedSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
+    igl::write_triangle_mesh("boundary_mesh.obj", VS, FS);
+
+    // compute inside/outside info
+    Eigen::MatrixXd C;
+    Eigen::VectorXd W;
+    igl::barycenter(V, T, C);
+    igl::winding_number(VS, FS, C, W);
+    R.resize(T.rows());
+    for (int t = 0; t < T.rows(); ++t) {
+        R(t) = (W(t) > 0.5);
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+void extractInsideMesh(
+    const Eigen::MatrixXd &VI,
+    const Eigen::MatrixXi &FI,
+    const MeshRefinement& MR,
+    Eigen::MatrixXd &V,
+    Eigen::MatrixXi &T,
+    const State &state)
+{
+    // volume mesh
+    extractVolumeMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, V, T);
+
+    // surface mesh
+    Eigen::MatrixXd VS = VI;
+    Eigen::MatrixXi FS = FI;
+    // extractTrackedSurfaceMesh(MR.tet_vertices, MR.tets, MR.t_is_removed, MR.is_surface_fs, VS, FS, state);
+
+    // compute inside/outside info
+    Eigen::MatrixXd C;
+    Eigen::VectorXd W;
+    igl::barycenter(V, T, C);
+    igl::winding_number(VS, FS, C, W);
+    int cnt = 0;
+    for (int t = 0; t < T.rows(); ++t) {
+        if ((W(t) > 0.5)) {
+            T.row(cnt++) = T.row(t);
+        }
+    }
+    T.conservativeResize(cnt, T.cols());
+
+    Eigen::MatrixXd VV;
+    Eigen::MatrixXi TT, F;
+    Eigen::VectorXi I;
+    igl::remove_unreferenced(V, T, VV, TT, I);
+    V = VV;
+    T = TT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,7 +273,40 @@ double tetwild_stage_one_preprocess(
 
     m_vertices.clear();
     m_faces.clear();
-    pp.process(geo_sf_mesh, m_vertices, m_faces, args);
+    //optimize with mmgs
+    if (args.use_mmgs) {
+        MmgOptions opt;
+        opt.hsiz = 2.0 * igl::bounding_box_diagonal(VI);
+        opt.hgrad *= 2.0;
+        opt.hausd = state.eps_input;
+        switch (logger().level()) {
+            case spdlog::level::trace:
+                opt.verbose = 10; break;
+            case spdlog::level::debug:
+                opt.verbose = 5; break;
+            default:
+                opt.verbose = 0;
+        }
+        Eigen::MatrixXd VO;
+        Eigen::MatrixXi FO;
+        if (remesh_uniform_sf(VI, FI, VO, FO, opt)) {
+            assert(VO.rows() > 0 && FO.rows() > 0);
+            igl::write_triangle_mesh("simplified.obj", VO, FO);
+            m_vertices.reserve(VO.rows());
+            for (int v = 0; v < VO.rows(); ++v) {
+                m_vertices.emplace_back(VO(v, 0), VO(v, 1), VO(v, 2));
+            }
+            m_faces.reserve(FO.rows());
+            for (int f = 0; f < FO.rows(); ++f) {
+                m_faces.push_back({{FO(f, 0), FO(f, 1), FO(f, 2)}});
+            }
+        } else {
+            logger().warn("mmgs didn't succeed, using TetWild's simplify procedure");
+        }
+    }
+    if (m_vertices.empty()) {
+        pp.process(geo_sf_mesh, m_vertices, m_faces, args);
+    }
     double tmp_time = igl_timer.getElapsedTime();
     addRecord(MeshRecord(MeshRecord::OpType::OP_PREPROCESSING, tmp_time, m_vertices.size(), m_faces.size()), args, state);
     logger().info("time = {}s", tmp_time);
@@ -369,7 +483,11 @@ void tetwild_stage_one(
 
 // -----------------------------------------------------------------------------
 
-void tetwild_stage_two(const Args &args, State &state,
+void tetwild_stage_two(
+    const Eigen::MatrixXd &VI,
+    const Eigen::MatrixXi &FI,
+    Args &args,
+    State &state,
     GEO::Mesh &geo_sf_mesh,
     GEO::Mesh &geo_b_mesh,
     std::vector<TetVertex> &tet_vertices,
@@ -391,15 +509,50 @@ void tetwild_stage_two(const Args &args, State &state,
     //improvement
     MR.refine(state.ENERGY_AMIPS);
 
-    extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+    //post-optimization with mmg3d
+    if (args.use_mmg3d) {
+        MmgOptions opt;
+        opt.hsiz = state.initial_edge_len;
+        opt.hausd = state.eps_input;
+        switch (logger().level()) {
+            case spdlog::level::trace:
+                opt.verbose = 10; break;
+            case spdlog::level::debug:
+                opt.verbose = 5; break;
+            default:
+                opt.verbose = 0;
+        }
+        Eigen::MatrixXi FO;
+        Eigen::VectorXi R;
+        // extractRegionMesh(MR, VO, TO, R, state);
+        extractInsideMesh(VI, FI, MR, VO, TO, state);
+        igl::writeMESH("before_mmg.mesh", VO, TO, FO);
+        logger().debug("mesh quality ok: {}", isMeshQualityOk(VO, TO));
+        logger().debug("volume ok: {}", checkVolume(VO, TO));
+        if (remesh_uniform_3d(VO, TO, R, VO, FO, TO, R, opt)) {
+            assert(VO.rows() > 0 && FO.rows() > 0);
+            // filterRegion(VO, TO, R, 1, VO, TO);
+            AO.resize(TO.rows());
+            AO.setZero(); //clear values
+        } else {
+            logger().warn("mmg3d failed to optimize the mesh, reverting to TetWild");
+            args.use_mmg3d = false;
+
+            //improvement
+            MR.refine(state.ENERGY_AMIPS, {{true, true, true, true}}, false, true);
+        }
+    } else {
+        extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
                         Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
-                        const Args &args)
+                        const Args &args_)
 {
+    Args args = args_;
     igl::Timer igl_timer;
     igl_timer.start();
 
@@ -416,7 +569,7 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
         tet_vertices, tet_indices, is_surface_facet);
 
     /// STAGE 2
-    tetwild_stage_two(args, state, geo_sf_mesh, geo_b_mesh,
+    tetwild_stage_two(VI, FI, args, state, geo_sf_mesh, geo_b_mesh,
         tet_vertices, tet_indices, is_surface_facet, VO, TO, AO);
 
     double total_time = igl_timer.getElapsedTime();
