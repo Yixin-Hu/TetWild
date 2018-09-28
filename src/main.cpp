@@ -188,6 +188,25 @@ int main(int argc, char *argv[]) {
     if(args.is_quiet) {
         args.write_csv_file = false;
     }
+    // args.user_callback = [] (Step step, double x) {
+    //     std::string name;
+    //     switch (step) {
+    //         case Step::Preprocess:
+    //             name = "Preprocess"; break;
+    //         case Step::Delaunay:
+    //             name = "Delaunay"; break;
+    //         case Step::FaceMatching:
+    //             name = "FaceMatching"; break;
+    //         case Step::BSP:
+    //             name = "BSP"; break;
+    //         case Step::Tetra:
+    //             name = "Tetra"; break;
+    //         case Step::Optimize:
+    //             name = "Optimize"; break;
+    //         default: {}
+    //     }
+    //     std::cout << "[" << name << "] " << x << std::endl;
+    // };
 
     //load input surface
     Eigen::MatrixXd VI, VO;

@@ -136,7 +136,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
             else
                 p[j] = p_min[j];
         }
-        points.push_back(std::make_pair(Point_d(p[0], p[1], p[2]), m_vertices_size + i));
+        points.emplace_back(Point_d(p[0], p[1], p[2]), m_vertices_size + i);
     }
     ///add voxel points
     std::vector<Point_d> voxel_points;
@@ -144,7 +144,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
         getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points, args, state);
     }
     for(int i=0;i<voxel_points.size();i++) {
-        points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
+        points.emplace_back(voxel_points[i], m_vertices_size + 8 + i);
     }
     logger().debug("{} voxel points are added!", voxel_points.size());
 
@@ -170,8 +170,9 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     }
     std::sort(cells.begin(), cells.end());
     for(int i=0;i<cells.size();i++) {
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++) {
             conn_n_ids[cells[i][j]].push_back(i);
+        }
     }
 
     //get bsp faces

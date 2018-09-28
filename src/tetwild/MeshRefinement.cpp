@@ -278,11 +278,14 @@ void MeshRefinement::refine(int energy_type, const std::array<bool, 4>& ops, boo
         }
 
         logger().info("//////////////// Pass {} ////////////////", pass);
+        if (args.user_callback) {
+            args.user_callback(Step::Optimize, double(pass - old_pass) / double(args.max_num_passes));
+        }
         doOperations(splitter, collapser, edge_remover, smoother,
                      std::array<bool, 4>({{is_split, ops[1], ops[2], ops[3]}}));
         update_cnt++;
 
-        {
+        if (0) {
             Eigen::MatrixXd V;
             Eigen::MatrixXi F;
             extractTrackedSurfaceMesh(tet_vertices, tets, t_is_removed, is_surface_fs, V, F, state);

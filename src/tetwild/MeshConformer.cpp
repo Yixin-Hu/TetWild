@@ -11,13 +11,13 @@
 
 #include <tetwild/MeshConformer.h>
 #include <tetwild/Logger.h>
+#include <tetwild/Args.h>
 
 namespace tetwild {
 
-void MeshConformer::match() {
+void MeshConformer::match(const Args &args) {
     is_matched.assign(m_faces.size(), false);
-    matchDivFaces();
-    return;
+    matchDivFaces(args);
 }
 
 void MeshConformer::matchVertexIndices(int x, const std::vector<std::array<int, 2>>& seed_v_list,
@@ -53,7 +53,7 @@ void MeshConformer::matchVertexIndices(int x, const std::vector<std::array<int, 
 }
 
 
-void MeshConformer::matchDivFaces() {
+void MeshConformer::matchDivFaces(const Args &args) {
     std::vector<std::array<int, 2>> seed_v_list;
     seed_v_list.reserve(bsp_faces.size() * 3);
     for (int i = 0; i < bsp_faces.size(); i++) {
@@ -68,6 +68,10 @@ void MeshConformer::matchDivFaces() {
     for (int i = 0; i < m_faces_size; i++) {
         int m_f_id = i;
         std::array<Point_3, 3> tri1 = {{m_vertices[m_faces[i][0]], m_vertices[m_faces[i][1]], m_vertices[m_faces[i][2]]}};
+
+        if (args.user_callback) {
+            args.user_callback(Step::FaceMatching, double(i) / double(m_faces_size));
+        }
 
         ///find seed info
         std::unordered_set<int> seed_fids, seed_nids;
@@ -107,8 +111,9 @@ void MeshConformer::matchDivFaces() {
             }
         }
         for (auto it = seed_fids.begin(); it != seed_fids.end(); it++)
-            for (auto jt = bsp_faces[*it].conn_nodes.begin(); jt != bsp_faces[*it].conn_nodes.end(); jt++)
+            for (auto jt = bsp_faces[*it].conn_nodes.begin(); jt != bsp_faces[*it].conn_nodes.end(); jt++) {
                 seed_nids.insert(*jt);
+            }
 
         for (auto it = seed_fids.begin(); it != seed_fids.end(); it++) {
             ////cal intersection type
