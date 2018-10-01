@@ -84,6 +84,9 @@ struct Args {
     // Skip the check if 0 is given
     double mmg3d_slivers_thres = 0;
 
+    // Angle threshold (in °) for sharp feature detection in mmg (0 means disabled).
+    double mmg_angle_thres = 45.0;
+
     ///////////////
     // [Logging] //
     ///////////////
