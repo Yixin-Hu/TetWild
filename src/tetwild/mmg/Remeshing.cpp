@@ -53,7 +53,6 @@ bool mmgs_tri_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     }
 
     // Set remeshing options
-    MMGS_Set_dparameter(mesh, met, MMGS_DPARAM_angleDetection, opt.angle_value);
     if (opt.enable_anisotropy) {
         MMGS_Set_solSize(mesh,met,MMG5_Vertex,0,MMG5_Tensor);
     }
@@ -71,6 +70,7 @@ bool mmgs_tri_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
     MMGS_Set_iparameter(mesh, met, MMGS_IPARAM_noinsert, int(opt.noinsert));
     MMGS_Set_iparameter(mesh, met, MMGS_IPARAM_nomove, int(opt.nomove));
     MMGS_Set_iparameter(mesh, met, MMG3D_IPARAM_verbose, int(opt.verbose));
+    MMGS_Set_dparameter(mesh, met, MMGS_DPARAM_angleDetection, opt.angle_value);
 
     int ier = MMGS_mmgslib(mesh,met);
     if (ier != MMG5_SUCCESS) {
@@ -100,7 +100,6 @@ bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, cons
     }
 
     // Set remeshing options
-    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_angleDetection, opt.angle_value);
     if (opt.enable_anisotropy) {
         MMG3D_Set_solSize(mesh,met,MMG5_Vertex,0,MMG5_Tensor);
     }
@@ -122,6 +121,7 @@ bool mmg3d_tet_remesh(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, cons
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_optim, int(opt.optim));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_optimLES, int(opt.optimLES));
     MMG3D_Set_iparameter(mesh, met, MMG3D_IPARAM_verbose, int(opt.verbose));
+    MMG3D_Set_dparameter(mesh, met, MMG3D_DPARAM_angleDetection, opt.angle_value);
     if (SI.rows() > 0) {
         assert(SI.size() == VI.rows());
         for(int v = 0; v < SI.size(); ++v) {
