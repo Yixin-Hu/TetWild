@@ -85,6 +85,10 @@ target_link_libraries(tetwild
 		mmg::mmg
 )
 
+if(MSVC)
+	target_compile_options (tetwild PRIVATE /w)
+endif()
+
 # ispc
 if(TETWILD_WITH_ISPC)
 	message(STATUS "Compiling energy with ISPC")
