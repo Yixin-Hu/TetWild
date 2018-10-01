@@ -282,6 +282,8 @@ double tetwild_stage_one_preprocess(
         opt.hsiz = 2.0 * igl::bounding_box_diagonal(VI);
         opt.hgrad *= 2.0;
         opt.hausd = state.eps_input;
+        opt.angle_detection = (args.mmg_angle_thres > 0.0);
+        opt.angle_value = args.mmg_angle_thres;
         if (logger().level() == spdlog::level::trace) {
             opt.verbose = 10;
         } else if (logger().level() == spdlog::level::debug) {
@@ -523,6 +525,8 @@ void tetwild_stage_two(
         MmgOptions opt;
         opt.hsiz = state.initial_edge_len;
         opt.hausd = state.eps_input;
+        opt.angle_detection = (args.mmg_angle_thres > 0.0);
+        opt.angle_value = args.mmg_angle_thres;
         if (logger().level() == spdlog::level::trace) {
             opt.verbose = 10;
         } else if (logger().level() == spdlog::level::debug) {
