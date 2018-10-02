@@ -5,6 +5,7 @@
 /extern/geogram
 /extern/libigl
 /extern/mmg
+/extern/sanitizers-cmake
 /extern/spdlog
 
 # Build

@@ -1,4 +1,4 @@
-add_executable(levelset levelset)
+add_executable(levelset levelset.cpp)
 target_link_libraries(levelset
 		tetwild::tetwild
 		tetwild::internal

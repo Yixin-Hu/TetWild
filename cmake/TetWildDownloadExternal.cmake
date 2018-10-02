@@ -60,3 +60,11 @@ function(tetwild_download_mmg)
         GIT_TAG        a9179cb77b32925011736bb3d862651b63cfaf1a
     )
 endfunction()
+
+## Sanitizers
+function(tetwild_download_sanitizers)
+    tetwild_download_project(sanitizers-cmake
+        GIT_REPOSITORY https://github.com/arsenm/sanitizers-cmake.git
+        GIT_TAG        6947cff3a9c9305eb9c16135dd81da3feb4bf87f
+    )
+endfunction()

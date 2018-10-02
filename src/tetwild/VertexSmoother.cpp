@@ -482,7 +482,7 @@ bool VertexSmoother::NewtonsMethod(const std::vector<int>& t_ids, const std::vec
         Point_3 old_p = tet_vertices[v_id].pos;
         double a = 1;
         bool step_taken = false;
-        double new_energy;
+        double new_energy = std::numeric_limits<double>::infinity();
 
         for (int it = 0; it < MAX_IT; it++) {
             //solve linear system
