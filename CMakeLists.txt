@@ -5,8 +5,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Options
 ################################################################################
 # tetwild
-option(TETWILD_WITH_HUNTER "Use Hunter to download and configure Boost" OFF)
-option(TETWILD_WITH_ISPC   "Use ISPC"                                   OFF)
+option(TETWILD_WITH_HUNTER     "Use Hunter to download and configure Boost" OFF)
+option(TETWILD_WITH_ISPC       "Use ISPC"                                   OFF)
+option(TETWILD_WITH_SANITIZERS "Use sanitizers"                             OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -29,6 +30,11 @@ option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
 #geogram
 option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
+#sanitizers
+option(SANITIZE_ADDRESS   "Sanitize Address"       OFF)
+option(SANITIZE_MEMORY    "Sanitize Memory"        OFF)
+option(SANITIZE_THREAD    "Sanitize Thread"        OFF)
+option(SANITIZE_UNDEFINED "Sanitize Undefined"     OFF)
 
 if(TETWILD_WITH_HUNTER)
 	# Needs to be set before the main project... argh =/
@@ -38,6 +44,12 @@ if(TETWILD_WITH_HUNTER)
 		SHA1 "cb75cce9a3a8d552e70e7118f3203eb4ac05c201"
 	)
 endif()
+
+# set(TETWILD_WITH_SANITIZERS   ON  CACHE BOOL "" FORCE)
+# set(SANITIZE_ADDRESS          OFF CACHE BOOL "" FORCE)
+# set(SANITIZE_MEMORY           OFF CACHE BOOL "" FORCE)
+# set(SANITIZE_THREAD           OFF CACHE BOOL "" FORCE)
+# set(SANITIZE_UNDEFINED        ON  CACHE BOOL "" FORCE)
 
 ################################################################################
 # Project name
@@ -73,6 +85,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ################################################################################
 # 3rd party libraries
 ################################################################################
+
+# Sanitizers
+if(TETWILD_WITH_SANITIZERS)
+	list(APPEND CMAKE_MODULE_PATH ${TETWILD_EXTERNAL}/sanitizers-cmake/cmake)
+endif()
+
+# Dependencies
 include(TetWildDependencies)
 
 ################################################################################
@@ -153,6 +172,10 @@ target_link_libraries(tetwild_library
 )
 set_target_properties(tetwild_library PROPERTIES OUTPUT_NAME "tetwild")
 
+if(TETWILD_WITH_SANITIZERS)
+	add_sanitizers(tetwild_library)
+endif()
+
 # tetwild private API
 add_library(tetwild_internal INTERFACE)
 add_library(tetwild::internal ALIAS tetwild_internal)
@@ -175,6 +198,10 @@ target_link_libraries(TetWild
 		warnings::all
 )
 igl_copy_cgal_dll(TetWild)
+
+if(TETWILD_WITH_SANITIZERS)
+	add_sanitizers(TetWild)
+endif()
 
 # Install
 install(TARGETS TetWild RUNTIME DESTINATION bin)

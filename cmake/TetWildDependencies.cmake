@@ -64,3 +64,9 @@ if(NOT TARGET mmg)
 	add_library(mmg::mmg2d ALIAS libmmg2d_a)
 	add_library(mmg::mmg3d ALIAS libmmg3d_a)
 endif()
+
+# Sanitizers
+if(TETWILD_WITH_SANITIZERS)
+    tetwild_download_sanitizers()
+    find_package(Sanitizers)
+endif()
