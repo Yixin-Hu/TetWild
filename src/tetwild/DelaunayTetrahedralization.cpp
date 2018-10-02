@@ -26,6 +26,9 @@
 #include <geogram/mesh/mesh_reorder.h>
 #include <bitset>
 
+#include <geogram/delaunay/delaunay_3d.h>
+#define USE_GEOGRAM false
+
 namespace tetwild {
 
 void DelaunayTetrahedralization::init(const std::vector<Point_3>& m_vertices, const std::vector<std::array<int, 3>>& m_faces,
@@ -56,8 +59,8 @@ void DelaunayTetrahedralization::init(const std::vector<Point_3>& m_vertices, co
 }
 
 void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Point_3& p_max, GEO::Mesh& geo_surface_mesh,
-                                                std::vector<Point_d>& voxel_points, const Args &args, const State &state)
-{
+                                                std::vector<Point_d>& voxel_points, const Args &args, const State &state) {
+#if !USE_GEOGRAM
     GEO::MeshFacetsAABB geo_face_tree(geo_surface_mesh);
 
     double voxel_resolution;
@@ -97,13 +100,180 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
             }
         }
     }
+#else
+    //todo
+#endif
 }
 
 void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, GEO::Mesh& geo_surface_mesh,
                                        std::vector<Point_3>& bsp_vertices, std::vector<BSPEdge>& bsp_edges,
                                        std::vector<BSPFace>& bsp_faces, std::vector<BSPtreeNode>& bsp_nodes,
-                                       const Args &args, const State &state)
-{
+                                       const Args &args, const State &state) {
+#if USE_GEOGRAM
+    cout<<"using geogram delaunay tetrahedralization"<<endl;
+
+    std::vector<Point_3> points;
+    const int m_vertices_size = m_vertices.size();
+    points.reserve(m_vertices_size);
+    for (int i = 0; i < m_vertices_size; i++) {
+        points.push_back(m_vertices[i]);
+    }
+
+    ///add 8 virtual vertices
+    Bbox_3 bbox = CGAL::bounding_box(m_vertices.begin(), m_vertices.end());
+    Point_3 p_min = bbox.min();
+    Point_3 p_max = bbox.max();
+
+    double dis = g_eps * 2;//todo: use epsilon to determine the size of bbx
+    if (dis < g_diag_l / 20)
+        dis = g_diag_l / 20;
+    else
+        dis = g_eps * 1.1;
+    p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
+    p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
+
+    for (int i = 0; i < 8; i++) {
+        std::array<CGAL_FT, 3> p;
+        std::bitset<sizeof(int) * 8> a(i);
+        for (int j = 0; j < 3; j++) {
+            if (a.test(j))
+                p[j] = p_max[j];
+            else
+                p[j] = p_min[j];
+        }
+        points.push_back(Point_3(p[0], p[1], p[2]));
+    }
+
+    ///add voxel points
+//    std::vector<Point_3> voxel_points;
+//    if (args.is_using_voxel)
+//        getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points);
+//    for (int i = 0; i < voxel_points.size(); i++) {
+//        points.push_back(std::make_pair(voxel_points[i], m_vertices_size + 8 + i));
+//    }
+//    cout << voxel_points.size() << " voxel points are added!" << endl;
+    //todo
+
+    GEO::Delaunay::initialize();
+    GEO::Delaunay_var T = GEO::Delaunay::create(3, "BDEL");
+    std::vector<double> V_d;
+    V_d.resize(points.size()*3);
+//    Eigen::MatrixXd V_d(points.size(), 3);
+    //points -> V_d
+    for(int i=0;i<points.size();i++) {
+        for (int j = 0; j < 3; j++)
+            V_d[i * 3 + j] = CGAL::to_double(points[i][j]);
+    }
+    T->set_vertices(points.size(), V_d.data());
+
+    auto tet2v = T->cell_to_v();
+    std::vector<std::array<int, 4>> cells;
+    cells.reserve(T->nb_cells());
+    std::vector<std::vector<int>> conn_c4v;
+    conn_c4v.resize(T->nb_vertices());
+    for (int i = 0; i < T->nb_cells(); i++) {
+        cells.push_back(std::array<int, 4>({tet2v[i * 4], tet2v[i * 4 + 1], tet2v[i * 4 + 2], tet2v[i * 4 + 3]}));
+        for (int j = 0; j < 4; j++)
+            conn_c4v[tet2v[i * 4 + j]].push_back(i);
+    }
+
+    std::vector<std::array<int, 2>> edges;
+    std::vector<std::array<int, 3>> faces;
+    edges.reserve(cells.size() * 6 / 6);
+    faces.reserve(cells.size() * 4 / 2);
+    for (int i = 0; i < cells.size(); i++) {
+        for (int j = 0; j < 3; j++) {//edge
+            if(cells[i][j] < cells[i][(j + 1) % 3])
+                edges.push_back(std::array<int, 2>({cells[i][j], cells[i][(j + 1) % 3]}));
+            else
+                edges.push_back(std::array<int, 2>({cells[i][(j + 1) % 3], cells[i][j]}));
+
+            if(cells[i][j] < cells[i][3])
+                edges.push_back(std::array<int, 2>({cells[i][j], cells[i][3]}));
+            else
+                edges.push_back(std::array<int, 2>({cells[i][3], cells[i][j]}));
+        }
+
+        for (int j = 0; j < 4; j++) {//face
+            std::array<int, 3> f = {cells[i][j], cells[i][(j + 1) % 4], cells[i][(j + 2) % 4]};
+            std::sort(f.begin(), f.end());
+            faces.push_back(f);
+        }
+    }
+    std::sort(edges.begin(), edges.end());
+    edges.erase(std::unique(edges.begin(), edges.end()), edges.end());
+    std::sort(faces.begin(), faces.end());
+    faces.erase(std::unique(faces.begin(), faces.end()), faces.end());
+
+    bsp_vertices = points;
+    bsp_edges = std::vector<BSPEdge>(edges.size(), BSPEdge());
+    bsp_faces = std::vector<BSPFace>(faces.size(), BSPFace());
+    bsp_nodes = std::vector<BSPtreeNode>(cells.size(), BSPtreeNode());
+
+    std::vector<std::vector<int>> conn_f4v;
+    conn_f4v.resize(T->nb_vertices());
+    for (int i = 0; i < faces.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            conn_f4v[faces[i][j]].push_back(i);
+            bsp_faces[i].vertices.push_back(faces[i][j]);
+        }
+
+        //conn_nodes
+        std::vector<int> tmp;
+        std::set_intersection(conn_c4v[faces[i][0]].begin(), conn_c4v[faces[i][0]].end(),
+                              conn_c4v[faces[i][1]].begin(), conn_c4v[faces[i][1]].end(), std::back_inserter(tmp));
+        std::set_intersection(tmp.begin(), tmp.end(),
+                              conn_c4v[faces[i][2]].begin(), conn_c4v[faces[i][2]].end(),
+                              std::inserter(bsp_faces[i].conn_nodes, bsp_faces[i].conn_nodes.begin()));
+
+        //faces for node
+        for(int n_id:bsp_faces[i].conn_nodes)
+            bsp_nodes[n_id].faces.push_back(i);
+    }
+
+    for (int i = 0; i < edges.size(); i++) {
+        for (int j = 0; j < 2; j++){
+            bsp_edges[i].vertices.push_back(edges[i][j]);
+        }
+
+        //conn_faces
+        std::set_intersection(conn_f4v[edges[i][0]].begin(), conn_f4v[edges[i][0]].end(),
+                              conn_f4v[edges[i][1]].begin(), conn_f4v[edges[i][1]].end(),
+                              std::inserter(bsp_edges[i].conn_faces, bsp_edges[i].conn_faces.begin()));
+
+        //edges for face
+        for(int f_id:bsp_edges[i].conn_faces)
+            bsp_faces[f_id].edges.push_back(i);
+    }
+
+
+    //check flip // DO NOT DELETE IT!
+//    for(int i=0;i<cells.size();i++){
+//        CGAL::Orientation ori = CGAL::orientation(bsp_vertices[cells[i][0]], bsp_vertices[cells[i][1]],
+//                                                  bsp_vertices[cells[i][2]], bsp_vertices[cells[i][3]]);
+//        if(ori!=CGAL::POSITIVE) {
+//            cout<<"geogram delaunay causes inversion!"<<endl;
+//            exit(250);
+//        }
+//    }
+
+    //output tetmesh for testing // DO NOT DELETE IT!
+//    std::fstream f(g_output_file+"_delauney.txt", std::ios::out);
+//    f.precision(std::numeric_limits<double>::digits10 + 1);
+//    f << "Vertices" << std::endl << bsp_vertices.size() << std::endl;
+//    for (int i = 0; i < bsp_vertices.size(); i++)
+//        f << CGAL::to_double(bsp_vertices[i][0])<<" "<<CGAL::to_double(bsp_vertices[i][1])
+//          <<" "<<CGAL::to_double(bsp_vertices[i][2])<<" " << std::endl;
+//
+//    f << "Tetrahedra" << endl<<cells.size() << std::endl;
+//    for (int i = 0; i < cells.size(); i++) {
+//        for (int j = 0; j < 4; j++)
+//            f << cells[i][j] << " ";
+//        f << 0 << std::endl;
+//    }
+//    f.close();
+#else
+
     std::vector<std::pair<Point_d, int>> points;
     const int m_vertices_size = m_vertices.size();
     points.reserve(m_vertices_size);
@@ -123,9 +293,6 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
         dis = state.eps * 1.1;
     p_min = Point_3(p_min[0] - dis, p_min[1] - dis, p_min[2] - dis);
     p_max = Point_3(p_max[0] + dis, p_max[1] + dis, p_max[2] + dis);
-
-//    logger().debug("p_min: {}, {}, {}", CGAL::to_double(p_min[0]), CGAL::to_double(p_min[1]), CGAL::to_double(p_min[2]));
-//    logger().debug("p_max: {}, {}, {}", CGAL::to_double(p_max[0]), CGAL::to_double(p_max[1]), CGAL::to_double(p_max[2]));
 
     for (int i = 0; i < 8; i++) {
         std::array<CGAL_FT, 3> p;
@@ -255,6 +422,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
             bsp_faces[*it].edges.push_back(i);
         }
     }
+#endif
 }
 
 void DelaunayTetrahedralization::outputTetmesh(const std::vector<Point_3>& m_vertices, std::vector<std::array<int, 4>>& cells,

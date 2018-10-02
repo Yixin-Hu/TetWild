@@ -95,6 +95,11 @@ void extractSurfaceMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &T,
     Eigen::VectorXi I;
     igl::boundary_facets(T, FS);
     igl::remove_unreferenced(V, FS, VS, FS, I);
+    for(int i=0;i < FS.rows();i++){
+        int tmp = FS(i, 0);
+        FS(i, 0) = FS(i, 2);
+        FS(i, 2) = tmp;
+    }
 }
 
 void extractFinalTetmesh(MeshRefinement& MR,
