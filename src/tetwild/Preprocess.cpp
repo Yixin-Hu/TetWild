@@ -22,6 +22,7 @@
 #include <igl/unique.h>
 #include <igl/unique_simplices.h>
 #include <igl/bounding_box_diagonal.h>
+#include <igl/writeSTL.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
@@ -200,6 +201,9 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     double eps_scalar = 0.8;
     double eps_scalar_2 = eps_scalar*eps_scalar;
 
+    progress_current = 0;
+    progress_total = 0;
+
    state.eps *= eps_scalar;
     state.eps_2 *= eps_scalar_2;
 //    state.sampling_dist *= eps_scalar*2;
@@ -232,12 +236,13 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
         double weight = getEdgeLength(edges[i]);
         sm_queue.push(ElementInQueue_sm(edges[i], weight));
         sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{edges[i][1], edges[i][0]}}), weight));
+        progress_total += 2;
     }
 
     //simplification
     ts = 0;
     f_tss.resize(F_in.size());
-    simplify(geo_sf_mesh, geo_face_tree);
+    simplify(geo_sf_mesh, geo_face_tree, args);
 
     ////get CGAL surface mesh
     int cnt = 0;
@@ -410,13 +415,18 @@ double Preprocess::getCosAngle(int v_id, int v1_id, int v2_id) {
                                 GEO::vec3(V_in(v_id, 0), V_in(v_id, 1), V_in(v_id, 2)));
 }
 
-void Preprocess::simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree) {
+void Preprocess::simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree, const Args &args) {
     int cnt = 0;
 //    logger().debug("queue.size() = {}", sm_queue.size());
     while (!sm_queue.empty()) {
         std::array<int, 2> v_ids = sm_queue.top().v_ids;
         double old_weight = sm_queue.top().weight;
         sm_queue.pop();
+
+        if (args.user_callback) {
+            args.user_callback(Step::Preprocess, double(progress_current) / double(progress_total));
+        }
+        ++progress_current;
 
         if (!isEdgeValid(v_ids, old_weight))
             continue;
@@ -426,18 +436,20 @@ void Preprocess::simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWi
             inf_e_tss.push_back(ts);
         } else {
             cnt++;
-            if (cnt % 1000 == 0)
+            if (cnt % 1000 == 0) {
                 logger().debug("1000 vertices removed");
+            }
         }
     }
     logger().debug("{}", cnt);
     logger().debug("{}", c);
 
-    if (cnt > 0)
-        postProcess(geo_mesh, face_aabb_tree);
+    if (cnt > 0) {
+        postProcess(geo_mesh, face_aabb_tree, args);
+    }
 }
 
-void Preprocess::postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree){
+void Preprocess::postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree, const Args &args) {
     logger().debug("postProcess!");
 
     std::vector<std::array<int, 2>> tmp_inf_es;
@@ -452,10 +464,12 @@ void Preprocess::postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAAB
                 break;
             }
         }
-        if (is_recal)
+        if (is_recal) {
             sm_queue.push(ElementInQueue_sm(inf_es[i], getEdgeLength(inf_es[i])));
-        else
+            ++progress_total;
+        } else {
             tmp_inf_es.push_back(inf_es[i]);
+        }
     }
     std::sort(tmp_inf_es.begin(), tmp_inf_es.end());
     tmp_inf_es.erase(std::unique(tmp_inf_es.begin(), tmp_inf_es.end()), tmp_inf_es.end());
@@ -463,7 +477,7 @@ void Preprocess::postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAAB
     ts++;
     inf_e_tss = std::vector<int>(inf_es.size(), ts);
 
-    simplify(geo_mesh, face_aabb_tree);
+    simplify(geo_mesh, face_aabb_tree, args);
 }
 
 bool Preprocess::removeAnEdge(int v1_id, int v2_id, const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree) {
@@ -578,6 +592,7 @@ bool Preprocess::removeAnEdge(int v1_id, int v2_id, const GEO::Mesh &geo_mesh, c
         double weight = getEdgeLength(v2_id, v_id);
         sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{v2_id, v_id}}), weight));
         sm_queue.push(ElementInQueue_sm(std::array<int, 2>({{v_id, v2_id}}), weight));
+        progress_total += 2;
     }
 
     return true;

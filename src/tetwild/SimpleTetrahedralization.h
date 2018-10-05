@@ -12,6 +12,7 @@
 #ifndef NEW_GTET_SIMPLETETRAHEDRALIZATION_H
 #define NEW_GTET_SIMPLETETRAHEDRALIZATION_H
 
+#include <tetwild/ForwardDecls.h>
 #include <tetwild/MeshConformer.h>
 #include <tetwild/TetmeshElements.h>
 
@@ -19,6 +20,7 @@ namespace tetwild {
 
 class SimpleTetrahedralization {
 public:
+    const Args & args;
     const State & state;
     MeshConformer& MC;
     std::vector<Point_3> centers;
@@ -28,7 +30,9 @@ public:
     int m_vertices_size;
 //    std::vector<bool> is_visited;
 
-    SimpleTetrahedralization(const State &st, MeshConformer& mc) : state(st), MC(mc) { }
+    SimpleTetrahedralization(const Args &ar, const State &st, MeshConformer& mc)
+        : args(ar), state(st), MC(mc)
+    { }
 
     void tetra(std::vector<TetVertex>& tet_vertices, std::vector<std::array<int, 4>>& tets);
     void triangulation(std::vector<TetVertex>& tet_vertices, std::vector<std::array<int, 4>>& tets);

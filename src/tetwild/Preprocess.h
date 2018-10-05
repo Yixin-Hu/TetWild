@@ -14,7 +14,7 @@
 
 #include <tetwild/ForwardDecls.h>
 #include <tetwild/CGALTypes.h>
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <geogram/mesh/mesh.h>
 #include <Eigen/Dense>
 #include <unordered_set>
@@ -59,8 +59,8 @@ public:
     void getBoundaryMesh(GEO::Mesh& b_mesh);
     void process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertices, std::vector<std::array<int, 3>>& m_faces, const Args &args);
 
-    void simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
-    void postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
+    void simplify(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree, const Args &args);
+    void postProcess(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree, const Args &args);
     bool removeAnEdge(int v1_id, int v2_id, const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
 
     void swap(const GEO::Mesh &geo_mesh, const GEO::MeshFacetsAABBWithEps& face_aabb_tree);
@@ -81,6 +81,9 @@ public:
     std::vector<std::array<int, 2>> inf_es;
     std::vector<int> inf_e_tss;
     std::vector<int> f_tss;
+
+    size_t progress_current;
+    size_t progress_total;
 
     void outputSurfaceColormap(const GEO::MeshFacetsAABBWithEps& geo_face_tree, const GEO::Mesh& geo_sf_mesh);
 };

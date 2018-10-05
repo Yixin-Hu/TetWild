@@ -28,7 +28,7 @@ public:
     void init();
 
     std::queue<int> processing_n_ids;
-    void subdivideBSPNodes();
+    void subdivideBSPNodes(const Args &args);
 
     const int V_POS=0;
     const int V_NEG=1;

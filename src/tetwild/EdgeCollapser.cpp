@@ -247,8 +247,7 @@ void EdgeCollapser::postProcess() {
 //        if (is_recal && isCollapsable_cd1(inf_es[i][0], inf_es[i][1]) && isCollapsable_cd2(inf_es[i][0], inf_es[i][1])) {
         if (is_recal && isCollapsable_cd1(inf_es[i][0], inf_es[i][1])) {
             if(!isLocked_ui(inf_es[i])) {
-                ElementInQueue_ec ele(inf_es[i], weight);
-                ec_queue.push(ele);
+                ec_queue.emplace(inf_es[i], weight);
             }
         } else
             tmp_inf_es.push_back(inf_es[i]);
@@ -608,8 +607,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
             if (isCollapsable_cd3(v2_id, *it, weight)) {
                 std::array<int, 2> e={{v2_id, *it}};
                 if(!isLocked_ui(e)) {
-                    ElementInQueue_ec ele(e, weight);
-                    ec_queue.push(ele);
+                    ec_queue.emplace(e, weight);
                 }
             }
         }
@@ -619,8 +617,7 @@ int EdgeCollapser::collapseAnEdge(int v1_id, int v2_id) {
             if (isCollapsable_cd3(*it, v2_id, weight)) {
                 std::array<int, 2> e={{*it, v2_id}};
                 if(!isLocked_ui(e)) {
-                    ElementInQueue_ec ele(e, weight);
-                    ec_queue.push(ele);
+                    ec_queue.emplace(e, weight);
                 }
             }
         }

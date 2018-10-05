@@ -41,7 +41,7 @@ endif()
 
 option(GEOGRAM_WITH_GRAPHICS "Viewers and geogram_gfx library" OFF)
 option(GEOGRAM_WITH_LEGACY_NUMERICS "Legacy numerical libraries" OFF)
-option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" OFF)
+option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" ON)
 option(GEOGRAM_WITH_TETGEN "Tetrahedral mesher (Hang Si's TetGen)" OFF)
 option(GEOGRAM_WITH_TRIANGLE "Triangle mesher (Jonathan Shewchuk's triangle)" ON)
 option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing vpipeline and optimal transport)" OFF)

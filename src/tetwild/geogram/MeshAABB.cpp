@@ -43,7 +43,7 @@
  *
  */
 
-#include <tetwild/geogram/mesh_AABB.h>
+#include <tetwild/geogram/MeshAABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>

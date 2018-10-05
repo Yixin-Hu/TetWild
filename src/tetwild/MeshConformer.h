@@ -12,6 +12,7 @@
 #ifndef GTET_MESHCONFORMER_H
 #define GTET_MESHCONFORMER_H
 
+#include <tetwild/ForwardDecls.h>
 #include <tetwild/CGALTypes.h>
 #include <tetwild/BSPElements.h>
 
@@ -32,9 +33,9 @@ public:
                   std::vector<BSPEdge>& bsp_es, std::vector<BSPFace>& bsp_fs, std::vector<BSPtreeNode>& bsp_ns) :
             m_vertices(m_vs), m_faces(m_fs), bsp_vertices(bsp_vs), bsp_edges(bsp_es), bsp_faces(bsp_fs), bsp_nodes(bsp_ns){}
 
-    void match();
+    void match(const Args &args);
     void matchVertexIndices(int x, const std::vector<std::array<int, 2>>& seed_v_list, std::vector<int>& f_list);
-    void matchDivFaces();
+    void matchDivFaces(const Args &args);
     void getOrientedVertices(int bsp_f_id);
 
     const int COPLANAR_INT=0;

@@ -39,30 +39,12 @@ void addRecord(const MeshRecord& record, const Args &args, const State &state) {
     f.close();
 }
 
-void pausee(){
+void pausee() {
     logger().debug("Is pausing... (Enter '0' to exit and other characters to continue.)");
     char c;
     std::cin>>c;
     if(c=='0')
         exit(0);
-}
-
-bool isHaveCommonEle(const std::unordered_set<int>& v1, const std::unordered_set<int>& v2) {
-#if 0
-    for (auto it = v1.begin(); it != v1.end(); it++)
-        if(std::find(v2.begin(), v2.end(), *it)!=v2.end())
-            return true;
-#else
-    if (v2.size() < v1.size()) {
-        return isHaveCommonEle(v2, v1);
-    }
-    for (int x : v1) {
-        if (v2.count(x)) {
-            return true;
-        }
-    }
-#endif
-    return false;
 }
 
 void setIntersection(const std::unordered_set<int>& s1, const std::unordered_set<int>& s2, std::unordered_set<int>& s) {

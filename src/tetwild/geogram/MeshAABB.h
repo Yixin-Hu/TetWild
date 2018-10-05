@@ -225,6 +225,16 @@ namespace GEO {
             return result;
         }
 
+        /*
+         * Returns true is dist(p) <= eps
+         */
+        bool point_in_envelope(const vec3 &p, double sq_epsilon) const {
+            vec3 nearest_point;
+            double result;
+            facet_in_envelope(p, sq_epsilon, nearest_point, result);
+            return result <= sq_epsilon;
+        }
+
 	/**
 	 * \brief Tests whether this surface mesh has an intersection
 	 *  with a segment.

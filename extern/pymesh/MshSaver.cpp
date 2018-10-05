@@ -62,7 +62,7 @@ void MshSaver::save_nodes(const VectorF& nodes) {
     fout << "$Nodes" << std::endl;
     fout << m_num_nodes << std::endl;
     if (!m_binary) {
-        for (size_t i=0; i<nodes.size(); i+=m_dim) {
+        for (size_t i=0; i<nodes.size(); i+= size_t(m_dim)) {
             const VectorF& v = nodes.segment(i,m_dim);
             int node_idx = i/m_dim+1;
             fout << node_idx << " " << v[0] << " " << v[1] << " ";

@@ -1034,10 +1034,7 @@ bool LocalOperations::isFaceOutEnvelop(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_sf_tree.squared_distance(geo_p) > state.eps_2)
-        return true;
-
-    return false;
+    return !geo_sf_tree.point_in_envelope(geo_p, state.eps_2);
 #else
     return false;
 #endif
@@ -1111,10 +1108,7 @@ bool LocalOperations::isFaceOutEnvelop_sampling(const Triangle_3f& tri) {
 bool LocalOperations::isPointOutBoundaryEnvelop(const Point_3f& p) {
 #if CHECK_ENVELOP
     GEO::vec3 geo_p(p[0], p[1], p[2]);
-    if (geo_b_tree.squared_distance(geo_p) > state.eps_2) {
-        return true;
-    }
-    return false;
+    return !geo_b_tree.point_in_envelope(geo_p, state.eps_2);
 #else
     return false;
 #endif
@@ -1291,11 +1285,13 @@ bool LocalOperations::isBoundaryPoint(int v_id) {
         return false;
     std::unordered_set<int> n_v_ids;
     for (int t_id:tet_vertices[v_id].conn_tets) {
-        for (int j = 0; j < 4; j++)
-            if (tets[t_id][j] != v_id && tet_vertices[tets[t_id][j]].is_on_boundary)
+        for (int j = 0; j < 4; j++) {
+            if (tets[t_id][j] != v_id && tet_vertices[tets[t_id][j]].is_on_boundary) {
                 n_v_ids.insert(tets[t_id][j]);
+            }
+        }
     }
-    for (int n_v_id:n_v_ids) {
+    for (int n_v_id : n_v_ids) {
         if (isEdgeOnBoundary(n_v_id, v_id))
             return true;
     }

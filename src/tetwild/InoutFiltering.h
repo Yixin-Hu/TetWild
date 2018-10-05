@@ -20,24 +20,24 @@ namespace tetwild {
 class InoutFiltering {
 public:
     const State &state;
-    std::vector<TetVertex>& tet_vertices;
-    std::vector<std::array<int, 4>>& tets;
-    std::vector<std::array<int, 4>>& is_surface_fs;
-    std::vector<bool>& v_is_removed;
-    std::vector<bool>& t_is_removed;
-    std::vector<TetQuality>& tet_qualities;
+    const std::vector<TetVertex>& tet_vertices;
+    const std::vector<std::array<int, 4>>& tets;
+    const std::vector<std::array<int, 4>>& is_surface_fs;
+    const std::vector<bool>& t_is_removed;
 
-    std::vector<bool> is_inside;
-    InoutFiltering(std::vector<TetVertex>& t_vs, std::vector<std::array<int, 4>>& ts,
-                   std::vector<std::array<int, 4>>& is_sf_fs,
-                   std::vector<bool>& v_is_rm, std::vector<bool>& t_is_rm, std::vector<TetQuality>& tet_qs,
-                   const State &st):
-            tet_vertices(t_vs), tets(ts), is_surface_fs(is_sf_fs), v_is_removed(v_is_rm), t_is_removed(t_is_rm),
-            tet_qualities(tet_qs), state(st)
+    InoutFiltering(const std::vector<TetVertex>& t_vs, const std::vector<std::array<int, 4>>& ts,
+                   const std::vector<std::array<int, 4>>& is_sf_fs,
+                   const std::vector<bool>& t_is_rm,
+                   const State &st)
+        : state(st)
+        , tet_vertices(t_vs)
+        , tets(ts)
+        , is_surface_fs(is_sf_fs)
+        , t_is_removed(t_is_rm)
     { }
 
     void getSurface(Eigen::MatrixXd& V_sf, Eigen::MatrixXi& F_sf);
-    void filter();
+    std::vector<bool> filter();
 
     void outputWindingNumberField(const Eigen::VectorXd& W);
 };
