@@ -27,10 +27,6 @@ if(NOT TARGET mmg)
 	add_library(mmg::mmg3d ALIAS libmmg3d_so)
 
 	foreach(target_name IN ITEMS libmmg_so libmmgs_so libmmg2d_so libmmg3d_so)
-		if(MSVC)
-			target_compile_options(${target_name} PRIVATE /w)
-		endif()
-
 		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 		set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 		set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

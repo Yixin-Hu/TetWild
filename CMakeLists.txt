@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.3)
 project(TetWild)
 
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4005 /wd4244 /wd4028 /wd4267 /wd4101 /wd4334 /wd4018 /wd4717 /wd4305")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4005 /wd4244 /wd4028 /wd4267 /wd4101 /wd4334 /wd4018 /wd4717 /wd4305")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
@@ -84,10 +89,6 @@ target_link_libraries(tetwild
 		spdlog
 		mmg::mmg
 )
-
-if(MSVC)
-	target_compile_options (tetwild PRIVATE /w)
-endif()
 
 # ispc
 if(TETWILD_WITH_ISPC)
