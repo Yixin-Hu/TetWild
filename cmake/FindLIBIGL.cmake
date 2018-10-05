@@ -3,7 +3,7 @@
 #
 #  LIBIGL_FOUND - system has LIBIGL
 #  LIBIGL_INCLUDE_DIR - **the** LIBIGL include directory
-if(LIBIGL_FOUND)
+if(LIBIGL_FOUND OR TARGET igl::core)
     return()
 endif()
 
@@ -14,13 +14,7 @@ find_path(LIBIGL_INCLUDE_DIR igl/readOBJ.h
         # ENV LIBIGL_ROOT
         # ENV LIBIGL_DIR
     PATHS
-        ${THIRD_PARTY_DIR}/libigl
-        ${CMAKE_SOURCE_DIR}/../..
-        ${CMAKE_SOURCE_DIR}/..
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/libigl
-        ${CMAKE_SOURCE_DIR}/../libigl
-        ${CMAKE_SOURCE_DIR}/../../libigl
+        ${TETWILD_EXTERNAL}/libigl
         # /usr
         # /usr/local
         # /usr/local/igl/libigl

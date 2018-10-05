@@ -1,4 +1,18 @@
+# Extern
+/extern/.cache
+/extern/cli11
+/extern/fmt
+/extern/geogram
+/extern/libigl
+/extern/mmg
+/extern/sanitizers-cmake
+/extern/spdlog
+
+# Build
+src/ispc/energy.h
 *build*/*
 .idea/*
+.vscode/
+/data
 .DS_Store
 test.cpp

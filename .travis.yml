@@ -1,0 +1,41 @@
+sudo: required
+dist: trusty
+
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - libmpfr-dev
+      - libboost1.54-all-dev
+      - libxi-dev
+
+matrix:
+  include:
+    - env: PYTHON="3.6" CONDA_PY=36 ARCH="x86_64"
+      os: linux
+      dist: trusty
+    - env: PYTHON="3.6" CONDA_PY=36 ARCH="x86_64" MACOSX_DEPLOYMENT_TARGET="10.9"
+      os: osx
+      osx_image: xcode8.3
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+       wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
+  - chmod +x miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda install conda-build
+  - conda install anaconda-client
+  - conda config --add channels conda-forge
+
+script:
+  - conda build .ci/conda

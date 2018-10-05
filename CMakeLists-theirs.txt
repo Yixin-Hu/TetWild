@@ -1,47 +1,12 @@
-################################################################################
-# General Information
-################################################################################
-
 cmake_minimum_required(VERSION 3.3)
-project(TetWild)
-
-################################################################################
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-if(NOT CMAKE_BUILD_TYPE)
-	message(STATUS "No build type selected, default to Release")
-	set(CMAKE_BUILD_TYPE "Release")
-endif()
-
 ################################################################################
-
-option(GTET_ISPC "Use ISPC" OFF)
-
-# Build static binaries
-#set(BUILD_SHARED_LIBS OFF)
-set(BUILD_STATIC_RUNTIME OFF)
-set(BUILD_DYNAMIC_RUNTIME ON)
-
-# Use folder in Visual Studio
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# Export compile flags (used for autocompletion of the C++ code)
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-
-# Generate position independent code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-#ADD_DEFINITIONS("-D_DLL")
-
+# Options
 ################################################################################
-# 3rd party libraries
-################################################################################
-
-
-# Geogram library
-include(geogram)
-
+# tetwild
+option(TETWILD_WITH_HUNTER "Use Hunter to download and configure Boost" OFF)
+option(TETWILD_WITH_ISPC   "Use ISPC"                                   OFF)
 # libigl library
 option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF)
 option(LIBIGL_WITH_ANTTWEAKBAR      "Use AntTweakBar"    OFF)
@@ -62,57 +27,165 @@ option(LIBIGL_WITH_NANOGUI          "Use Nanogui menu"   OFF)
 option(LIBIGL_WITH_OPENGL           "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW      "Use GLFW"           OFF)
 option(LIBIGL_WITH_VIEWER           "Use OpenGL viewer"  OFF)
-find_package(LIBIGL REQUIRED QUIET)
-find_package(Eigen REQUIRED)
+#geogram
+option(GEOGRAM_WITH_TRIANGLE        "Use Triangle"       OFF)
+
+if(TETWILD_WITH_HUNTER)
+	# Needs to be set before the main project... argh =/
+	include(HunterGate)
+	HunterGate(
+		URL "https://github.com/ruslo/hunter/archive/v0.23.25.tar.gz"
+		SHA1 "cb75cce9a3a8d552e70e7118f3203eb4ac05c201"
+	)
+endif()
+
+################################################################################
+# Project name
+################################################################################
+
+project(TetWild)
+
+################################################################################
+# Settings
+################################################################################
+if(NOT CMAKE_BUILD_TYPE)
+	message(STATUS "No build type selected, default to Release")
+	set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
+
+# Color output
+include(UseColors)
+
+# Use folder in Visual Studio
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Extra warnings
+include(Warnings)
+
+# Export compile flags (used for autocompletion of the C++ code)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+# Generate position independent code
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+################################################################################
+# 3rd party libraries
+################################################################################
+include(TetWildDependencies)
+
+################################################################################
+# TetWild
+################################################################################
+# Build static library for executable
+add_library(tetwild_library STATIC
+		include/tetwild/Args.h
+		include/tetwild/Exception.h
+		include/tetwild/Logger.h
+		include/tetwild/tetwild.h
+		src/tetwild/BSPSubdivision.cpp
+		src/tetwild/BSPSubdivision.h
+		src/tetwild/CGALTypes.h
+		src/tetwild/Common.cpp
+		src/tetwild/Common.h
+		src/tetwild/DelaunayTetrahedralization.cpp
+		src/tetwild/DelaunayTetrahedralization.h
+		src/tetwild/DistanceQuery.cpp
+		src/tetwild/DistanceQuery.h
+		src/tetwild/EdgeCollapser.cpp
+		src/tetwild/EdgeCollapser.h
+		src/tetwild/EdgeRemover.cpp
+		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeSplitter.cpp
+		src/tetwild/EdgeSplitter.h
+		src/tetwild/ForwardDecls.h
+		src/tetwild/InoutFiltering.cpp
+		src/tetwild/InoutFiltering.h
+		src/tetwild/LocalOperations.cpp
+		src/tetwild/LocalOperations.h
+		src/tetwild/Logger.cpp
+		src/tetwild/MeshConformer.cpp
+		src/tetwild/MeshConformer.h
+		src/tetwild/MeshRefinement.cpp
+		src/tetwild/MeshRefinement.h
+		src/tetwild/Preprocess.cpp
+		src/tetwild/Preprocess.h
+		src/tetwild/SimpleTetrahedralization.cpp
+		src/tetwild/SimpleTetrahedralization.h
+		src/tetwild/State.cpp
+		src/tetwild/State.h
+		src/tetwild/TetmeshElements.cpp
+		src/tetwild/TetmeshElements.h
+		src/tetwild/tetwild.cpp
+		src/tetwild/VertexSmoother.cpp
+		src/tetwild/VertexSmoother.h
+		src/tetwild/geogram/MeshAABB.cpp
+		src/tetwild/geogram/MeshAABB.h
+		src/tetwild/geogram/Utils.cpp
+		src/tetwild/geogram/Utils.h
+		src/tetwild/mmg/Remeshing.cpp
+		src/tetwild/mmg/Remeshing.h
+		src/tetwild/mmg/internal/Conversion.cpp
+		src/tetwild/mmg/internal/Conversion.h
+)
+add_library(tetwild::tetwild ALIAS tetwild_library)
+target_include_directories(tetwild_library
+	PRIVATE
+		src
+	PUBLIC
+		include
+)
+target_link_libraries(tetwild_library
+	PUBLIC
+		geogram
+		igl::core
+		pymesh::pymesh
+		spdlog::spdlog
+		mmg::mmg
+	PRIVATE
+		igl::cgal
+		warnings::all
+)
+set_target_properties(tetwild_library PROPERTIES OUTPUT_NAME "tetwild")
+
+# tetwild private API
+add_library(tetwild_internal INTERFACE)
+add_library(tetwild::internal ALIAS tetwild_internal)
+target_include_directories(tetwild_internal INTERFACE src)
+
+# ispc
+if(TETWILD_WITH_ISPC)
+	message(STATUS "Compiling energy with ISPC")
+	add_subdirectory(src/ispc)
+	ispc_add_energy(libTetWild)
+endif()
+
+# Building executable
+add_executable(TetWild src/main.cpp)
+target_link_libraries(TetWild
+		tetwild::tetwild
+		tetwild::internal
+		CLI11::CLI11
+		igl::cgal
+		warnings::all
+)
+igl_copy_cgal_dll(TetWild)
+
+# Install
+install(TARGETS TetWild RUNTIME DESTINATION bin)
 
 ################################################################################
 
-SET(MAIN_FILE main.cpp)
+add_subdirectory(misc)
 
-set(SOURCE_FILES
-		BSPElements.h TetmeshElements.h
-		Preprocess.cpp Preprocess.h
-		DelaunayTetrahedralization.cpp DelaunayTetrahedralization.h
-		MeshConformer.cpp MeshConformer.h
-		BSPSubdivision.cpp BSPSubdivision.h
-		SimpleTetrahedralization.cpp SimpleTetrahedralization.h
-		MeshRefinement.cpp MeshRefinement.h
-		LocalOperations.cpp LocalOperations.h
-		EdgeSplitter.cpp EdgeSplitter.h
-		EdgeCollapser.cpp EdgeCollapser.h
-		EdgeRemover.cpp EdgeRemover.h
-		VertexSmoother.cpp VertexSmoother.h
-		InoutFiltering.cpp InoutFiltering.h
-		CLI11.hpp
+################################################################################
+# Folders for Visual Studio/XCode IDEs
+################################################################################
 
-		pymesh/MshLoader.cpp pymesh/MshLoader.h
-		pymesh/MshSaver.cpp pymesh/MshSaver.h
-		pymesh/Exception.h
-		heads.cpp heads.h
-		tetwild.h tetwild.cpp
-		)
-
-
-SET(OBJ_FILES "")
-if(GTET_ISPC)
-	add_custom_command(OUTPUT energy_ispc.o
-			COMMAND ispc ${CMAKE_SOURCE_DIR}/ispc/energy.ispc -h ${CMAKE_SOURCE_DIR}/ispc/energy.h -o energy_ispc.o DEPENDS ${CMAKE_SOURCE_DIR}/ispc/energy.ispc)
-	add_definitions(-DGTET_ISPC)
-    LIST(APPEND OBJ_FILES energy_ispc.o)
-endif(GTET_ISPC)
-ADD_LIBRARY(lib_tetwild SHARED ${SOURCE_FILES} ${OBJ_FILES})
-target_link_libraries(lib_tetwild geogram igl::core igl::cgal)
-target_include_directories(lib_tetwild SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
-set_target_properties(lib_tetwild PROPERTIES OUTPUT_NAME "TetWild")
-
-add_executable(TetWild ${MAIN_FILE})
-target_link_libraries(TetWild lib_tetwild)
-
-#target_link_libraries(TetWild geogram igl::core igl::cgal igl::viewer)
-
-INSTALL(TARGETS lib_tetwild TetWild
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin)
-INSTALL(FILES tetwild.h
-    DESTINATION include)
+# geogram
+set_target_properties(geogram PROPERTIES FOLDER extern/geogram)
+set_target_properties(geogram_third_party PROPERTIES FOLDER extern/geogram)
+set_target_properties(uninstall PROPERTIES FOLDER extern/geogram)
+# pymesh
+set_target_properties(pymesh_tiny PROPERTIES FOLDER extern/pymesh)

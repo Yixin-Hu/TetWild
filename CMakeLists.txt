@@ -1,53 +1,97 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.3)
+project(TetWild)
 
-if(WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267")
-endif()
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(TETWILD_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
-### Sources ###
+include(TetWildDependencies)
 
-set(sources
-    heads.cpp
-    heads.h
-    EdgeSplitter.cpp
-    EdgeSplitter.h
-    EdgeCollapser.cpp
-    EdgeCollapser.h
-    EdgeRemover.cpp
-    EdgeRemover.h
-    tetwild.cpp
-    tetwild.h
-    LocalOperations.cpp
-    LocalOperations.h
-    Preprocess.cpp
-    Preprocess.h
-    MeshConformer.cpp
-    MeshConformer.h
-    DelaunayTetrahedralization.cpp
-    DelaunayTetrahedralization.h
-    BSPSubdivision.cpp
-    BSPSubdivision.h
-    SimpleTetrahedralization.cpp
-    SimpleTetrahedralization.h
-    MeshRefinement.cpp
-    MeshRefinement.h
-    VertexSmoother.cpp
-    VertexSmoother.h
-    InoutFiltering.cpp
-    InoutFiltering.h
-    pymesh/MshSaver.cpp
-    pymesh/MshSaver.h
-    pymesh/MshLoader.cpp
-    pymesh/MshLoader.h
+################################################################################
+# TetWild
+################################################################################
+
+add_library(tetwild STATIC
+		extern/pymesh/MshLoader.h
+		extern/pymesh/MshLoader.cpp
+		extern/pymesh/MshSaver.h
+		extern/pymesh/MshSaver.cpp
+		extern/pymesh/Exception.h
+		include/tetwild/Args.h
+		include/tetwild/Exception.h
+		include/tetwild/Logger.h
+		include/tetwild/tetwild.h
+		src/tetwild/BSPSubdivision.cpp
+		src/tetwild/BSPSubdivision.h
+		src/tetwild/CGALTypes.h
+		src/tetwild/Common.cpp
+		src/tetwild/Common.h
+		src/tetwild/DelaunayTetrahedralization.cpp
+		src/tetwild/DelaunayTetrahedralization.h
+		src/tetwild/DistanceQuery.cpp
+		src/tetwild/DistanceQuery.h
+		src/tetwild/EdgeCollapser.cpp
+		src/tetwild/EdgeCollapser.h
+		src/tetwild/EdgeRemover.cpp
+		src/tetwild/EdgeRemover.h
+		src/tetwild/EdgeSplitter.cpp
+		src/tetwild/EdgeSplitter.h
+		src/tetwild/ForwardDecls.h
+		src/tetwild/InoutFiltering.cpp
+		src/tetwild/InoutFiltering.h
+		src/tetwild/LocalOperations.cpp
+		src/tetwild/LocalOperations.h
+		src/tetwild/Logger.cpp
+		src/tetwild/MeshConformer.cpp
+		src/tetwild/MeshConformer.h
+		src/tetwild/MeshRefinement.cpp
+		src/tetwild/MeshRefinement.h
+		src/tetwild/Preprocess.cpp
+		src/tetwild/Preprocess.h
+		src/tetwild/Quality.cpp
+		src/tetwild/Quality.h
+		src/tetwild/SimpleTetrahedralization.cpp
+		src/tetwild/SimpleTetrahedralization.h
+		src/tetwild/State.cpp
+		src/tetwild/State.h
+		src/tetwild/TetmeshElements.cpp
+		src/tetwild/TetmeshElements.h
+		src/tetwild/tetwild.cpp
+		src/tetwild/Utils.cpp
+		src/tetwild/Utils.h
+		src/tetwild/VertexSmoother.cpp
+		src/tetwild/VertexSmoother.h
+		src/tetwild/geogram/MeshAABB.cpp
+		src/tetwild/geogram/MeshAABB.h
+		src/tetwild/geogram/Utils.cpp
+		src/tetwild/geogram/Utils.h
+		src/tetwild/mmg/Remeshing.cpp
+		src/tetwild/mmg/Remeshing.h
+		src/tetwild/mmg/internal/Conversion.cpp
+		src/tetwild/mmg/internal/Conversion.h
+)
+target_include_directories(tetwild
+	PUBLIC
+		extern
+		src
+		include
+)
+target_link_libraries(tetwild
+	PRIVATE
+		libigl2
+		cgal2
+		geogram
+	PUBLIC
+		spdlog
+		mmg::mmg
 )
 
-# This corrects cmake's default Visual Studio's ugly folder organization
-source_group("" FILES ${sources})
+if(MSVC)
+	target_compile_options (tetwild PRIVATE /w)
+endif()
 
-add_library(tetwild ${sources})
-
-target_include_directories(tetwild PUBLIC .)
-
-target_link_libraries(tetwild PUBLIC
-  glm geogram libigl2 cgal2)
+# ispc
+if(TETWILD_WITH_ISPC)
+	message(STATUS "Compiling energy with ISPC")
+	add_subdirectory(src/ispc)
+	ispc_add_energy(tetwild)
+endif()

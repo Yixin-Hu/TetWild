@@ -8,8 +8,8 @@ endif()
 
 ################################################################################
 
-if(THIRD_PARTY_DIR)
-	set(GEOGRAM_SEARCH_PATHS ${THIRD_PARTY_DIR})
+if(TETWILD_EXTERNAL)
+	set(GEOGRAM_SEARCH_PATHS ${TETWILD_EXTERNAL})
 else()
 	set(GEOGRAM_SEARCH_PATHS
 			${GEOGRAM_INSTALL_PREFIX}
@@ -32,7 +32,7 @@ set(GEOGRAM_ROOT ${GEOGRAM_SOURCE_INCLUDE_DIR}/../..)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(VORPALINE_ARCH_64 TRUE CACHE BOOL "" FORCE)
-	set(VORPALINE_PLATFORM Win-vs-dynamic-generic CACHE STRING "" FORCE)
+	set(VORPALINE_PLATFORM Win-vs-generic CACHE STRING "" FORCE)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(VORPALINE_PLATFORM Linux64-gcc-dynamic CACHE STRING "" FORCE)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -41,7 +41,7 @@ endif()
 
 option(GEOGRAM_WITH_GRAPHICS "Viewers and geogram_gfx library" OFF)
 option(GEOGRAM_WITH_LEGACY_NUMERICS "Legacy numerical libraries" OFF)
-option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" OFF)
+option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" ON)
 option(GEOGRAM_WITH_TETGEN "Tetrahedral mesher (Hang Si's TetGen)" OFF)
 option(GEOGRAM_WITH_TRIANGLE "Triangle mesher (Jonathan Shewchuk's triangle)" ON)
 option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing vpipeline and optimal transport)" OFF)

@@ -1,0 +1,27 @@
+package:
+  name: tetwild
+  version: "0.1"
+
+source:
+  path: ../..
+
+build:
+  number: 0
+  features:
+    - vc14 # [win]
+
+requirements:
+  build:
+    - vc 14 # [win]
+    - cmake
+    - ninja
+    - boost-cpp
+
+  run:
+    - vc 14 # [win]
+    - boost-cpp
+
+about:
+  home: https://github.com/Yixin-Hu/TetWild
+  license: MPLv2.0
+  summary: Robust Tetrahedral Meshing in the Wild
