@@ -6,6 +6,8 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 
 💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://drive.google.com/open?id=1VGOviRMLOsaTVEf9R6lB1b84a3aKP4eH).**
 
+💡💡💡 **Check our [license](https://github.com/Yixin-Hu/TetWild#license) first.**
+
 💡💡💡 **Our algorithm should be and is robust both in theory and in practice. If you do find TetWild crash (on your laptop), please test it (on cluster) with more resource given. The most complex model I tested requires >100GB memory.**
 
 💡💡💡 **The orientation of input faces is as important as the position of their vertices. Our algorithm is faithful to the input face position and orientation. The winding number algorithm we are using requires reasonably consistent orientation of the input triangle mesh. If the input has a large region of faces all inverted (i.e. with flipped normal), the output tetmesh could have some parts missing or includes some elements "outside" the surface around this region, which is expected because the inverted input faces defines the "inside" as outside. We provide three 2D examples as below for easier understanding. The left in each sub-figure is input boundary with normals and the right is output triangle meshes.**
@@ -162,6 +164,8 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 ## License
 TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
 
+TetWild is free for both commercial and non-commercial usage. However, you have to cite our work in your paper or put a reference of TetWild in your software. Whenever you fix bugs or make some improvement of TetWild, you should contribute back.
+
 ## Acknowledgements
 
 We used several useful libraries in our implement, testing, and rendering listed as follows. We would like to especially thank their authors for their great work and publishing the code.
@@ -169,8 +173,3 @@ We used several useful libraries in our implement, testing, and rendering listed
 - [PyMesh](https://github.com/qnzhou/PyMesh)
 - [PyRenderer](https://github.com/qnzhou/PyRenderer)
 - [CLI11](https://github.com/CLIUtils/CLI11)
-
-
-
-
-
