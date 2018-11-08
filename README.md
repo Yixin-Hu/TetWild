@@ -102,6 +102,10 @@ Users can provide a background tetmesh in .msh format with vertex scalar field `
 
 Our method can fill gaps and holes but the tetmesh faces on those parts could be bumpy. We provide users an option to do Lapacian smoothing on those faces to get a smoother surface.
 
+- With out winding number
+
+Please use `--save-mid-result 2`.
+
 ### Command Line Switches
 Our software supports usage via command line or via a C++ function wrapper. Here is an overview of all command line switches:
 
@@ -127,6 +131,7 @@ Options:
   --is-laplacian              Do Laplacian smoothing for the surface of output on the holes of input (optional)
   --targeted-num-v INT        Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)
   --bg-mesh TEXT              Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)
+  --save-mid-result           0: save result before optimization, 1: save mid-results during optimization, 2: save result without winding number.
   -q,--is-quiet               Mute console output. (optional)
   --log TEXT                  Log info to given file.
   --level INT                 Log level (0 = most verbose, 6 = off).

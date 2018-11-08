@@ -110,6 +110,8 @@ int main(int argc, char *argv[]) {
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
 
+    app.add_option("--save-mid-result", args.save_mid_result, "Get result without winding number: --save-mid-result 2");
+
     try {
         app.parse(argc, argv);
     } catch (const CLI::ParseError &e) {
