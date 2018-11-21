@@ -405,6 +405,8 @@ void tetrahedralization(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI,
                         Eigen::MatrixXd &VO, Eigen::MatrixXi &TO, Eigen::VectorXd &AO,
                         const Args &args)
 {
+    GEO::initialize();
+
     igl::Timer igl_timer;
     igl_timer.start();
 
