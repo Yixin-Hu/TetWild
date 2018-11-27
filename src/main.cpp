@@ -12,6 +12,7 @@
 #include <tetwild/MeshRefinement.h>
 #include <igl/read_triangle_mesh.h>
 #include <igl/write_triangle_mesh.h>
+#include <igl/writeOBJ.h>
 #include <pymesh/MshSaver.h>
 #include <tetwild/DisableWarnings.h>
 #include <CLI/CLI.hpp>
