@@ -22,6 +22,7 @@
 #include <igl/unique.h>
 #include <igl/unique_simplices.h>
 #include <igl/bounding_box_diagonal.h>
+#include <igl/writeSTL.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
