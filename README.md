@@ -1,4 +1,6 @@
 
+### 💡💡💡 **I recently found a bug in this version. I will fix it as soon as possible. Please use our older stable version: [https://github.com/Yixin-Hu-backup/TetWild](https://github.com/Yixin-Hu-backup/TetWild) (Note: different way to set parameters). Sorry about that!** 
+
 # TetWild - Tetrahedral Meshing in the Wild
 ![](docs/teaser.png)
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
