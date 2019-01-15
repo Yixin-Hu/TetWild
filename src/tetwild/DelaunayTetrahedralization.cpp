@@ -67,7 +67,7 @@ void DelaunayTetrahedralization::getVoxelPoints(const Point_3& p_min, const Poin
     if(args.initial_edge_len_rel < 5.0) {
         voxel_resolution = state.bbox_diag / 20.0;
     } else {
-        voxel_resolution = state.bbox_diag * args.initial_edge_len_rel / 100.0;
+        voxel_resolution = state.bbox_diag * args.initial_edge_len_rel;
     }
     std::array<double, 3> d;
     std::array<int, 3> N;

@@ -18,10 +18,10 @@ namespace tetwild {
 // Global arguments controlling the behavior of TetWild
 struct Args {
     // Initial target edge-length at every vertex (in % of the bbox diagonal)
-    double initial_edge_len_rel = 5.0;
+    double initial_edge_len_rel = 1/20.0;
 
     // Target epsilon (in % of the bbox diagonal)
-    double eps_rel = 0.1;
+    double eps_rel = 1e-3;
 
     //////////////////////
     // Advanced options //

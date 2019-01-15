@@ -1,6 +1,3 @@
-
-### 💡💡💡 **I recently found a bug in this version. I will fix it as soon as possible. Please use our older stable version: [https://github.com/Yixin-Hu-backup/TetWild](https://github.com/Yixin-Hu-backup/TetWild) (Note: different way to set parameters). Sorry about that!** 
-
 # TetWild - Tetrahedral Meshing in the Wild
 ![](docs/teaser.png)
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
@@ -125,8 +122,8 @@ Options:
   --output TEXT               Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
   --postfix TEXT              Postfix P for output files. (string, optional, default: '_')
   -l,--ideal-edge-length FLOAT
-                              ideal_edge_length = diag_of_bbox * L / 100. (double, optional, default: 5%)
-  -e,--epsilon FLOAT          epsilon = diag_of_bbox * EPS / 100. (double, optional, default: 0.1%)
+                              ideal_edge_length = diag_of_bbox * L. (double, optional, default: 0.05)
+  -e,--epsilon FLOAT          epsilon = diag_of_bbox * EPS. (double, optional, default: 1e-3)
   --stage INT                 Run pipeline in stage STAGE. (integer, optional, default: 1)
   --filter-energy FLOAT       Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)
   --max-pass INT              Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)
