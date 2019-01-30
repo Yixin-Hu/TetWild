@@ -277,7 +277,7 @@ void Preprocess::process(GEO::Mesh& geo_sf_mesh, std::vector<Point_3>& m_vertice
     }
     swap(geo_sf_mesh, geo_face_tree);
     if(args.save_mid_result == 0)
-        igl::writeSTL(state.working_dir+state.postfix+"_swapped.stl", V_in, F_in);
+        igl::writeSTL(state.working_dir+state.postfix+"_simplified.stl", V_in, F_in);
 
 //    checkBoundary(V_in, F_in);
 

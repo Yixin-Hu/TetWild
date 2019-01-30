@@ -50,7 +50,7 @@ struct Args {
     int max_num_passes = 80;
 
     // Sample points at voxel centers for initial Delaunay triangulation
-    bool use_voxel_stuffing = true;
+    bool not_use_voxel_stuffing = false;
 
     // Use Laplacian smoothing on the faces/vertices covering an open boundary after the mesh optimization step (post-processing)
     bool smooth_open_boundary = false;

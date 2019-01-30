@@ -307,7 +307,7 @@ void DelaunayTetrahedralization::tetra(const std::vector<Point_3>& m_vertices, G
     }
     ///add voxel points
     std::vector<Point_d> voxel_points;
-    if(args.use_voxel_stuffing) {
+    if(!args.not_use_voxel_stuffing) {
         getVoxelPoints(p_min, p_max, geo_surface_mesh, voxel_points, args, state);
     }
     for(int i=0;i<voxel_points.size();i++) {

@@ -103,15 +103,15 @@ int main(int argc, char *argv[]) {
     app.add_option("--stage", args.stage, "Run pipeline in stage STAGE. (integer, optional, default: 1)");
     app.add_option("--filter-energy", args.filter_energy_thres, "Stop mesh improvement when the maximum energy is smaller than ENERGY. (double, optional, default: 10)");
     app.add_option("--max-pass", args.max_num_passes, "Do PASS mesh improvement passes in maximum. (integer, optional, default: 80)");
-
-    app.add_flag("--is-laplacian", args.smooth_open_boundary, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
     app.add_option("--targeted-num-v", args.target_num_vertices, "Output tetmesh that contains TV vertices. (integer, optional, tolerance: 5%)");
     app.add_option("--bg-mesh", args.background_mesh, "Background tetmesh BGMESH in .msh format for applying sizing field. (string, optional)");
-    app.add_flag("-q,--is-quiet", args.is_quiet, "Mute console output. (optional)");
     app.add_option("--log", log_filename, "Log info to given file.");
     app.add_option("--level", log_level, "Log level (0 = most verbose, 6 = off).");
-
     app.add_option("--save-mid-result", args.save_mid_result, "Get result without winding number: --save-mid-result 2");
+
+    app.add_flag("--no-voxel", args.not_use_voxel_stuffing, "Use voxel stuffing before BSP subdivision.");
+    app.add_flag("--is-laplacian", args.smooth_open_boundary, "Do Laplacian smoothing for the surface of output on the holes of input (optional)");
+    app.add_flag("-q,--is-quiet", args.is_quiet, "Mute console output. (optional)");
 
     try {
         app.parse(argc, argv);
