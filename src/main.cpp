@@ -129,7 +129,10 @@ int main(int argc, char *argv[]) {
     if(slz_file != "") {
         args.working_dir = input_surface.substr(0, slz_file.size() - 4);
     } else {
-        args.working_dir = input_surface.substr(0, input_surface.size() - 4);
+        if(output_volume.empty())
+            args.working_dir = input_surface.substr(0, input_surface.size() - 4);
+        else
+            args.working_dir = output_volume;
     }
 
     if(args.csv_file.empty()) {
