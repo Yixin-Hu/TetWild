@@ -2,6 +2,18 @@ cmake_minimum_required(VERSION 3.3)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ################################################################################
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	foreach(config ${CMAKE_CONFIGURATION_TYPES})
+		string(TOUPPER ${config} config)
+		string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
+		string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
+	endforeach()
+endif()
+
+################################################################################
+
+################################################################################
 # Options
 ################################################################################
 # tetwild
