@@ -166,7 +166,7 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 3. Call function `tetwild::tetrahedralization(v_in, f_in, v_out, t_out, a_out, args)`. The input/output arguments are described in the function docstring, and use libigl-style matrices for representing a mesh.
 
 ## License
-TetWild is MPL2 licensed. But it contains CGAL code under GPL license. We're currently working on replacing these pieces of code.
+TetWild is MPL2 licensed. But it contains CGAL code under GPL license. 
 
 TetWild is free for both commercial and non-commercial usage. However, you have to cite our work in your paper or put a reference of TetWild in your software. Whenever you fix bugs or make some improvement of TetWild, you should contribute back.
 
