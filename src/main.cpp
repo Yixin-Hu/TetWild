@@ -85,6 +85,8 @@ void gtet_new_slz(const Eigen::MatrixXd &VI, const Eigen::MatrixXi &FI, const st
     extractFinalTetmesh(MR, VO, TO, AO, args, state); //do winding number and output the tetmesh
 }
 
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh.h>
 int main(int argc, char *argv[]) {
     int log_level = 1; // debug
     std::string log_filename;
@@ -152,7 +154,16 @@ int main(int argc, char *argv[]) {
     Eigen::MatrixXd VI, VO;
     Eigen::MatrixXi FI, TO;
     Eigen::VectorXd AO;
-    igl::read_triangle_mesh(input_surface, VI, FI);
+//    igl::read_triangle_mesh(input_surface, VI, FI);
+    GEO::Mesh input;
+    GEO::mesh_load(input_surface, input);
+    VI.resize(input.vertices.nb(), 3);
+    for(int i=0;i<VI.rows();i++)
+        VI.row(i)<<(input.vertices.point(i))[0], (input.vertices.point(i))[1], (input.vertices.point(i))[2];
+    FI.resize(input.facets.nb(), 3);
+    for(int i=0;i<FI.rows();i++)
+        FI.row(i)<<input.facets.vertex(i, 0), input.facets.vertex(i, 1), input.facets.vertex(i, 2);
+
     if(slz_file != "") {
         gtet_new_slz(VI, FI, slz_file,
             {{true, false, true, true}}, VO, TO, AO, args);
