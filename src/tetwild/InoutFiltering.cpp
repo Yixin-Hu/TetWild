@@ -55,24 +55,25 @@ void InoutFiltering::filter() {
 
     //if the surface is totally reversed
     //TODO: test the correctness
-//    if(std::count(tmp_t_is_removed.begin(), tmp_t_is_removed.end(), false)==0) {
-//        logger().debug("Winding number gives a empty mesh! trying again");
-//        for (int i = 0; i < F.rows(); i++) {
-//            int tmp = F(i, 0);
-//            F(i, 0) = F(i, 2);
-//            F(i, 2) = F(i, 0);
-//        }
+    if(std::count(tmp_t_is_removed.begin(), tmp_t_is_removed.end(), false)==0) {
+        logger().debug("Winding number gives a empty mesh! trying again");
+        for (int i = 0; i < F.rows(); i++) {
+            int tmp = F(i, 1);
+            F(i, 1) = F(i, 2);
+            F(i, 2) = tmp;
+        }
 //        igl::writeSTL(state.working_dir+state.postfix_str+"_debug.stl", V, F);
-//
-//        tmp_t_is_removed = t_is_removed;
-//        cnt = 0;
-//        for (int i = 0; i < tets.size(); i++) {
-//            if (tmp_t_is_removed[i])
-//                continue;
-//            tmp_t_is_removed[i] = !(W(cnt) > 0.5);
-//            cnt++;
-//        }
-//    }
+        igl::winding_number(V, F, C, W);
+
+        tmp_t_is_removed = t_is_removed;
+        cnt = 0;
+        for (int i = 0; i < tets.size(); i++) {
+            if (tmp_t_is_removed[i])
+                continue;
+            tmp_t_is_removed[i] = !(W(cnt) > 0.5);
+            cnt++;
+        }
+    }
 
 //    outputWindingNumberField(W);
 
