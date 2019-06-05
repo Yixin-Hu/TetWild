@@ -1,4 +1,4 @@
-add_library(pymesh_tiny
+add_library(pymesh_tiny STATIC
 		MshLoader.h
 		MshLoader.cpp
 		MshSaver.h
