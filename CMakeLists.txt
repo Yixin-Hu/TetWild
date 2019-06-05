@@ -3,15 +3,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ################################################################################
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	foreach(config ${CMAKE_CONFIGURATION_TYPES})
-		string(TOUPPER ${config} config)
-		string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
-		string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
-	endforeach()
-endif()
-
-################################################################################
 
 ################################################################################
 # Options
@@ -91,7 +82,7 @@ include(TetWildDependencies)
 # TetWild
 ################################################################################
 # Build static library for executable
-add_library(libTetWild STATIC
+add_library(libTetWild 
 		include/tetwild/Args.h
 		include/tetwild/Exception.h
 		include/tetwild/Logger.h
