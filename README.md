@@ -28,6 +28,17 @@ Here is pre-generated tetmeshes and the extracted surface meshes for research-pu
 
 ## Installation
 
+#### via Docker
+
+Install [Docker](https://docs.docker.com/) and run Docker. Pull TetWild Docker image and run the binary:
+
+```bash
+docker pull yixinhu/tetwild
+docker run --rm -v "$(pwd)":/data yixinhu/tetwild [TetWild arguments]
+```
+
+#### via CMake
+
 Our code was originally developed on MacOS and has been tested on Linux and Windows.
 
 - Clone the repository into your local machine:
