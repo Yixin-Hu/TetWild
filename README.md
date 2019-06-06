@@ -64,7 +64,7 @@ docker run --rm -v "$(pwd)":/data yixinhu/tetwild [TetWild arguments]
 
 #### via CMake
 
-Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TriWild in Unix OS:
+Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TetWild in Unix OS:
 
 - Clone the repository into your local machine:
 
