@@ -3,6 +3,31 @@
 Yixin Hu, Qingnan Zhou, Xifeng Gao, Alec Jacobson, Denis Zorin, Daniele Panozzo.
 ACM Transactions on Graphics (SIGGRAPH 2018).
 
+```
+@article{Hu:2018:TMW:3197517.3201353,
+ author = {Hu, Yixin and Zhou, Qingnan and Gao, Xifeng and Jacobson, Alec and Zorin, Denis and Panozzo, Daniele},
+ title = {Tetrahedral Meshing in the Wild},
+ journal = {ACM Trans. Graph.},
+ issue_date = {August 2018},
+ volume = {37},
+ number = {4},
+ month = jul,
+ year = {2018},
+ issn = {0730-0301},
+ pages = {60:1--60:14},
+ articleno = {60},
+ numpages = {14},
+ url = {http://doi.acm.org/10.1145/3197517.3201353},
+ doi = {10.1145/3197517.3201353},
+ acmid = {3201353},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {mesh generation, robust geometry processing, tetrahedral meshing},
+} 
+```
+
+## Important Tips
+
 💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/TetWild_Final.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://drive.google.com/open?id=1VGOviRMLOsaTVEf9R6lB1b84a3aKP4eH).**
 
 💡💡💡 **Check our [license](https://github.com/Yixin-Hu/TetWild#license) first.**
@@ -180,29 +205,6 @@ We provide a wrapper for TetWild in `tetwild.h`, allowing users do the tetraheda
 TetWild is MPL2 licensed. But it contains CGAL code under GPL license. 
 
 TetWild is free for both commercial and non-commercial usage. However, you have to cite our work in your paper or put a reference of TetWild in your software. Whenever you fix bugs or make some improvement of TetWild, you should contribute back.
-
-```
-@article{Hu:2018:TMW:3197517.3201353,
- author = {Hu, Yixin and Zhou, Qingnan and Gao, Xifeng and Jacobson, Alec and Zorin, Denis and Panozzo, Daniele},
- title = {Tetrahedral Meshing in the Wild},
- journal = {ACM Trans. Graph.},
- issue_date = {August 2018},
- volume = {37},
- number = {4},
- month = jul,
- year = {2018},
- issn = {0730-0301},
- pages = {60:1--60:14},
- articleno = {60},
- numpages = {14},
- url = {http://doi.acm.org/10.1145/3197517.3201353},
- doi = {10.1145/3197517.3201353},
- acmid = {3201353},
- publisher = {ACM},
- address = {New York, NY, USA},
- keywords = {mesh generation, robust geometry processing, tetrahedral meshing},
-} 
-```
 
 ## Acknowledgements
 
