@@ -64,7 +64,7 @@ docker run --rm -v "$(pwd)":/data yixinhu/tetwild [TetWild arguments]
 
 #### via CMake
 
-Our code was originally developed on MacOS and has been tested on Linux and Windows.
+Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TriWild in Unix OS:
 
 - Clone the repository into your local machine:
 
@@ -73,8 +73,7 @@ git clone https://github.com/Yixin-Hu/TetWild
 ```
 
 - Compile the code using cmake (default in Release mode):
-
-You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.
+<!--You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.-->
 
 ```bash
 cd TetWild
@@ -84,6 +83,13 @@ cmake ..
 make
 ```
 
+- Check the installation:
+
+```bash
+./TetWild --help
+```
+This command should show a list of TetWild parameters.
+
 💡 If you do not have Boost installed (which is needed for CGAL), you can enable the cmake option `-DTETWILD_WITH_HUNTER=ON`. This will let CMake use [Hunter](https://github.com/ruslo/hunter) to download and configure Boost automatically. Other options include installing Boost via Conda, compile from source, etc.
 
 💡 If you find `Could not find Matlab` or `Could not find Mosek` in the output of cmake, it does not matter since they are not used.
@@ -92,7 +98,7 @@ make
 
 ## Usage
 
-#### Input/output Format
+### Input/output Format
 
 The inputs of our software are triangle surface meshes in `.off/.obj/.stl/.ply` format.
 
