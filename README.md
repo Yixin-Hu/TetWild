@@ -26,6 +26,10 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 } 
 ```
 
+## News
+
+🎉🎉🎉 We have 2D version "TetWild" - **TriWild** public! TriWild is able to deal with both linear and curved constriants. Now we are able to mesh curves robustly! Check it out 👉 **[TriWild](https://github.com/wildmeshing/TriWild)**.
+
 ## Important Tips
 
 💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/tetwild.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://drive.google.com/open?id=1VGOviRMLOsaTVEf9R6lB1b84a3aKP4eH).**
