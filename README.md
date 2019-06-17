@@ -68,7 +68,7 @@ docker run --rm -v "$(pwd)":/data yixinhu/tetwild [TetWild arguments]
 
 #### via CMake
 
-Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TetWild in Unix OS:
+Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TetWild in MacOS:
 
 - Clone the repository into your local machine:
 
@@ -77,7 +77,6 @@ git clone https://github.com/Yixin-Hu/TetWild
 ```
 
 - Compile the code using cmake (default in Release mode):
-<!--You need to install [CGAL](https://doc.cgal.org/latest/Manual/installation.html) before compiling the code.-->
 
 ```bash
 cd TetWild
@@ -85,6 +84,18 @@ mkdir build
 cd build
 cmake ..
 make
+```
+
+You may need to install `gmp` and `mpfr` or `CGAL` before compiling the code. You can install them via [homebrew](https://brew.sh/).
+
+```
+brew install gmp
+brew install mpfr
+```
+or
+
+```
+brew install cgal
 ```
 
 - Check the installation:
