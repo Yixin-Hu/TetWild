@@ -45,7 +45,7 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 <!--<img src="images/new.png" alt="drawing" style="width:25px;"/> New features-->
 
 ## Dataset
-Here is pre-generated tetmeshes and the extracted surface meshes for research-purpose usage.
+Here is pre-generated tetmeshes and the extracted surface meshes for research-purpose usage. **Please kindly cite our paper when using our pre-generated data.**
 
 - Input: [Thingi10k](https://ten-thousand-models.appspot.com/)
 
