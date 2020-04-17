@@ -23,7 +23,7 @@ State::State(const Args &args, const Eigen::MatrixXd &V)
     , bbox_diag(igl::bounding_box_diagonal(V))
     , eps_input(bbox_diag * args.eps_rel)
     , eps_delta(args.sampling_dist_rel > 0 ? 0 : eps_input / args.stage / std::sqrt(3))
-    , initial_edge_len(bbox_diag * args.initial_edge_len_rel)
+    , initial_edge_len(args.getAbsoluteEdgeLength(bbox_diag))
 {
     if (args.sampling_dist_rel > 0) {
         //for testing only

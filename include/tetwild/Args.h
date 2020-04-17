@@ -20,6 +20,25 @@ struct Args {
     // Initial target edge-length at every vertex (in % of the bbox diagonal)
     double initial_edge_len_rel = 1/20.0;
 
+    // Initial absolute target edge-length at every vertex. Only used if -a is specified.
+    double initial_edge_len_abs = 0.0;
+
+    // convenience function to get the correct absolute edge length depending
+    // on what was set by the CLI reader
+    double getAbsoluteEdgeLength(const double bbox_diag) const
+    {
+        return initial_edge_len_abs != 0.0 ? initial_edge_len_abs
+          : initial_edge_len_rel*bbox_diag;
+    }
+
+    // convenience function to get the correct relative edge length depending
+    // on what was set by the CLI reader
+    double getRelativeEdgeLength(const double bbox_diag) const
+    {
+        return initial_edge_len_abs != 0.0 ? initial_edge_len_abs/bbox_diag
+          : initial_edge_len_rel;
+    }
+
     // Target epsilon (in % of the bbox diagonal)
     double eps_rel = 1e-3;
 
