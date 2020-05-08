@@ -66,6 +66,8 @@ docker pull yixinhu/tetwild
 docker run --rm -v "$(pwd)":/data yixinhu/tetwild [TetWild arguments]
 ```
 
+Important note: If you find TetWild termination unreasonably, it's largely due to the momery limit of Docker. Please check the momery limit using `docker stats`.
+
 #### via CMake
 
 Our code was originally developed on MacOS and has been tested on Linux and Windows. We provide the commands for installing TetWild in MacOS:
