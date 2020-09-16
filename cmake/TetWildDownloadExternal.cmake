@@ -17,7 +17,7 @@ endfunction()
 function(tetwild_download_libigl)
     tetwild_download_project(libigl
         GIT_REPOSITORY https://github.com/libigl/libigl.git
-        GIT_TAG        e699d257fe860d4fd82709835e72438bd0cd1533
+        GIT_TAG        v2.2.0
     )
 endfunction()
 
