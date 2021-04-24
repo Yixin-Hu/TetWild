@@ -178,7 +178,7 @@ Positionals:
 Options:
   -h,--help                   Print this help message and exit
   --input TEXT REQUIRED       Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)
-  --output TEXT               Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')
+  --output TEXT               Output tetmesh OUTPUT in .msh or .mesh format. (string, optional, default: input_file+postfix+'.msh')
   --postfix TEXT              Postfix P for output files. (string, optional, default: '_')
   -l,--ideal-edge-length FLOAT
                               ideal_edge_length = diag_of_bbox * L. (double, optional, default: 0.05)
