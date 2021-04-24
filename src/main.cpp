@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
     CLI::App app{"RobustTetMeshing"};
     app.add_option("input,--input", input_surface, "Input surface mesh INPUT in .off/.obj/.stl/.ply format. (string, required)")->required();
-    app.add_option("output,--output", output_volume, "Output tetmesh OUTPUT in .msh format. (string, optional, default: input_file+postfix+'.msh')");
+    app.add_option("output,--output", output_volume, "Output tetmesh OUTPUT in .msh or .mesh format. (string, optional, default: input_file+postfix+'.msh')");
     app.add_option("--postfix", args.postfix, "Postfix P for output files. (string, optional, default: '_')");
     auto absolute = app.add_option("-a,--ideal-absolute-edge-length", args.initial_edge_len_abs, "Absolute edge length (not scaled by bbox). -a and -l cannot both be given as arguments.");
     auto relative = app.add_option("-l,--ideal-edge-length", args.initial_edge_len_rel, "ideal_edge_length = diag_of_bbox * L. (double, optional, default: 0.05)");
