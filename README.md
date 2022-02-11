@@ -32,7 +32,7 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 
 ## Important Tips
 
-💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://cs.nyu.edu/~yixinhu/tetwild.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://slides.games-cn.org/pdf/GAMES201858%E8%83%A1%E8%AF%91%E5%BF%83.pdf).**
+💡💡💡 **If you are interested in the algorithm details, please refer to our [paper](https://yixin-hu.github.io/tetwild.pdf) first. We provide plenty of examples and statistics in the paper. You can also refer to my SIGRRAPH talk [slides](https://slides.games-cn.org/pdf/GAMES201858%E8%83%A1%E8%AF%91%E5%BF%83.pdf).**
 
 💡💡💡 **Check our [license](https://github.com/Yixin-Hu/TetWild#license) first.**
 
