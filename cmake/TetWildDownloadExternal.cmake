@@ -17,15 +17,15 @@ endfunction()
 function(tetwild_download_libigl)
     tetwild_download_project(libigl
         GIT_REPOSITORY https://github.com/libigl/libigl.git
-        GIT_TAG        v2.2.0
+        GIT_TAG        45cfc79fede992ea3923ded9de3c21d1c4faced1
     )
 endfunction()
 
 ## geogram
 function(tetwild_download_geogram)
     tetwild_download_project(geogram
-        GIT_REPOSITORY https://github.com/alicevision/geogram.git
-        GIT_TAG        v1.6.7
+        GIT_REPOSITORY https://github.com/Yixin-Hu/geogram/
+        GIT_TAG        3afe5c1c22a746e17be6c7b739af0c6e7f5ad5d4
     )
 endfunction()
 
