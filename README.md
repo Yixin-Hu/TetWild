@@ -28,6 +28,8 @@ ACM Transactions on Graphics (SIGGRAPH 2018).
 
 ## News
 
+🎉🎉🎉 We have faster version "TetWild" - **fTetWild** public! fTetWild is faster than TetWild with same robustness and similar output quality! Check it out 👉 **[fTetWild](https://github.com/wildmeshing/fTetWild)**.
+
 🎉🎉🎉 We have 2D version "TetWild" - **TriWild** public! TriWild is able to deal with both linear and curved constraints. Now we are able to mesh curves robustly! Check it out 👉 **[TriWild](https://github.com/wildmeshing/TriWild)**.
 
 ## Important Tips
